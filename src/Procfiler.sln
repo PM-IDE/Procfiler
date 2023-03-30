@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Procfiler", "Procfiler\Procfiler.csproj", "{620216AE-8E3A-4044-BAB5-761E3F9C78EB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MISC", "MISC", "{84772E20-EBEB-40C6-AB47-0FDA497E72F5}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\Readme.md = ..\Readme.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcfilerTests", "ProcfilerTests\ProcfilerTests.csproj", "{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Scripts", "Scripts\Scripts.fsproj", "{2E431DA6-968F-4F64-9483-7C3745706F7A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{620216AE-8E3A-4044-BAB5-761E3F9C78EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{620216AE-8E3A-4044-BAB5-761E3F9C78EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{620216AE-8E3A-4044-BAB5-761E3F9C78EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{620216AE-8E3A-4044-BAB5-761E3F9C78EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E431DA6-968F-4F64-9483-7C3745706F7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E431DA6-968F-4F64-9483-7C3745706F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E431DA6-968F-4F64-9483-7C3745706F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E431DA6-968F-4F64-9483-7C3745706F7A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

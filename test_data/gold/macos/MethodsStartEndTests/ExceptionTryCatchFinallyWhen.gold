@@ -1,0 +1,6 @@
+	[start] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
+		[start] exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
+			[start] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
+			[ end ] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
+		[ end ] exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
+	[ end ] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])

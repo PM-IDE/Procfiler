@@ -1,0 +1,24 @@
+Method: filewriteproject!Program.<Main>(class System.String[])
+
+Trace 0
+	[start] filewriteproject!Program.<Main>(class System.String[])
+		[start] filewriteproject!Program.<Main>$(class System.String[])
+			[start] filewriteproject!Program+<<Main>$>d__0.MoveNext()
+			[ end ] filewriteproject!Program+<<Main>$>d__0.MoveNext()
+		[ end ] filewriteproject!Program.<Main>$(class System.String[])
+	[ end ] filewriteproject!Program.<Main>(class System.String[])
+
+Method: filewriteproject!Program.<Main>$(class System.String[])
+
+Trace 0
+	[start] filewriteproject!Program.<Main>$(class System.String[])
+		[start] filewriteproject!Program+<<Main>$>d__0.MoveNext()
+		[ end ] filewriteproject!Program+<<Main>$>d__0.MoveNext()
+	[ end ] filewriteproject!Program.<Main>$(class System.String[])
+
+Method: filewriteproject!Program+<<Main>$>d__0.MoveNext()
+
+Trace 0
+	[start] filewriteproject!Program+<<Main>$>d__0.MoveNext()
+	[ end ] filewriteproject!Program+<<Main>$>d__0.MoveNext()
+

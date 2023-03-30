@@ -1,0 +1,4 @@
+	[start] finalizableobject!Program.<Main>$(class System.String[])
+		[start] finalizableobject!ClassWithFinalizer..ctor()
+		[ end ] finalizableobject!ClassWithFinalizer..ctor()
+	[ end ] finalizableobject!Program.<Main>$(class System.String[])

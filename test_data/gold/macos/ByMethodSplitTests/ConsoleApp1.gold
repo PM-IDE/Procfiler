@@ -1,0 +1,24 @@
+Method: consoleapp1!Program.Main()
+
+Trace 0
+	[start] consoleapp1!Program.Main()
+		[start] consoleapp1!Program.Method1()
+			[start] consoleapp1!Program.Method2()
+			[ end ] consoleapp1!Program.Method2()
+		[ end ] consoleapp1!Program.Method1()
+	[ end ] consoleapp1!Program.Main()
+
+Method: consoleapp1!Program.Method1()
+
+Trace 0
+	[start] consoleapp1!Program.Method1()
+		[start] consoleapp1!Program.Method2()
+		[ end ] consoleapp1!Program.Method2()
+	[ end ] consoleapp1!Program.Method1()
+
+Method: consoleapp1!Program.Method2()
+
+Trace 0
+	[start] consoleapp1!Program.Method2()
+	[ end ] consoleapp1!Program.Method2()
+

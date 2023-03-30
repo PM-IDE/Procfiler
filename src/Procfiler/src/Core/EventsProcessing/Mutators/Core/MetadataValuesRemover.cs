@@ -1,0 +1,31 @@
+using Procfiler.Core.Collector;
+using Procfiler.Core.EventRecord;
+using Procfiler.Utils;
+
+namespace Procfiler.Core.EventsProcessing.Mutators.Core;
+
+public abstract class MetadataValuesRemover : SingleEventMutatorBase, ISingleEventMutator
+{
+  protected abstract string[] MetadataKeys { get; }
+  
+  
+  public override IEnumerable<EventLogMutation> Mutations => MetadataKeys.Select(key => new AttributeRemovalMutation(EventClass, key));
+  
+
+  protected MetadataValuesRemover(IProcfilerLogger logger) : base(logger)
+  {
+  }
+
+
+  protected override void ProcessInternal(EventRecordWithMetadata eventRecord, SessionGlobalData context)
+  {
+    var metadata = eventRecord.Metadata;
+    foreach (var metadataKey in MetadataKeys)
+    {
+      if (!metadata.Remove(metadataKey))
+      {
+        Logger.LogAbsenceOfMetadata(EventClass, metadataKey);
+      }
+    }
+  }
+}

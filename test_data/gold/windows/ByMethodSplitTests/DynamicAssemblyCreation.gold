@@ -1,0 +1,6 @@
+Method: dynamicassemblycreation!Program.<Main>$(class System.String[])
+
+Trace 0
+	[start] dynamicassemblycreation!Program.<Main>$(class System.String[])
+	[ end ] dynamicassemblycreation!Program.<Main>$(class System.String[])
+
