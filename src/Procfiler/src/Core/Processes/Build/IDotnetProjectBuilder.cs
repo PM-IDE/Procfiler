@@ -3,7 +3,7 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.Processes.Build;
 
-public readonly struct BuildResult : IDisposable
+public readonly struct BuildResult
 {
   private readonly TempFolderCookie myTempFolderCookie;
   
@@ -16,7 +16,7 @@ public readonly struct BuildResult : IDisposable
   }
   
   
-  public void Dispose() => myTempFolderCookie.Dispose();
+  public void ClearUnderlyingFolder() => myTempFolderCookie.Dispose();
 }
 
 public interface IDotnetProjectBuilder

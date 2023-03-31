@@ -20,7 +20,15 @@ public partial class CollectCommandBase
     command.AddOption(ConfigurationOption);
     command.AddOption(ProvidersCategory);
     command.AddOption(InstrumentCodeOption);
+    command.AddOption(TempPathOption);
+    command.AddOption(RemoveTempFolder);
   }
+
+  private Option<string> TempPathOption { get; } =
+    new("--temp", static () => string.Empty, "Folder which will be used for temp artifacts of events collection");
+
+  private Option<bool> RemoveTempFolder { get; } =
+    new("--remove-temp", static () => true, "Whether to remove temp directory for artifacts after finishing work");
 
   private Option<InstrumentationKind> InstrumentCodeOption { get; } =
     new("--instrument", static () => InstrumentationKind.OnlyMainAssembly, "Kind of instrumentation to be used");

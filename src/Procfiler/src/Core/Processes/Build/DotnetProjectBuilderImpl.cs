@@ -21,14 +21,19 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
 
   public BuildResult? TryBuildDotnetProject(ProjectBuildInfo projectBuildInfo)
   {
-    var (pathToCsproj, tfm, configuration, instrumentationKind) = projectBuildInfo;
+    var (pathToCsproj, tfm, configuration, instrumentationKind, _, tempPath) = projectBuildInfo;
     var projectName = Path.GetFileNameWithoutExtension(pathToCsproj);
     using var _ = new PerformanceCookie($"Building::{projectName}", myLogger);
     
     var projectDirectory = Path.GetDirectoryName(pathToCsproj);
     Debug.Assert(projectDirectory is { });
 
-    var artifactsFolderCookie = CreateTempArtifactsPath();
+    var artifactsFolderCookie = tempPath switch
+    {
+      null => CreateTempArtifactsPath(),
+      { } => new TempFolderCookie(myLogger, tempPath)
+    };
+    
     var buildConfig = BuildConfigurationExtensions.ToString(configuration);
     var startInfo = new ProcessStartInfo
     {

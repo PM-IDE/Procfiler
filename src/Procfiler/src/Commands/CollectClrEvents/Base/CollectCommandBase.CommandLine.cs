@@ -1,3 +1,4 @@
+using System.CommandLine.Binding;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Exceptions;
 
@@ -78,13 +79,7 @@ public abstract partial class CollectCommandBase
         throw new ArgumentOutOfRangeException(nameof(pathToCsproj));
       }
 
-      var tfm = parseResult.GetValueForOption(TfmOption);
-      Debug.Assert(tfm is { });
-
-      var buildConfiguration = parseResult.GetValueForOption(ConfigurationOption);
-      var instrumentationKind = parseResult.GetValueForOption(InstrumentCodeOption);
-      var projectBuildInfo = new ProjectBuildInfo(pathToCsproj, tfm, buildConfiguration, instrumentationKind);
-      
+      var projectBuildInfo = CreateProjectBuildInfo(parseResult, pathToCsproj);
       if (parseResult.HasOption(RepeatOption))
       {
         var repeatCount = parseResult.GetValueForOption(RepeatOption);
@@ -100,6 +95,23 @@ public abstract partial class CollectCommandBase
     }
 
     throw new ArgumentOutOfRangeException();
+  }
+
+  private ProjectBuildInfo CreateProjectBuildInfo(ParseResult parseResult, string pathToCsproj)
+  {
+    var tfm = parseResult.GetValueForOption(TfmOption);
+    Debug.Assert(tfm is { });
+
+    var buildConfiguration = parseResult.GetValueForOption(ConfigurationOption);
+    var instrumentationKind = parseResult.GetValueForOption(InstrumentCodeOption);
+    var tempPath = parseResult.GetValueForOption(TempPathOption);
+    if (Equals(tempPath, ((IValueDescriptor) TempPathOption).GetDefaultValue()))
+    {
+      tempPath = null;
+    }
+
+    var removeTemp = parseResult.GetValueForOption(RemoveTempFolder);
+    return new ProjectBuildInfo(pathToCsproj, tfm, buildConfiguration, instrumentationKind, removeTemp, tempPath);
   }
   
   private void CheckForPidOrExePathOrThrow(ParseResult parseResult)

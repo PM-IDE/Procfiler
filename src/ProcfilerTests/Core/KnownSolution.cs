@@ -67,7 +67,9 @@ public class KnownSolution
   public CollectClrEventsFromExeContext CreateContext(string solutionsDir)
   {
     var csprojPath = Path.Combine(solutionsDir, Name, Name + ".csproj");
-    var projectBuildInfo = new ProjectBuildInfo(csprojPath, Tfm, BuildConfiguration.Debug, InstrumentationKind.None);
+    var projectBuildInfo = new ProjectBuildInfo(
+      csprojPath, Tfm, BuildConfiguration.Debug, InstrumentationKind.None, true, null);
+    
     return new CollectClrEventsFromExeContext(projectBuildInfo, CreateCommonContext());
   }
 

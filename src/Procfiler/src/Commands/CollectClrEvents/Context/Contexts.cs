@@ -20,7 +20,9 @@ public record struct ProjectBuildInfo(
   string CsprojPath,
   string Tfm,
   BuildConfiguration Configuration,
-  InstrumentationKind InstrumentationKind
+  InstrumentationKind InstrumentationKind,
+  bool RemoveTempPath,
+  string? TempPath
 );
 
 public record CollectClrEventsContext(CollectingClrEventsCommonContext CommonContext);

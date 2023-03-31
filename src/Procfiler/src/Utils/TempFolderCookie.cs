@@ -12,6 +12,14 @@ public readonly struct TempFolderCookie : IDisposable
     myLogger = logger;
     FolderPath = Directory.CreateTempSubdirectory().FullName;
   }
+
+  public TempFolderCookie(IProcfilerLogger logger, string existingFolder)
+  {
+    Debug.Assert(Directory.Exists(existingFolder));
+    
+    myLogger = logger;
+    FolderPath = existingFolder;
+  }
   
   
   public void Dispose() => PathUtils.DeleteDirectory(FolderPath, myLogger);
