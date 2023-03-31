@@ -40,7 +40,7 @@ public class SelfContainedTypeCache
       {
         if (myCache.TryGetValue(type.FullName, out var existingType))
         {
-          myLogger.LogError("Already have type def for {FullName}: {TypeDef}", type.FullName, existingType);
+          myLogger.LogWarning("Already have type def for {FullName}: {TypeDef}", type.FullName, existingType);
           continue;
         }
         
