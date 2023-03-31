@@ -120,20 +120,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
         {
           foreach (var method in type.Methods)
           {
-            if (!method.IsManaged) continue;
-            if (!method.HasBody) continue;
-            if (!CanPatchMethod(method)) continue;
-
-            var processor = method.Body.GetILProcessor();
-            for (var i = method.Body.Instructions.Count - 1; i >= 0; i--)
-            {
-              if (ShouldInsertExitLogging(method.Body.Instructions, i))
-              {
-                InsertProcfilerLogBefore(i, processor, consoleWriteLineReference, false);
-              }
-            }
-
-            InsertProcfilerLogBefore(0, processor, consoleWriteLineReference, true);
+            PatchMethodIfNeeded(method, consoleWriteLineReference);
           }
         }
       }
@@ -146,45 +133,81 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     }
   }
 
-  private static bool CanPatchMethod(MethodDefinition methodDefinition)
+  private void PatchMethodIfNeeded(MethodDefinition method, MethodReference consoleWriteLineMethodReference)
   {
-    foreach (var instruction in methodDefinition.Body.Instructions)
+    if (!method.IsManaged) return;
+    if (!method.HasBody) return;
+
+    PatchMethod(method, consoleWriteLineMethodReference);
+  }
+
+  private void PatchMethod(MethodDefinition method, MethodReference consoleWriteLineReference)
+  {
+    var processor = method.Body.GetILProcessor();
+    var instructions = method.Body.Instructions;
+
+    for (var i = instructions.Count - 1; i >= 0; i--)
     {
-      if (instruction.OpCode == OpCodes.Throw || instruction.OpCode == OpCodes.Leave ||
-          instruction.OpCode == OpCodes.Leave_S)
+      if (ShouldInsertExitLogging(instructions, i))
       {
-        //ToDo: need proper support for exceptions
-        return false;
+        InsertProcfilerLogBefore(i, processor, consoleWriteLineReference, false);
       }
     }
 
-    return true;
-  }
+    InsertProcfilerLogBefore(0, processor, consoleWriteLineReference, true);
 
-  private static bool IsConsoleWriteLineMethod(MethodDefinition methodDefinition)
-  {
-    return methodDefinition.Name == DotNetConstants.WriteLine && 
-           methodDefinition.Parameters.Count == 1 && 
-           methodDefinition.Parameters[0].ParameterType.FullName == DotNetConstants.SystemString;
-  }
+    Instruction GetStartOfInsertedInstructions(Instruction context)
+    {
+      return context.Previous.Previous.Previous.Previous;
+    }
+    
+    foreach (var instruction in instructions)
+    {
+      if (instruction.Operand is Instruction target && ShouldInsertExitLogging(target))
+      {
+        instruction.Operand = GetStartOfInsertedInstructions(target);
+      }
+    }
+    
+    foreach (var handler in method.Body.ExceptionHandlers)
+    {
+      if (ShouldInsertExitLogging(handler.HandlerEnd))
+      {
+        handler.HandlerEnd = GetStartOfInsertedInstructions(handler.HandlerEnd);
+      }
 
-  private bool ShouldInsertExitLogging(Collection<Instruction> instructions, int index) => 
-    instructions[index].OpCode == OpCodes.Ret;
+      if (ShouldInsertExitLogging(handler.TryEnd))
+      {
+        handler.TryEnd = GetStartOfInsertedInstructions(handler.TryEnd);
+      }
+    }
+  }
+  
+  private static bool IsConsoleWriteLineMethod(MethodDefinition methodDefinition) =>
+    methodDefinition.Name == DotNetConstants.WriteLine && 
+    methodDefinition.Parameters.Count == 1 && 
+    methodDefinition.Parameters[0].ParameterType.FullName == DotNetConstants.SystemString;
+
+  private static bool ShouldInsertExitLogging(Instruction instruction) =>
+    instruction.OpCode == OpCodes.Ret;
+  
+  private static bool ShouldInsertExitLogging(Collection<Instruction> instructions, int index) => 
+    ShouldInsertExitLogging(instructions[index]);
 
   private static void InsertProcfilerLogBefore(
     int index, ILProcessor processor, MethodReference methodReference, bool entering)
   {
     var messageStart = entering ? "Entering" : "Exiting";
     var message = $"{messageStart} {processor.Body.Method.FullName}";
-    var loadStringInstruction = Instruction.Create(OpCodes.Ldstr, message);
     
     var instruction = processor.Body.Instructions[index];
-
     if (index == 0 || processor.Body.Instructions[index - 1].OpCode != OpCodes.Nop)
     {
       processor.InsertBefore(instruction, Instruction.Create(OpCodes.Nop));
     }
-    
+
+    var loadStringInstruction = Instruction.Create(OpCodes.Ldstr, message);
+
     processor.InsertBefore(instruction, loadStringInstruction);
     var call = Instruction.Create(OpCodes.Call, methodReference);
     processor.InsertAfter(loadStringInstruction, call);
