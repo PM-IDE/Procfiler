@@ -33,12 +33,13 @@ public class DllMethodsPatcher : IDllMethodsPatcher
   
   public void PatchMethodStartEnd(string dllPath, InstrumentationKind instrumentationKind)
   {
+    if (instrumentationKind == InstrumentationKind.None) return;
+    
     try
     {
-      if (instrumentationKind == InstrumentationKind.None) return;
-      
       var directory = Path.GetDirectoryName(dllPath);
       Debug.Assert(directory is { });
+      
       var cache = new SelfContainedTypeCache(myLogger, directory);
       var assembly = AssemblyDefinition.ReadAssembly(dllPath, new ReaderParameters
       {
@@ -46,6 +47,13 @@ public class DllMethodsPatcher : IDllMethodsPatcher
         ReadSymbols = true,
         ReadWrite = true
       });
+      
+      foreach (var module in assembly.Modules)
+      {
+        const string Name = InstrumentalProfilerConstants.ProcfilerEventSource;
+        var reference = new AssemblyNameReference(Name, new Version(1, 0, 0, 0));
+        module.AssemblyReferences.Add(reference);
+      }
 
       var assemblyWithPath = new AssemblyDefWithPath(assembly, dllPath);
       
@@ -109,18 +117,24 @@ public class DllMethodsPatcher : IDllMethodsPatcher
       myLogger.LogInformation("Patching assembly: {Name}", assembly.Name);
       cache.ProcessAssembly(new AssemblyDefWithPath(assembly, physicalPath), true);
 
-      var consoleType = cache.Types[DotNetConstants.SystemConsole];
-      var consoleWriteLineMethod = consoleType.Methods.FirstOrDefault(IsConsoleWriteLineMethod);
+      var loggerType = cache.Types[InstrumentalProfilerConstants.MethodStartEndEventSourceType];
+      
+      var methodStartedLogger = loggerType.Methods.FirstOrDefault(IsLogMethodStartedMethod);
+      var methodFinishedLogger = loggerType.Methods.FirstOrDefault(IsLogMethodFinishedMethod);
 
-      Debug.Assert(consoleWriteLineMethod is { });
+      Debug.Assert(methodStartedLogger is { });
+      Debug.Assert(methodFinishedLogger is { });
+      
       foreach (var moduleDefinition in assembly.Modules)
       {
-        var consoleWriteLineReference = moduleDefinition.ImportReference(consoleWriteLineMethod);
+        var methodStartLogReference = moduleDefinition.ImportReference(methodStartedLogger);
+        var methodFinishedLogReference = moduleDefinition.ImportReference(methodFinishedLogger);
+        
         foreach (var type in moduleDefinition.Types)
         {
           foreach (var method in type.Methods)
           {
-            PatchMethodIfNeeded(method, consoleWriteLineReference);
+            PatchMethodIfNeeded(method, methodStartLogReference, methodFinishedLogReference);
           }
         }
       }
@@ -133,15 +147,17 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     }
   }
 
-  private void PatchMethodIfNeeded(MethodDefinition method, MethodReference consoleWriteLineMethodReference)
+  private void PatchMethodIfNeeded(
+    MethodDefinition method, MethodReference methodStartedLogReference, MethodReference methodFinishedLogReference)
   {
     if (!method.IsManaged) return;
     if (!method.HasBody) return;
 
-    PatchMethod(method, consoleWriteLineMethodReference);
+    PatchMethod(method, methodStartedLogReference, methodFinishedLogReference);
   }
 
-  private void PatchMethod(MethodDefinition method, MethodReference consoleWriteLineReference)
+  private void PatchMethod(
+    MethodDefinition method, MethodReference methodStartedLogReference, MethodReference methodFinishedLogReference)
   {
     var processor = method.Body.GetILProcessor();
     var instructions = method.Body.Instructions;
@@ -150,11 +166,11 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     {
       if (ShouldInsertExitLogging(instructions, i))
       {
-        InsertProcfilerLogBefore(i, processor, consoleWriteLineReference, false);
+        InsertProcfilerLogBefore(i, processor, methodFinishedLogReference, false);
       }
     }
 
-    InsertProcfilerLogBefore(0, processor, consoleWriteLineReference, true);
+    InsertProcfilerLogBefore(0, processor, methodStartedLogReference, true);
 
     Instruction GetStartOfInsertedInstructions(Instruction context)
     {
@@ -182,12 +198,23 @@ public class DllMethodsPatcher : IDllMethodsPatcher
       }
     }
   }
-  
-  private static bool IsConsoleWriteLineMethod(MethodDefinition methodDefinition) =>
-    methodDefinition.Name == DotNetConstants.WriteLine && 
-    methodDefinition.Parameters.Count == 1 && 
+
+  private static bool IsLogMethodStartedMethod(MethodDefinition methodDefinition) =>
+    methodDefinition.Name == InstrumentalProfilerConstants.LogMethodStartedMethodName &&
+    IsMethodWithOneStringParameter(methodDefinition);
+
+  private static bool IsLogMethodFinishedMethod(MethodDefinition methodDefinition) =>
+    methodDefinition.Name == InstrumentalProfilerConstants.LogMethodStartedMethodName &&
+    IsMethodWithOneStringParameter(methodDefinition);
+
+  private static bool IsMethodWithOneStringParameter(MethodDefinition methodDefinition) =>
+    methodDefinition.Parameters.Count == 1 &&
     methodDefinition.Parameters[0].ParameterType.FullName == DotNetConstants.SystemString;
 
+  private static bool IsConsoleWriteLineMethod(MethodDefinition methodDefinition) =>
+    methodDefinition.Name == DotNetConstants.WriteLine && 
+    IsMethodWithOneStringParameter(methodDefinition);
+  
   private static bool ShouldInsertExitLogging(Instruction instruction) =>
     instruction.OpCode == OpCodes.Ret;
   

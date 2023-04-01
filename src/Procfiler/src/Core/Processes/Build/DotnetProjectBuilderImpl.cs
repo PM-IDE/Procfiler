@@ -21,7 +21,39 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
 
   public BuildResult? TryBuildDotnetProject(ProjectBuildInfo projectBuildInfo)
   {
-    var (pathToCsproj, tfm, configuration, instrumentationKind, _, tempPath) = projectBuildInfo;
+    var resultNullable = TryBuildDotnetProjectInternal(projectBuildInfo);
+    if (resultNullable is not { } result) return null;
+
+    if (projectBuildInfo.InstrumentationKind is not InstrumentationKind.None)
+    {
+      var procfilerDirectory = Environment.CurrentDirectory;
+      const string ProcfilerEventSourceDllName = $"{InstrumentalProfilerConstants.ProcfilerEventSource}.dll";
+      
+      var procfilerEventSourceDll = Directory
+        .GetFiles(procfilerDirectory)
+        .FirstOrDefault(f => f.EndsWith(ProcfilerEventSourceDllName));
+
+      if (procfilerEventSourceDll is null)
+      {
+        throw new FileNotFoundException($"Failed to find {InstrumentalProfilerConstants.ProcfilerEventSource}.dll");
+      }
+
+      var from = Path.Combine(Environment.CurrentDirectory, procfilerEventSourceDll);
+      var buildResultDirName = Path.GetDirectoryName(result.BuiltDllPath);
+      Debug.Assert(buildResultDirName is { });
+      
+      var to = Path.Combine(buildResultDirName, ProcfilerEventSourceDllName);
+      File.Copy(from, to, true);
+      
+      myDllMethodsPatcher.PatchMethodStartEnd(result.BuiltDllPath, projectBuildInfo.InstrumentationKind);
+    }
+
+    return result;
+  }
+
+  private BuildResult? TryBuildDotnetProjectInternal(ProjectBuildInfo projectBuildInfo)
+  {
+    var (pathToCsproj, tfm, configuration, _, _, tempPath) = projectBuildInfo;
     var projectName = Path.GetFileNameWithoutExtension(pathToCsproj);
     using var _ = new PerformanceCookie($"Building::{projectName}", myLogger);
     
@@ -77,9 +109,6 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
     }
     
     var pathToDll = Path.Combine(artifactsFolderCookie.FolderPath, projectName + ".dll");
-    
-    myDllMethodsPatcher.PatchMethodStartEnd(pathToDll, instrumentationKind);
-    
     return new BuildResult(artifactsFolderCookie)
     {
       BuiltDllPath = pathToDll

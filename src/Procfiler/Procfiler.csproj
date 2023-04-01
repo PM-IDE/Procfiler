@@ -39,4 +39,8 @@
       <Folder Include="src\Core\EventsProcessing\Mutators\SingleEventMutators\StatefulMutators" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ProcfilerEventSources\ProcfilerEventSources.csproj" />
+    </ItemGroup>
+
 </Project>
