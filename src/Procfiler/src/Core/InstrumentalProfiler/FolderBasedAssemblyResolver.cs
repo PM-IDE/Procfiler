@@ -4,13 +4,23 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.InstrumentalProfiler;
 
-public class FolderBasedAssemblyResolver : IAssemblyResolver
+public interface IAssembliesProvider
+{
+  IReadOnlyDictionary<string, AssemblyDefWithPath> Assemblies { get; }
+
+  void Initialize();
+}
+
+public class FolderBasedAssemblyResolver : IAssemblyResolver, IAssembliesProvider
 {
   private readonly IProcfilerLogger myLogger;
   private readonly string myContextFolder;
   private readonly Dictionary<string, AssemblyDefWithPath> myContextAssembliesToPaths;
 
   private bool myContextAssembliesInitialized;
+
+
+  public IReadOnlyDictionary<string, AssemblyDefWithPath> Assemblies => myContextAssembliesToPaths;
 
 
   public FolderBasedAssemblyResolver(IProcfilerLogger logger, string contextFolder)
@@ -45,6 +55,8 @@ public class FolderBasedAssemblyResolver : IAssemblyResolver
     AssemblyResolver = this
   };
   
+  public void Initialize() => InitializeContextAssembliesIfNeeded(CreateReaderParameters());
+
   private void InitializeContextAssembliesIfNeeded(ReaderParameters readerParameters)
   {
     if (myContextAssembliesInitialized) return;

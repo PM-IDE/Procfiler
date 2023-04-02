@@ -41,41 +41,44 @@ public class DllMethodsPatcher : IDllMethodsPatcher
       Debug.Assert(directory is { });
       
       var cache = new SelfContainedTypeCache(myLogger, directory);
+      cache.Initialize();
+      
       var assembly = AssemblyDefinition.ReadAssembly(dllPath, new ReaderParameters
       {
         InMemory = true,
         ReadSymbols = true,
         ReadWrite = true
       });
-      
-      foreach (var module in assembly.Modules)
-      {
-        const string Name = InstrumentalProfilerConstants.ProcfilerEventSource;
-        var reference = new AssemblyNameReference(Name, new Version(1, 0, 0, 0));
-        module.AssemblyReferences.Add(reference);
-      }
 
       var assemblyWithPath = new AssemblyDefWithPath(assembly, dllPath);
-      
+      var patchedAssemblies = new List<AssemblyDefWithPath>();
       switch (instrumentationKind)
       {
         case InstrumentationKind.OnlyMainAssembly:
-          PatchAssemblyMethods(assemblyWithPath, cache);
+          PatchAssemblyMethods(assemblyWithPath, cache, patchedAssemblies);
           break;
         case InstrumentationKind.MainAssemblyAndAllReferences:
-          PatchAssemblyMethodsWithReferences(assemblyWithPath, cache);
+          PatchAssemblyMethodsWithReferences(assemblyWithPath, cache, patchedAssemblies);
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(instrumentationKind), instrumentationKind, null);
       }
+
+      foreach (var (patchedAssembly, physicalPath) in patchedAssemblies)
+      {
+        patchedAssembly.Write(physicalPath);
+      }
     }
     catch (Exception ex) when (ex is not ArgumentOutOfRangeException)
     {
-      myLogger.LogError(ex, "Failed to instrument code");
+      myLogger.LogError(ex, "Failed to instrument code of {DllPath} or one of it's dependencies", dllPath);
     }
   }
 
-  private void PatchAssemblyMethodsWithReferences(AssemblyDefWithPath assemblyDefWithPath, SelfContainedTypeCache cache)
+  private void PatchAssemblyMethodsWithReferences(
+    AssemblyDefWithPath assemblyDefWithPath, 
+    SelfContainedTypeCache cache,
+    List<AssemblyDefWithPath> patchedAssemblies)
   {
     var visited = new HashSet<string>();
     var queue = new Queue<AssemblyDefWithPath>();
@@ -88,7 +91,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
 
       visited.Add(currentAssembly.Assembly.FullName);
       
-      PatchAssemblyMethods(currentAssembly, cache);
+      PatchAssemblyMethods(currentAssembly, cache, patchedAssemblies);
       
       foreach (var module in currentAssembly.Assembly.Modules)
       {
@@ -103,9 +106,12 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     }
   }
 
-  private void PatchAssemblyMethods(AssemblyDefWithPath assemblyDefWithPath, SelfContainedTypeCache cache)
+  private void PatchAssemblyMethods(
+    AssemblyDefWithPath assemblyDefWithPath,
+    SelfContainedTypeCache cache,
+    List<AssemblyDefWithPath> patchedAssemblies)
   {
-    var (assembly, physicalPath) = assemblyDefWithPath;
+    var (assembly, _) = assemblyDefWithPath;
     if ((assembly.MainModule.Attributes & ModuleAttributes.ILOnly) == 0)
     {
       myLogger.LogWarning("Will not patch ");
@@ -115,8 +121,6 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     try
     {
       myLogger.LogInformation("Patching assembly: {Name}", assembly.Name);
-      cache.ProcessAssembly(new AssemblyDefWithPath(assembly, physicalPath), true);
-
       var loggerType = cache.Types[InstrumentalProfilerConstants.MethodStartEndEventSourceType];
       
       var methodStartedLogger = loggerType.Methods.FirstOrDefault(IsLogMethodStartedMethod);
@@ -139,7 +143,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
         }
       }
 
-      assembly.Write(physicalPath);
+      patchedAssemblies.Add(assemblyDefWithPath);
     }
     catch (Exception ex)
     {

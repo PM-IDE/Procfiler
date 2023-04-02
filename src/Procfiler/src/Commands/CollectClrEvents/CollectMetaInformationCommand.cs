@@ -35,7 +35,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
           foreach (var (payloadName, payloadValue) in eventRecord.Metadata)
           {
             var valuesCount = payloadValues.GetOrCreate(payloadName, static () => new Dictionary<string, int>());
-            var count = valuesCount!.GetOrCreate(payloadValue, static () => 0);
+            var count = valuesCount.GetOrCreate(payloadValue, static () => 0);
             valuesCount[payloadValue] = count + 1;
           }
         }

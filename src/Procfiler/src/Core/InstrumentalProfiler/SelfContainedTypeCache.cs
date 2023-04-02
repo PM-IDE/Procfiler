@@ -26,45 +26,25 @@ public class SelfContainedTypeCache
     myAssemblies = new Dictionary<string, AssemblyDefWithPath>();
   }
 
-  
-  public void ProcessAssembly(AssemblyDefWithPath assemblyDefWithPath, bool processReferences)
+
+  public void Initialize()
   {
-    var (assemblyDefinition, _) = assemblyDefWithPath;
-    if (myAssemblies.ContainsKey(assemblyDefinition.FullName)) return;
-
-    myAssemblies[assemblyDefinition.FullName] = assemblyDefWithPath;
-
-    foreach (var module in assemblyDefinition.Modules)
+    myResolver.Initialize();
+    foreach (var (fullName, assemblyDefWithPath) in myResolver.Assemblies)
     {
-      foreach (var type in module.Types)
-      {
-        if (myCache.TryGetValue(type.FullName, out var existingType))
-        {
-          myLogger.LogWarning("Already have type def for {FullName}: {TypeDef}", type.FullName, existingType);
-          continue;
-        }
-        
-        myCache[type.FullName] = type;
-      }
+      myAssemblies[fullName] = assemblyDefWithPath;
 
-      if (processReferences)
+      foreach (var module in assemblyDefWithPath.Assembly.Modules)
       {
-        foreach (var reference in module.AssemblyReferences)
+        foreach (var type in module.Types)
         {
-          try
+          if (myCache.TryGetValue(type.FullName, out var existingType))
           {
-            ProcessAssembly(myResolver.ResolveWithPath(reference, new ReaderParameters
-            {
-              ReadWrite = true,
-              ReadSymbols = false,
-              InMemory = true,
-              AssemblyResolver = myResolver
-            }), true);
+            myLogger.LogWarning("Already have type def for {FullName}: {TypeDef}", type.FullName, existingType);
+            continue;
           }
-          catch (FailedToResolveAssemblyException ex)
-          {
-            myLogger.LogWarning(ex, "Failed to resolve assembly {Name}", reference.FullName);
-          }
+
+          myCache[type.FullName] = type;
         }
       }
     }
