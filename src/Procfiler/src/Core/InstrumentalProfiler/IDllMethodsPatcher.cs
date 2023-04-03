@@ -208,7 +208,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     IsMethodWithOneStringParameter(methodDefinition);
 
   private static bool IsLogMethodFinishedMethod(MethodDefinition methodDefinition) =>
-    methodDefinition.Name == InstrumentalProfilerConstants.LogMethodStartedMethodName &&
+    methodDefinition.Name == InstrumentalProfilerConstants.LogMethodFinishedMethodName &&
     IsMethodWithOneStringParameter(methodDefinition);
 
   private static bool IsMethodWithOneStringParameter(MethodDefinition methodDefinition) =>
