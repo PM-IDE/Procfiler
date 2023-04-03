@@ -74,6 +74,10 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       CreateNoWindow = true,
+      Environment =
+      {
+        ["DOTNET_DefaultDiagnosticPortSuspend"] = "0"
+      },
       Arguments = $"build {pathToCsproj} -c {buildConfig} -f {tfm} -o {artifactsFolderCookie.FolderPath} --self-contained true"
     };
 
