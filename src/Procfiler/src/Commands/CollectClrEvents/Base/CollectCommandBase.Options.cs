@@ -22,7 +22,11 @@ public partial class CollectCommandBase
     command.AddOption(InstrumentCodeOption);
     command.AddOption(TempPathOption);
     command.AddOption(RemoveTempFolder);
+    command.AddOption(ArgumentsOption);
   }
+
+  private Option<string> ArgumentsOption { get; } =
+    new("--arguments", static () => string.Empty, "Arguments which will be passed when launching the program");
 
   private Option<string> TempPathOption { get; } =
     new("--temp", static () => string.Empty, "Folder which will be used for temp artifacts of events collection");
@@ -31,7 +35,7 @@ public partial class CollectCommandBase
     new("--remove-temp", static () => true, "Whether to remove temp directory for artifacts after finishing work");
 
   private Option<InstrumentationKind> InstrumentCodeOption { get; } =
-    new("--instrument", static () => InstrumentationKind.OnlyMainAssembly, "Kind of instrumentation to be used");
+    new("--instrument", static () => InstrumentationKind.None, "Kind of instrumentation to be used");
 
   private Option<ProvidersCategoryKind> ProvidersCategory { get; } =
     new("--providers", static () => ProvidersCategoryKind.All, "Providers which will be used for collecting events");
@@ -39,13 +43,14 @@ public partial class CollectCommandBase
   protected Option<int> RepeatOption { get; } =
     new("--repeat", static () => 1, "The number of times launching of the program should be repeated");
 
-  private Option<string> PathToCsprojOption { get; } = new("-csproj", "The path to the .csproj file of the project to be executed");
+  private Option<string> PathToCsprojOption { get; } = 
+    new("-csproj", "The path to the .csproj file of the project to be executed");
 
   private Option<string> TfmOption { get; } =
-    new("-tfm", static () => "net6.0", "The target framework identifier, the project will be built for specified tfm");
+    new("--tfm", static () => "net6.0", "The target framework identifier, the project will be built for specified tfm");
 
   private Option<BuildConfiguration> ConfigurationOption { get; } =
-    new("-c", static () => BuildConfiguration.Debug, "Build configuration which will be used during project build");
+    new("--c", static () => BuildConfiguration.Debug, "Build configuration which will be used during project build");
 
   private Option<int> ProcessIdOption { get; } = new("-p", "The process id from which we should collect CLR events");
 
@@ -55,7 +60,7 @@ public partial class CollectCommandBase
   };
 
   private Option<int> DurationOption { get; } = 
-    new("--duration", static () => 10_000, "The amount of time to spend collecting CLR events");
+    new("--duration", static () => 20_000, "The amount of time to spend collecting CLR events");
 
   private Option<int> TimeoutOption { get; } =
     new("--timeout", static () => 10_000, "The timeout which we want to wait until processing all events");

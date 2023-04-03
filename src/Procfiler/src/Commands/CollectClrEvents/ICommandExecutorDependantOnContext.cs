@@ -64,7 +64,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
   private ValueTask<CollectedEvents> CollectEventsFromProcess(CollectClrEventsContext context, int processId)
   {
-    var (_, _, _, category, _, duration, timeout) = context.CommonContext;
+    var (_, _, _, _, category, _, duration, timeout) = context.CommonContext;
     return myClrEventsCollector.CollectEventsAsync(processId, duration, timeout, category);
   }
 
@@ -81,10 +81,11 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     }
 
     var buildResult = buildResultNullable.Value;
+    var arguments = context.CommonContext.Arguments;
     
     try
     {
-      if (myProcessLauncher.TryStartDotnetProcess(buildResult.BuiltDllPath) is not { } process)
+      if (myProcessLauncher.TryStartDotnetProcess(buildResult.BuiltDllPath, arguments) is not { } process)
       {
         myLogger.LogError("Failed to start or to find process");
         return;

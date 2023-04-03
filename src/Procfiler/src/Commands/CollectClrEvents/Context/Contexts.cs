@@ -10,10 +10,11 @@ public record struct CollectingClrEventsCommonContext(
   string OutputPath,
   SerializationContext SerializationContext,
   IParseResultInfoProvider CommandParseResult,
-  ProvidersCategoryKind ProviderCategory = ProvidersCategoryKind.All,
-  bool ClearPathBefore = true,
-  int DurationMs = 5_000,
-  int MaxWaitForLogWriteTimeoutMs = 10_000
+  string Arguments,
+  ProvidersCategoryKind ProviderCategory,
+  bool ClearPathBefore,
+  int DurationMs,
+  int MaxWaitForLogWriteTimeoutMs
 );
 
 public record struct ProjectBuildInfo(

@@ -1,4 +1,5 @@
 using Procfiler.Commands.CollectClrEvents.Context;
+using Procfiler.Core.Collector;
 using Procfiler.Core.InstrumentalProfiler;
 using Procfiler.Utils;
 
@@ -76,7 +77,8 @@ public class KnownSolution
   private static CollectingClrEventsCommonContext CreateCommonContext()
   {
     var serializationContext = new SerializationContext(FileFormat.Csv);
-    return new CollectingClrEventsCommonContext(string.Empty, serializationContext, null);
+    return new CollectingClrEventsCommonContext(
+      string.Empty, serializationContext, null, string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000);
   }
 
   public override string ToString()

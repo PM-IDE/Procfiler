@@ -5,7 +5,7 @@ namespace Procfiler.Core.Processes;
 
 public interface IProcessLauncher
 {
-  Process? TryStartDotnetProcess(string pathToExecutable);
+  Process? TryStartDotnetProcess(string pathToExecutable, string arguments);
 }
 
 [AppComponent]
@@ -20,7 +20,7 @@ public class ProcessLauncher : IProcessLauncher
   }
   
 
-  public Process? TryStartDotnetProcess(string pathToExecutable)
+  public Process? TryStartDotnetProcess(string pathToExecutable, string arguments)
   {
     var startInfo = new ProcessStartInfo
     {
@@ -29,7 +29,7 @@ public class ProcessLauncher : IProcessLauncher
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       CreateNoWindow = true,
-      Arguments = pathToExecutable,
+      Arguments = $"{pathToExecutable} {arguments}",
       Environment =
       {
         ["DOTNET_DefaultDiagnosticPortSuspend"] = "1",
