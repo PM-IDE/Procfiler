@@ -20,12 +20,12 @@ public static class ProcfilerContainerBuilder
       PathUtils.EnsureEmptyDirectoryOrThrow(logDirectory);
       var logFile = Path.Combine(logDirectory, $"log-{{Date}}-{DateTime.Now.TimeOfDay.TotalMilliseconds}.txt");
       options.AddFile(logFile, logLevel);
-      // options.AddSimpleConsole(formatterOptions =>
-      // {
-      //   formatterOptions.SingleLine = true;
-      //   formatterOptions.IncludeScopes = false;
-      //   formatterOptions.ColorBehavior = LoggerColorBehavior.Enabled;
-      // });
+      options.AddSimpleConsole(formatterOptions =>
+      {
+        formatterOptions.SingleLine = true;
+        formatterOptions.IncludeScopes = false;
+        formatterOptions.ColorBehavior = LoggerColorBehavior.Enabled;
+      });
     }).CreateLogger(string.Empty);
     
     builder.RegisterInstance(logger);

@@ -53,7 +53,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
 
   private BuildResult? TryBuildDotnetProjectInternal(ProjectBuildInfo projectBuildInfo)
   {
-    var (pathToCsproj, tfm, configuration, _, _, tempPath) = projectBuildInfo;
+    var (pathToCsproj, tfm, configuration, _, removeTempPath, tempPath) = projectBuildInfo;
     var projectName = Path.GetFileNameWithoutExtension(pathToCsproj);
     using var _ = new PerformanceCookie($"Building::{projectName}", myLogger);
     
@@ -82,29 +82,38 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
       StartInfo = startInfo
     };
 
+    void RemoveArtifactsFolderIfNeeded()
+    {
+      if (removeTempPath)
+      {
+        artifactsFolderCookie.Dispose();
+      }
+    }
+    
     try
     {
       if (!process.Start())
       {
         myLogger.LogError("Failed to start build process for {PathToCsproj}", pathToCsproj);
-        artifactsFolderCookie.Dispose();
+        RemoveArtifactsFolderIfNeeded();
         return null;
       }
 
-      process.WaitForExit();
+      process.WaitForExit(TimeSpan.FromSeconds(5));
 
       if (process.ExitCode != 0)
       {
         var output = process.StandardOutput.ReadToEnd();
         myLogger.LogError("Failed to build project {Path}, {Output}", pathToCsproj, output);
-        artifactsFolderCookie.Dispose();
+        RemoveArtifactsFolderIfNeeded();
         return null;
       }
     }
     catch (Exception ex)
     {
-      artifactsFolderCookie.Dispose();
-      myLogger.LogError(ex, "Failed to build project {CsprojPath}", pathToCsproj);
+      RemoveArtifactsFolderIfNeeded();
+      var output = process.StandardOutput.ReadToEnd();
+      myLogger.LogError(ex, "Failed to build project {Path}, {Output}", pathToCsproj, output);
       return null;
     }
     
