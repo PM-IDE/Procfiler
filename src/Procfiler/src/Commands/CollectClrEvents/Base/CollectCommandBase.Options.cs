@@ -64,7 +64,7 @@ public partial class CollectCommandBase
   };
 
   private Option<int> DurationOption { get; } = 
-    new("--duration", static () => 20_000, "The amount of time to spend collecting CLR events");
+    new("--duration", static () => 60_000, "The amount of time to spend collecting CLR events");
 
   private Option<int> TimeoutOption { get; } =
     new("--timeout", static () => 10_000, "The timeout which we want to wait until processing all events");

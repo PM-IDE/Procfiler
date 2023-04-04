@@ -109,7 +109,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
         return;
       }
 
-      myLogger.LogInformation("Started process: {Id} {Path}", process.Id, pathToCsproj);
+      myLogger.LogInformation("Started process: {Id} {Path}", process.Id, buildResult.BuiltDllPath);
 
       CollectedEvents? events = null;
       try
