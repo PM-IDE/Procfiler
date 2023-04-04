@@ -39,6 +39,12 @@ public record CollectClrEventsFromExeWithRepeatContext(
   CollectingClrEventsCommonContext CommonContext
 ) : CollectClrEventsFromExeContext(ProjectBuildInfo, CommonContext);
 
+public record CollectClrEventsFromExeWithArguments(
+  ProjectBuildInfo ProjectBuildInfo,
+  CollectingClrEventsCommonContext CommonContext,
+  IReadOnlyList<string> Arguments
+) : CollectClrEventsFromExeContext(ProjectBuildInfo, CommonContext);
+
 public record CollectClrEventsFromRunningProcessContext(
   int ProcessId,
   CollectingClrEventsCommonContext CommonContext

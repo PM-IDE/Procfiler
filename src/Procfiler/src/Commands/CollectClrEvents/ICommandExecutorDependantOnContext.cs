@@ -38,10 +38,28 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     context switch
     {
       CollectClrEventsFromExeWithRepeatContext repeatContext => ExecuteCommandWithRetryExe(repeatContext, func),
+      CollectClrEventsFromExeWithArguments argsContext => ExecuteCommandWithArgumentsList(argsContext, func),
       CollectClrEventsFromExeContext exeContext => ExecuteCommandWithLaunchingProcess(exeContext, func),
       CollectClrEventsFromRunningProcessContext runContext => ExecuteCommandWithRunningProcess(runContext, func),
       _ => throw new ArgumentOutOfRangeException(nameof(context), context, null)
     };
+
+  private async ValueTask ExecuteCommandWithArgumentsList(
+    CollectClrEventsFromExeWithArguments context, Func<CollectedEvents,ValueTask> func)
+  {
+    foreach (var currentArguments in context.Arguments)
+    {
+      var newContext = context with
+      {
+        CommonContext = context.CommonContext with
+        {
+          Arguments = currentArguments
+        }
+      };
+
+      await ExecuteCommandWithLaunchingProcess(newContext, func);
+    }
+  }
 
   private async ValueTask ExecuteCommandWithRetryExe(
     CollectClrEventsFromExeWithRepeatContext context, Func<CollectedEvents, ValueTask> func)

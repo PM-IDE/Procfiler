@@ -81,6 +81,30 @@ public abstract partial class CollectCommandBase
       }
 
       var projectBuildInfo = CreateProjectBuildInfo(parseResult, pathToCsproj);
+      if (parseResult.HasOption(RepeatOption) && 
+          parseResult.GetValueForOption(RepeatOption) > 1 && 
+          parseResult.HasOption(ArgumentsFileOption))
+      {
+        Logger.LogError("Executing with arguments file and repeat count is not yet supported");
+        throw new ArgumentOutOfRangeException();
+      }
+      
+      if (parseResult.HasOption(ArgumentsFileOption))
+      {
+        var filePath = parseResult.GetValueForOption(ArgumentsFileOption);
+        if (!Equals(filePath, ((IValueDescriptor)ArgumentsFileOption).GetDefaultValue()))
+        {
+          if (!File.Exists(filePath))
+          {
+            Logger.LogError("Invalid path to arguments file: {Path}", filePath);
+            throw new FileNotFoundException("Failed to find argument file", filePath);
+          }
+
+          var arguments = File.ReadAllLines(filePath);
+          return new CollectClrEventsFromExeWithArguments(projectBuildInfo, commonContext, arguments); 
+        }
+      }
+      
       if (parseResult.HasOption(RepeatOption))
       {
         var repeatCount = parseResult.GetValueForOption(RepeatOption);

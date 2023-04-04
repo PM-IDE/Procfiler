@@ -23,7 +23,11 @@ public partial class CollectCommandBase
     command.AddOption(TempPathOption);
     command.AddOption(RemoveTempFolder);
     command.AddOption(ArgumentsOption);
+    command.AddOption(ArgumentsFileOption);
   }
+
+  private Option<string> ArgumentsFileOption { get; } =
+    new("--arguments-file", static () => string.Empty, "File containing list of arguments which will be passed to program");
 
   private Option<string> ArgumentsOption { get; } =
     new("--arguments", static () => string.Empty, "Arguments which will be passed when launching the program");
