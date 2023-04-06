@@ -7,13 +7,34 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Serialization.XES;
 
-public readonly record struct EmptyXesDocument(XmlDocument Document, XmlElement LogNode);
-
 public interface IXesEventsSerializer
 {
-  void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
-  EmptyXesDocument CreateEmptyDocument();
-  XmlElement CreateTrace(int traceNum, EventSessionInfo sessionInfo, XmlDocument document);
+  Task SerializeEventsAsync(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
+}
+
+internal readonly struct StartEndElementCookie : IAsyncDisposable
+{
+  public static async Task<StartEndElementCookie> CreateStartElementAsync(
+    XmlWriter xmlWriter, string? prefix, string tagName, string? @namespace)
+  {
+    await xmlWriter.WriteStartElementAsync(prefix, tagName, @namespace);
+    return new StartEndElementCookie(xmlWriter);
+  }
+  
+  
+  private readonly XmlWriter myXmlWriter;
+
+  
+  private StartEndElementCookie(XmlWriter xmlWriter)
+  {
+    myXmlWriter = xmlWriter;
+  }
+
+  
+  public ValueTask DisposeAsync()
+  {
+    return new ValueTask(myXmlWriter.WriteEndElementAsync());
+  }
 }
 
 [AppComponent]
@@ -31,138 +52,113 @@ public partial class XesEventsSerializer : IXesEventsSerializer
   }
 
 
-  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
+  public async Task SerializeEventsAsync(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
   {
-    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", myLogger);
+    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEventsAsync)}", myLogger);
 
-    var (xmlDocument, root) = CreateEmptyDocument();
-    AddLogAttributes(xmlDocument, root);
+    await using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+    {
+      Indent = true,
+      Async = true
+    });
+
+    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, LogTagName, null);
+    await WriteHeaderAsync(writer);
 
     var traceNum = 0;
     foreach (var sessionInfo in eventsTraces)
     {
-      root.AppendChild(CreateTrace(traceNum++, sessionInfo, xmlDocument));
+      await WriteTrace(traceNum++, sessionInfo, writer);
     }
-    
-    xmlDocument.Save(stream);
   }
 
-  private static void AddLogAttributes(XmlDocument document, XmlElement root)
+  private static async Task WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
   {
-    root.AppendChild(CreateStringValueTag(document, LifecycleModel, StandardLifecycleModel));
-  }
-
-  public XmlElement CreateTrace(int traceNum, EventSessionInfo sessionInfo, XmlDocument xmlDocument)
-  {
-    var currentTrace = xmlDocument.CreateNode(XmlNodeType.Element, TraceTagName, string.Empty);
-    currentTrace.AppendChild(CreateStringValueTag(xmlDocument, ConceptName, traceNum.ToString()));
+    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, TraceTagName, null);
+    await WriteStringValueTagAsync(writer, ConceptName, traceNum.ToString());
 
     foreach (var currentEvent in new OrderedEventsEnumerator(sessionInfo.Events))
     {
-      currentTrace.AppendChild(CreateEventNode(xmlDocument, currentEvent));
+      await WriteEventNodeAsync(writer, currentEvent);
     }
-
-    return (XmlElement) currentTrace;
   }
-
-  public EmptyXesDocument CreateEmptyDocument()
+  
+  private static async Task WriteEventNodeAsync(XmlWriter writer, EventRecordWithMetadata currentEvent)
   {
-    var xmlDocument = new XmlDocument();
-    var root = xmlDocument.CreateNode(XmlNodeType.Element, LogTagName, string.Empty);
-    WriteHeader(xmlDocument, root);
-    xmlDocument.AppendChild(root);
-
-    return new EmptyXesDocument(xmlDocument, (XmlElement)root);
-  }
-
-  private static XmlNode CreateEventNode(XmlDocument xmlDocument, EventRecordWithMetadata currentEvent)
-  {
-    var node = xmlDocument.CreateNode(XmlNodeType.Element, EventTag, string.Empty);
-
-    node.AppendChild(CreateDateTag(xmlDocument, currentEvent.Stamp));
-    node.AppendChild(CreateStringValueTag(xmlDocument, ConceptName, currentEvent.EventName));
-    node.AppendChild(CreateStringValueTag(xmlDocument, EventId, (ourNextEventId++).ToString()));
-    node.AppendChild(CreateStringValueTag(xmlDocument, "ManagedThreadId", currentEvent.ManagedThreadId.ToString()));
-    node.AppendChild(CreateStringValueTag(xmlDocument, "StackTraceId", currentEvent.StackTraceId.ToString()));
+    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, EventTag, null);
     
-    AddMetadataValueIfPresentAndRemoveFromMetadata(xmlDocument, node, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
-    AddMetadataValueIfPresentAndRemoveFromMetadata(xmlDocument, node, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
-
-    return node;
+    await WriteDateTagAsync(writer, currentEvent.Stamp);
+    await WriteStringValueTagAsync(writer, ConceptName, currentEvent.EventName);
+    await WriteStringValueTagAsync(writer, EventId, (ourNextEventId++).ToString());
+    await WriteStringValueTagAsync(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
+    await WriteStringValueTagAsync(writer, "StackTraceId", currentEvent.StackTraceId.ToString());
+    
+    await AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
+      writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
+    
+    await AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
+      writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
   }
 
-  private static void AddMetadataValueIfPresentAndRemoveFromMetadata(
-    XmlDocument document, 
-    XmlNode node,
-    EventRecordWithMetadata eventRecord,
-    string metadataKey,
-    string attributeName)
+  private static async Task AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
+    XmlWriter writer, EventRecordWithMetadata eventRecord, string metadataKey, string attributeName)
   {
     if (eventRecord.Metadata.TryGetValue(metadataKey, out var value))
     {
-      node.AppendChild(CreateStringValueTag(document, attributeName, value));
+      await WriteStringValueTagAsync(writer, attributeName, value);
       eventRecord.Metadata.Remove(metadataKey);
     }
   }
 
-  private static void WriteHeader(XmlDocument document, XmlNode logRoot)
+  private static async Task WriteHeaderAsync(XmlWriter writer)
   {
-    logRoot.Attributes!.Append(CreateAttribute(document, XesVersion, "1849.2016"));
-    logRoot.Attributes!.Append(CreateAttribute(document, XesFeatures, ""));
+    await writer.WriteAttributeStringAsync(null, XesVersion, null, "1849.2016");
+    await writer.WriteAttributeStringAsync(null, XesFeatures, null, string.Empty);
 
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_Time", "meta_time", "http://www.xes-standard.org/meta_time.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "Lifecycle", "lifecycle", "http://www.xes-standard.org/lifecycle.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_LifeCycle", "meta_life", "http://www.xes-standard.org/meta_life.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "Organizational", "org", "http://www.xes-standard.org/org.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_Organization", "meta_org", "http://www.xes-standard.org/meta_org.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "Time", "time", "http://www.xes-standard.org/time.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_Concept", "meta_concept", "http://www.xes-standard.org/meta_concept.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_Completeness", "meta_completeness", "http://www.xes-standard.org/meta_completeness.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_3TU", "meta_3TU", "http://www.xes-standard.org/meta_3TU.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "Concept", "concept", "http://www.xes-standard.org/concept.xesext"));
-    logRoot.AppendChild(CreateExtensionTag(document, "MetaData_General", "meta_general", "http://www.xes-standard.org/meta_general.xesext"));
+    await WriteExtensionTagAsync(writer, "MetaData_Time", "meta_time", "http://www.xes-standard.org/meta_time.xesext");
+    await WriteExtensionTagAsync(writer, "Lifecycle", "lifecycle", "http://www.xes-standard.org/lifecycle.xesext");
+    await WriteExtensionTagAsync(writer, "MetaData_LifeCycle", "meta_life", "http://www.xes-standard.org/meta_life.xesext");
+    await WriteExtensionTagAsync(writer, "Organizational", "org", "http://www.xes-standard.org/org.xesext");
+    await WriteExtensionTagAsync(writer, "MetaData_Organization", "meta_org", "http://www.xes-standard.org/meta_org.xesext");
+    await WriteExtensionTagAsync(writer, "Time", "time", "http://www.xes-standard.org/time.xesext");
+    await WriteExtensionTagAsync(writer, "MetaData_Concept", "meta_concept", "http://www.xes-standard.org/meta_concept.xesext");
+    await WriteExtensionTagAsync(writer, "MetaData_Completeness", "meta_completeness", "http://www.xes-standard.org/meta_completeness.xesext");
+    await WriteExtensionTagAsync(writer, "MetaData_3TU", "meta_3TU", "http://www.xes-standard.org/meta_3TU.xesext");
+    await WriteExtensionTagAsync(writer, "Concept", "concept", "http://www.xes-standard.org/concept.xesext");
+    await WriteExtensionTagAsync(writer, "MetaData_General", "meta_general", "http://www.xes-standard.org/meta_general.xesext");
   }
 
-  private static XmlNode CreateExtensionTag(XmlDocument document, string name, string prefix, string uri)
+  private static async Task WriteExtensionTagAsync(XmlWriter writer, string name, string prefix, string uri)
   {
-    var extensionNode = document.CreateNode(XmlNodeType.Element, Extension, string.Empty);
-
-    extensionNode.Attributes!.Append(CreateAttribute(document, Name, name));
-    extensionNode.Attributes!.Append(CreateAttribute(document, Prefix, prefix));
-    extensionNode.Attributes!.Append(CreateAttribute(document, Uri, uri));
-
-    return extensionNode;
+    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, Extension, null);
+    await writer.WriteAttributeStringAsync(null, Name, null, name);
+    await writer.WriteAttributeStringAsync(null, Prefix, null, prefix);
+    await writer.WriteAttributeStringAsync(null, Uri, null, uri);
   }
 
-  private static XmlNode CreateStringValueTag(XmlDocument document, string keyValue, string value)
+  private static async Task WriteStringValueTagAsync(XmlWriter writer, string key, string value)
   {
-    var nameNode = document.CreateNode(XmlNodeType.Element, StringTagName, string.Empty);
+    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, StringTagName, null);
+    await WriteKeyAttributeAsync(writer, key);
+    await WriteAttributeAsync(writer, ValueAttr, value);
+  }
+
+  private static async Task WriteDateTagAsync(XmlWriter writer, long stamp)
+  {
+    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, DateTag, null);
+    await WriteKeyAttributeAsync(writer, DateTimeKey);
     
-    nameNode.Attributes!.Append(CreateKeyAttribute(document, keyValue));
-    nameNode.Attributes!.Append(CreateAttribute(document, ValueAttr, value));
-
-    return nameNode;
-  }
-
-  private static XmlNode CreateDateTag(XmlDocument document, long stamp)
-  {
-    var dateNode = document.CreateNode(XmlNodeType.Element, DateTag, string.Empty);
-    
-    dateNode.Attributes!.Append(CreateKeyAttribute(document, DateTimeKey));
-
     var dateString = new DateTime(stamp).ToUniversalTime().ToString("O");
-    dateNode.Attributes!.Append(CreateAttribute(document, ValueAttr, dateString));
-    
-    return dateNode;
+    await WriteAttributeAsync(writer, ValueAttr, dateString);
   }
 
-  private static XmlAttribute CreateAttribute(XmlDocument document, string name, string value)
+  private static Task WriteAttributeAsync(XmlWriter writer, string name, string value)
   {
-    var attr = document.CreateAttribute(name);
-    attr.Value = value;
-    return attr;
+    return writer.WriteAttributeStringAsync(null, name, null, value);
   }
 
-  private static XmlAttribute CreateKeyAttribute(XmlDocument document, string value) => 
-    CreateAttribute(document, Key, value);
+  private static Task WriteKeyAttributeAsync(XmlWriter writer, string value)
+  {
+    return writer.WriteAttributeStringAsync(null, Key, null, value);
+  }
 }
