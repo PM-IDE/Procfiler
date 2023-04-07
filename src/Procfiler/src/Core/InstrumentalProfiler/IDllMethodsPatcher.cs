@@ -10,8 +10,8 @@ namespace Procfiler.Core.InstrumentalProfiler;
 public enum InstrumentationKind
 {
   None,
-  OnlyMainAssembly,
-  MainAssemblyAndAllReferences
+  MainAssembly,
+  MainAssemblyAndReferences
 }
 
 public interface IDllMethodsPatcher
@@ -54,10 +54,10 @@ public class DllMethodsPatcher : IDllMethodsPatcher
       var patchedAssemblies = new List<AssemblyDefWithPath>();
       switch (instrumentationKind)
       {
-        case InstrumentationKind.OnlyMainAssembly:
+        case InstrumentationKind.MainAssembly:
           PatchAssemblyMethods(assemblyWithPath, cache, patchedAssemblies);
           break;
-        case InstrumentationKind.MainAssemblyAndAllReferences:
+        case InstrumentationKind.MainAssemblyAndReferences:
           PatchAssemblyMethodsWithReferences(assemblyWithPath, cache, patchedAssemblies);
           break;
         default:
@@ -111,10 +111,10 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     SelfContainedTypeCache cache,
     List<AssemblyDefWithPath> patchedAssemblies)
   {
-    var (assembly, _) = assemblyDefWithPath;
+    var (assembly, path) = assemblyDefWithPath;
     if ((assembly.MainModule.Attributes & ModuleAttributes.ILOnly) == 0)
     {
-      myLogger.LogWarning("Will not patch ");
+      myLogger.LogWarning("Will not patch {Assembly} as it is not IL only", path);
       return;
     }
     

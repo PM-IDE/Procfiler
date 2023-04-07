@@ -10,7 +10,7 @@ public class MethodStartEndEventSource : EventSource
   
   public static MethodStartEndEventSource Log { get; } = new();
 
-  public static void LogMethodStart(string methodName) => Log.MethodStarted(methodName);
+  public static void LogMethodStarted(string methodName) => Log.MethodStarted(methodName);
   public static void LogMethodFinished(string methodName) => Log.MethodFinished(methodName); 
   
   
