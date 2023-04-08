@@ -11,12 +11,12 @@ public class MethodStartEndEventSource : EventSource
   public static MethodStartEndEventSource Log { get; } = new();
 
   public static void LogMethodStarted(string methodName) => Log.MethodStarted(methodName);
-  public static void LogMethodFinished(string methodName) => Log.MethodFinished(methodName); 
-  
-  
-  [Event(MethodStartedId)]
+  public static void LogMethodFinished(string methodName) => Log.MethodFinished(methodName);
+
+
+  [Event(MethodStartedId, Level = EventLevel.LogAlways)]
   public void MethodStarted(string methodName) => WriteEvent(MethodStartedId, methodName);
 
-  [Event(MethodFinishedId)]
+  [Event(MethodFinishedId, Level = EventLevel.LogAlways)]
   public void MethodFinished(string methodName) => WriteEvent(MethodFinishedId, methodName);
 }

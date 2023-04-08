@@ -1,4 +1,5 @@
 using Procfiler.Utils.Container;
+using ProcfilerEventSources;
 
 namespace Procfiler.Core.Collector;
 
@@ -33,31 +34,35 @@ public class EventPipeProvidersProviderImpl : IEventPipeProvidersProvider
         new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, (long)ClrTraceEventParser.Keywords.All),
         new(SampleProfilerTraceEventParser.ProviderName, EventLevel.Verbose),
         new(TplEtwProviderTraceEventParser.ProviderName, EventLevel.Verbose, (long)TplEtwProviderTraceEventParser.Keywords.Default),
-        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, CreateClrPrivateTraceEventParserKeywords),
-        new(FrameworkEventSource, EventLevel.Verbose, CreateFrameworkTraceEventParserKeywords),
+        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, ClrPrivateTraceEventParserKeywords),
+        new(FrameworkEventSource, EventLevel.Verbose, FrameworkTraceEventParserKeywords),
         new(NetHttp, EventLevel.Verbose),
         new(NetSockets, EventLevel.Verbose),
         new(Runtime, EventLevel.Verbose),
-        new(ArrayPoolSource, EventLevel.Verbose)
+        new(ArrayPoolSource, EventLevel.Verbose),
+        new(nameof(MethodStartEndEventSource), EventLevel.LogAlways)
       },
       [ProvidersCategoryKind.Gc] = new EventPipeProvider[]
       {
-        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, CreateGcPrivateKeywords),
-        new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, CreateGcKeywords)
+        new(nameof(MethodStartEndEventSource), EventLevel.LogAlways),
+        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, GcPrivateKeywords),
+        new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, GcKeywords)
       },
       [ProvidersCategoryKind.GcAllocHigh] = new EventPipeProvider[]
       {
-        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, CreateGcPrivateKeywords),
-        new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, CreateGcAllocHighKeywords)
+        new(nameof(MethodStartEndEventSource), EventLevel.LogAlways),
+        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, GcPrivateKeywords),
+        new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, GcAllocHighKeywords)
       },
       [ProvidersCategoryKind.GcAllocLow] = new EventPipeProvider[]
       {
-        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, CreateGcPrivateKeywords),
-        new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, CreateGcAllocLowKeywords)
+        new(nameof(MethodStartEndEventSource), EventLevel.LogAlways),
+        new(ClrPrivateTraceEventParser.ProviderName, EventLevel.Verbose, GcPrivateKeywords),
+        new(ClrTraceEventParser.ProviderName, EventLevel.Verbose, GcAllocLowKeywords)
       }
     };
 
-  private static long CreateClrPrivateTraceEventParserKeywords => (long)
+  private static long ClrPrivateTraceEventParserKeywords => (long)
   (
     ClrPrivateTraceEventParser.Keywords.GC |
     ClrPrivateTraceEventParser.Keywords.Binding |
@@ -72,7 +77,7 @@ public class EventPipeProvidersProviderImpl : IEventPipeProvidersProvider
     ClrPrivateTraceEventParser.Keywords.Startup
   );
 
-  private static long CreateFrameworkTraceEventParserKeywords => (long)
+  private static long FrameworkTraceEventParserKeywords => (long)
   (
     FrameworkEventSourceTraceEventParser.Keywords.Loader |
     FrameworkEventSourceTraceEventParser.Keywords.NetClient |
@@ -81,21 +86,21 @@ public class EventPipeProvidersProviderImpl : IEventPipeProvidersProvider
     FrameworkEventSourceTraceEventParser.Keywords.DynamicTypeUsage
   );
 
-  private static long CreateGcKeywords => (long)ClrTraceEventParser.Keywords.GCHeapSnapshot;
+  private static long GcKeywords => (long)ClrTraceEventParser.Keywords.GCHeapSnapshot;
 
-  private static long CreateGcAllocHighKeywords => (long)
+  private static long GcAllocHighKeywords => (long)
   (
     ClrTraceEventParser.Keywords.GCHeapSnapshot |
     ClrTraceEventParser.Keywords.GCSampledObjectAllocationHigh
   );
 
-  private static long CreateGcAllocLowKeywords => (long)
+  private static long GcAllocLowKeywords => (long)
   (
     ClrTraceEventParser.Keywords.GCHeapSnapshot |
     ClrTraceEventParser.Keywords.GCSampledObjectAllocationLow
   );
 
-  private static long CreateGcPrivateKeywords => (long)ClrPrivateTraceEventParser.Keywords.GC;
+  private static long GcPrivateKeywords => (long)ClrPrivateTraceEventParser.Keywords.GC;
   
 
   public IReadOnlyList<EventPipeProvider> GetProvidersFor(ProvidersCategoryKind category) =>

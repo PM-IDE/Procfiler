@@ -246,8 +246,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
   private static void InsertProcfilerLogBefore(
     int index, ILProcessor processor, MethodReference methodReference, bool entering)
   {
-    var messageStart = entering ? "Entering" : "Exiting";
-    var message = $"{messageStart} {processor.Body.Method.FullName}";
+    var message = processor.Body.Method.FullName;
     
     var instruction = processor.Body.Instructions[index];
     if (index == 0 || processor.Body.Instructions[index - 1].OpCode != OpCodes.Nop)
