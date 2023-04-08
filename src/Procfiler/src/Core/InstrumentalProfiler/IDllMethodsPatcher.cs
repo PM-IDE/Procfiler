@@ -89,7 +89,8 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     
     var assemblyName = mainAssembly.Name.Name;
     var depsJsonPath = Path.Combine(directory, $"{assemblyName}.deps.json");
-    await myDepsJsonPatcher.AddAssemblyReferenceAsync(depsJsonPath, ProcfilerEventSources, new Version(1, 0, 0));
+    await myDepsJsonPatcher.AddAssemblyReferenceAsync(
+      mainAssembly, depsJsonPath, ProcfilerEventSources, new Version(1, 0, 0));
   }
   
   private void PatchAssemblyMethodsWithReferences(
