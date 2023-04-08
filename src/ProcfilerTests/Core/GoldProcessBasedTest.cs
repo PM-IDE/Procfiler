@@ -57,7 +57,7 @@ public class GoldProcessBasedTest : ProcessTestBase
   {
     var folderName = GetType().Name;
     var osPrefix = GetOsFolderOrThrow();
-    var directory = Path.Combine(CreatePathToTestData(), "gold", osPrefix, folderName);
+    var directory = Path.Combine(TestPaths.CreatePathToTestData(), "gold", osPrefix, folderName);
     if (!Directory.Exists(directory))
     {
       Directory.CreateDirectory(directory);
