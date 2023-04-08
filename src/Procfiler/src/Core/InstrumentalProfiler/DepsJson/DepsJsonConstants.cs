@@ -4,7 +4,7 @@ public static class DepsJsonConstants
 {
   public const string RuntimeTarget = "runtimeTarget";
   public const string CompilationOptions = "compilationOptions";
-  public const string Targets = "targetsc";
+  public const string Targets = "targets";
   public const string Libraries = "libraries";
   public const string Runtimes = "runtimes";
   public const string Runtime = "runtime";

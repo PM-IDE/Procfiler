@@ -2,6 +2,14 @@ namespace Procfiler.Utils;
 
 public static class PathUtils
 {
+  public static void ThrowIfNotExists(string path)
+  {
+    if (!Path.Exists(path))
+    {
+      throw new FileNotFoundException(path);
+    }
+  }
+  
   public static void CheckIfDirectoryOrThrow(string path)
   {
     if (!File.GetAttributes(path).HasFlag(FileAttributes.Directory))

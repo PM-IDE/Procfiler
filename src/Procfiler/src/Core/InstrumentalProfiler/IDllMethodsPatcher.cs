@@ -2,6 +2,7 @@
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using Procfiler.Core.Constants;
+using Procfiler.Core.InstrumentalProfiler.DepsJson;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
@@ -16,22 +17,26 @@ public enum InstrumentationKind
 
 public interface IDllMethodsPatcher
 {
-  void PatchMethodStartEnd(string dllPath, InstrumentationKind instrumentationKind);
+  Task PatchMethodStartEndAsync(string dllPath, InstrumentationKind instrumentationKind);
 }
 
 [AppComponent]
 public class DllMethodsPatcher : IDllMethodsPatcher
 {
+  private const string ProcfilerEventSources = "ProcfilerEventSources";
+  
   private readonly IProcfilerLogger myLogger;
+  private readonly IDepsJsonPatcher myDepsJsonPatcher;
 
   
-  public DllMethodsPatcher(IProcfilerLogger logger)
+  public DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJsonPatcher)
   {
     myLogger = logger;
+    myDepsJsonPatcher = depsJsonPatcher;
   }
 
   
-  public void PatchMethodStartEnd(string dllPath, InstrumentationKind instrumentationKind)
+  public async Task PatchMethodStartEndAsync(string dllPath, InstrumentationKind instrumentationKind)
   {
     if (instrumentationKind == InstrumentationKind.None) return;
     
@@ -68,6 +73,8 @@ public class DllMethodsPatcher : IDllMethodsPatcher
       {
         patchedAssembly.Write(physicalPath);
       }
+
+      await PatchDepsJsonAsync(assembly, dllPath);
     }
     catch (Exception ex) when (ex is not ArgumentOutOfRangeException)
     {
@@ -75,6 +82,16 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     }
   }
 
+  private async Task PatchDepsJsonAsync(AssemblyDefinition mainAssembly, string dllPath)
+  {
+    var directory = Path.GetDirectoryName(dllPath);
+    Debug.Assert(directory is { });
+    
+    var assemblyName = mainAssembly.Name.Name;
+    var depsJsonPath = Path.Combine(directory, $"{assemblyName}.deps.json");
+    await myDepsJsonPatcher.AddAssemblyReferenceAsync(depsJsonPath, ProcfilerEventSources, new Version(1, 0, 0));
+  }
+  
   private void PatchAssemblyMethodsWithReferences(
     AssemblyDefWithPath assemblyDefWithPath, 
     SelfContainedTypeCache cache,

@@ -45,7 +45,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
       var to = Path.Combine(buildResultDirName, ProcfilerEventSourceDllName);
       File.Copy(from, to, true);
       
-      myDllMethodsPatcher.PatchMethodStartEnd(result.BuiltDllPath, projectBuildInfo.InstrumentationKind);
+      myDllMethodsPatcher.PatchMethodStartEndAsync(result.BuiltDllPath, projectBuildInfo.InstrumentationKind);
     }
 
     return result;

@@ -10,17 +10,20 @@ public interface IDepsJsonPatcher
 [AppComponent]
 public class DepsJsonPatcherImpl : IDepsJsonPatcher
 {
-  private readonly IDepsJsonReaderWriter myDepsJsonReaderWriter;
+  private readonly IDepsJsonReader myDepsJsonReader;
+  private readonly IDepsJsonWriter myDepsJsonWriter;
 
   
-  public DepsJsonPatcherImpl(IDepsJsonReaderWriter depsJsonReaderWriter)
+  public DepsJsonPatcherImpl(IDepsJsonReader depsJsonReader, IDepsJsonWriter depsJsonWriter)
   {
-    myDepsJsonReaderWriter = depsJsonReaderWriter;
+    myDepsJsonReader = depsJsonReader;
+    myDepsJsonWriter = depsJsonWriter;
   }
 
   
-  public Task AddAssemblyReferenceAsync(string depsJsonPath, string assemblyName, Version version)
+  public async Task AddAssemblyReferenceAsync(string depsJsonPath, string assemblyName, Version version)
   {
-    throw new NotImplementedException();
+    var depsJsonFile = await myDepsJsonReader.ReadOrThrowAsync(depsJsonPath);
+    await myDepsJsonWriter.WriteAsync(depsJsonPath, depsJsonFile);
   }
 }

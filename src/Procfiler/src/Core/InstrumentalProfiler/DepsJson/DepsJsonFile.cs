@@ -60,28 +60,42 @@ public class TargetItem
 
 public class TargetDependency
 {
-  public List<DependencyOfTargetDependency> Dependencies { get; init; }
-  public List<RuntimeTarget> RuntimeTargets { get; init; }
-  public List<FileInfo> Runtime { get; init; }
-  public List<FileInfo> Native { get; init; }
+  public string Name { get; set; }
+  public required List<DependencyOfTargetDependency> Dependencies { get; init; }
+  public required List<RuntimeTarget> RuntimeTargets { get; init; }
+  public required List<FileInfo> Runtime { get; init; }
+  public required List<FileInfo> Native { get; init; }
 }
 
 public class NameWithVersion
 {
+  //todo: parse version
   public static NameWithVersion Parse(string rawName) => new()
   {
-    Name = rawName
+    Name = rawName,
+    Version = null
   };
-  
-  
-  public string Name { get; init; }
-  public string? Version { get; init; }
+
+  public static NameWithVersion Create(string name, string version) => new()
+  {
+    Name = name, 
+    Version = version
+  };
+
+
+  public required string Name { get; init; }
+  public required string? Version { get; init; }
+
+
+  public override string ToString()
+  {
+    return Name;
+  }
 }
 
 public class DependencyOfTargetDependency
 {
   public NameWithVersion NameWithVersion { get; init; }
-  public Version Version { get; set; }
 }
 
 public class FileInfo

@@ -20,4 +20,7 @@ public static class JsonElementExtensions
 
   public static string GetStringValueOrThrow(this JsonElement element) =>
     element.GetString() ?? throw new NullReferenceException();
+
+  public static JsonElement? GetPropertyOrNull(this JsonElement element, string propertyName) =>
+    element.TryGetProperty(propertyName, out var property) ? property : null;
 }

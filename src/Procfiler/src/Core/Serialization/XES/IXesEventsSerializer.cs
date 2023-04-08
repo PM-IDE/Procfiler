@@ -4,37 +4,13 @@ using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
+using Procfiler.Utils.Xml;
 
 namespace Procfiler.Core.Serialization.XES;
 
 public interface IXesEventsSerializer
 {
   Task SerializeEventsAsync(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
-}
-
-internal readonly struct StartEndElementCookie : IAsyncDisposable
-{
-  public static async Task<StartEndElementCookie> CreateStartElementAsync(
-    XmlWriter xmlWriter, string? prefix, string tagName, string? @namespace)
-  {
-    await xmlWriter.WriteStartElementAsync(prefix, tagName, @namespace);
-    return new StartEndElementCookie(xmlWriter);
-  }
-  
-  
-  private readonly XmlWriter myXmlWriter;
-
-  
-  private StartEndElementCookie(XmlWriter xmlWriter)
-  {
-    myXmlWriter = xmlWriter;
-  }
-
-  
-  public ValueTask DisposeAsync()
-  {
-    return new ValueTask(myXmlWriter.WriteEndElementAsync());
-  }
 }
 
 [AppComponent]
