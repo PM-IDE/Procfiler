@@ -5,16 +5,24 @@ namespace Procfiler.Core.InstrumentalProfiler.DepsJson;
 
 public interface IDepsJsonWriter
 {
-  Task WriteAsync(string path, DepsJsonFile file);
+  Task WriteAsync(Stream stream, DepsJsonFile file);
+}
+
+public static class ExtensionsForIDepsJsonWriter
+{
+  public static async Task WriteAsync(this IDepsJsonWriter writer, string path, DepsJsonFile file)
+  {
+    await using var fs = File.OpenWrite(path);
+    await writer.WriteAsync(fs, file);
+  }
 }
 
 [AppComponent]
 public class DepsJsonWriterImpl : IDepsJsonWriter
 {
-  public async Task WriteAsync(string path, DepsJsonFile file)
+  public async Task WriteAsync(Stream stream, DepsJsonFile file)
   {
-    await using var fs = File.OpenWrite(path);
-    await using var writer = new Utf8JsonWriter(fs, new JsonWriterOptions
+    await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
     {
       Indented = true
     });
