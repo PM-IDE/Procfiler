@@ -4,8 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Procfiler", "Procfiler\Proc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MISC", "MISC", "{84772E20-EBEB-40C6-AB47-0FDA497E72F5}"
 	ProjectSection(SolutionItems) = preProject
-		..\.gitignore = ..\.gitignore
-		..\Readme.md = ..\Readme.md
+		..\..\.gitignore = ..\..\.gitignore
+		..\..\Readme.md = ..\..\Readme.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcfilerTests", "ProcfilerTests\ProcfilerTests.csproj", "{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}"
