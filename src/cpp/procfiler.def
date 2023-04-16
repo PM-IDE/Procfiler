@@ -1,0 +1,5 @@
+LIBRARY "Procfiler.dll"
+
+EXPORTS
+    DllCanUnloadNow PRIVATE
+    DllGetClassObject PRIVATE
