@@ -8,3 +8,5 @@ data
 __pycache__
 results
 ProcessMining/pm4pyex/pm4pyex/tests/test_data
+cmake-build-debug
+3rdparty
