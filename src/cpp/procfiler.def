@@ -1,5 +1,7 @@
-LIBRARY "Procfiler.dll"
+LIBRARY     Procfiler.dll
 
 EXPORTS
-    DllCanUnloadNow PRIVATE
-    DllGetClassObject PRIVATE
+            DllGetClassObject       PRIVATE
+            DllCanUnloadNow         PRIVATE
+            PassCallbackToProfiler  PRIVATE
+            DoPInvoke               PRIVATE

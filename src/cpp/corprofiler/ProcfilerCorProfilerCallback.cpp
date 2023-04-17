@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "ProcfilerCorProfilerCallback.h"
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
