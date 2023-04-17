@@ -42,7 +42,7 @@ ENDIF()
 
 IF (WIN32)
     add_library("Procfiler" SHARED
-        profiler.def
+        procfiler.def
         dllmain.cpp
     )
 ELSE()
