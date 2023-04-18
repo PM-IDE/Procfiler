@@ -1,5 +1,26 @@
 #include "ProcfilerCorProfilerCallback.h"
 
+
+void HandleFunctionEnter2(FunctionID funcId,
+                          UINT_PTR clientData,
+                          COR_PRF_FRAME_INFO func,
+                          COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
+    printf(("Entered: " + std::to_string(func) + "\n").c_str());
+}
+
+void HandleFunctionLeave2(FunctionID funcId,
+                          UINT_PTR clientData,
+                          COR_PRF_FRAME_INFO func,
+                          COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
+    printf(("Left: " + std::to_string(func) + "\n").c_str());
+}
+
+void HandleFunctionTailCall(FunctionID funcId,
+                            UINT_PTR clientData,
+                            COR_PRF_FRAME_INFO func) {
+    printf(("Tail call: " + std::to_string(func) + "\n").c_str());
+}
+
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
     myLogger->Log("Started initializing CorProfiler callback");
     void** ptr = reinterpret_cast<void**>(&this->myProfilerInfo);
@@ -9,15 +30,20 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
-    DWORD eventMask = COR_PRF_MONITOR_JIT_COMPILATION |
-                      COR_PRF_DISABLE_TRANSPARENCY_CHECKS_UNDER_FULL_TRUST |
-                      COR_PRF_DISABLE_INLINING |
-                      COR_PRF_MONITOR_MODULE_LOADS |
-                      COR_PRF_DISABLE_ALL_NGEN_IMAGES;
+    DWORD eventMask = COR_PRF_ALL;
 
     result = myProfilerInfo->SetEventMask(eventMask);
     if (FAILED(result)) {
-        myLogger->Log("Failed to set event mask");
+        myLogger->Log("Failed to set event mask: " + std::to_string(result));
+        return E_FAIL;
+    }
+
+    result = myProfilerInfo->SetEnterLeaveFunctionHooks2(HandleFunctionEnter2,
+                                                         HandleFunctionLeave2,
+                                                         HandleFunctionTailCall);
+
+    if (FAILED(result)) {
+        myLogger->Log("Failed to set enter-leave hooks: " + std::to_string(result));
         return E_FAIL;
     }
 
@@ -26,6 +52,8 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 }
 
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
+    myLogger->Log("Shutting down profiler");
+
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
         myProfilerInfo = nullptr;
@@ -473,4 +501,3 @@ ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
     myProfilerInfo = nullptr;
     myLogger = nullptr;
 }
-

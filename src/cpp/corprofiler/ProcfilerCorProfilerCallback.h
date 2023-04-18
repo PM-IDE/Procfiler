@@ -10,7 +10,7 @@ private:
     std::atomic<int> myRefCount;
 
 public:
-    ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
+    explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
     ~ProcfilerCorProfilerCallback();
 
     HRESULT STDMETHODCALLTYPE Initialize(IUnknown* pICorProfilerInfoUnk) override;
