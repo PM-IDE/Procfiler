@@ -47,7 +47,7 @@ HRESULT STDMETHODCALLTYPE ClassFactory::CreateInstance(IUnknown *pUnkOuter, REFI
         return CLASS_E_NOAGGREGATION;
     }
 
-    auto p = new ProcfilerCorProfilerCallback();
+    auto p = new ProcfilerCorProfilerCallback(new ProcfilerLogger());
     return p->QueryInterface(riid, ppvObject);
 }
 

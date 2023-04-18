@@ -7,7 +7,9 @@ set(SOURCES
     procfiler.def
     ClassFactory.cpp
     dllmain.cpp
-    corprofiler/ProcfilerCorProfilerCallback.cpp guids.cpp)
+    corprofiler/ProcfilerCorProfilerCallback.cpp
+    guids.cpp
+    logging/ProcfilerLogger.cpp)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 

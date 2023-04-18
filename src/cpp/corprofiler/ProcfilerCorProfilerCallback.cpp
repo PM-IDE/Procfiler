@@ -1,12 +1,11 @@
-#include <cstdio>
 #include "ProcfilerCorProfilerCallback.h"
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
-    printf("Started initializing CorProfiler callback");
-    REFIID uuid = CorProf11GUID;
+    myLogger->Log("Started initializing CorProfiler callback");
     void** ptr = reinterpret_cast<void**>(&this->myProfilerInfo);
-    HRESULT result = pICorProfilerInfoUnk->QueryInterface(uuid, ptr);
+    HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo11, ptr);
     if (FAILED(result)) {
+        myLogger->Log("Failed to query interface: " + std::to_string(result));
         return E_FAIL;
     }
 
@@ -18,10 +17,11 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 
     result = myProfilerInfo->SetEventMask(eventMask);
     if (FAILED(result)) {
+        myLogger->Log("Failed to set event mask");
         return E_FAIL;
     }
 
-    printf("Initialized CorProfiler callback");
+    myLogger->Log("Initialized CorProfiler callback");
     return S_OK;
 }
 
@@ -34,7 +34,10 @@ HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     return S_OK;
 }
 
-ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback() : myRefCount(0), myProfilerInfo(nullptr) {
+ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logger) :
+    myRefCount(0),
+    myProfilerInfo(nullptr),
+    myLogger(logger) {
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
@@ -464,5 +467,10 @@ HRESULT ProcfilerCorProfilerCallback::EventPipeEventDelivered(EVENTPIPE_PROVIDER
                                                               ULONG numStackFrames,
                                                               UINT_PTR* stackFrames) {
     return S_OK;
+}
+
+ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
+    myProfilerInfo = nullptr;
+    myLogger = nullptr;
 }
 

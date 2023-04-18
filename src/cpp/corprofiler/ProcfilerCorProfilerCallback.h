@@ -1,17 +1,17 @@
 #include "cor.h"
 #include "corprof.h"
+#include "../logging/ProcfilerLogger.h"
 #include <atomic>
-
-const GUID CorProf11GUID = { 0x42350846, 0xAAED, 0x47F7, { 0xB1, 0x28, 0xFD, 0x0C, 0x98, 0x88, 0x1C, 0xDE } };
 
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {
 private:
+    ProcfilerLogger* myLogger;
     ICorProfilerInfo11* myProfilerInfo;
     std::atomic<int> myRefCount;
 
-
 public:
-    ProcfilerCorProfilerCallback();
+    ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
+    ~ProcfilerCorProfilerCallback();
 
     HRESULT STDMETHODCALLTYPE Initialize(IUnknown* pICorProfilerInfoUnk) override;
     HRESULT STDMETHODCALLTYPE Shutdown() override;
@@ -126,7 +126,17 @@ public:
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
     {
-        if (riid == CorProf11GUID ||
+        if (riid == IID_ICorProfilerCallback11 ||
+            riid == IID_ICorProfilerCallback10 ||
+            riid == IID_ICorProfilerCallback9 ||
+            riid == IID_ICorProfilerCallback8 ||
+            riid == IID_ICorProfilerCallback7 ||
+            riid == IID_ICorProfilerCallback6 ||
+            riid == IID_ICorProfilerCallback5 ||
+            riid == IID_ICorProfilerCallback4 ||
+            riid == IID_ICorProfilerCallback3 ||
+            riid == IID_ICorProfilerCallback2 ||
+            riid == IID_ICorProfilerCallback ||
             riid == IID_IUnknown)
         {
             *ppvObject = this;
