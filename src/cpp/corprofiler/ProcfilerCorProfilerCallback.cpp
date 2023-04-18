@@ -1,24 +1,28 @@
 #include "ProcfilerCorProfilerCallback.h"
+#include "thread"
 
+size_t CurrentThreadId() {
+    return std::hash<std::thread::id>()(std::this_thread::get_id());
+}
 
 void HandleFunctionEnter2(FunctionID funcId,
                           UINT_PTR clientData,
                           COR_PRF_FRAME_INFO func,
                           COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
-    printf(("Entered: " + std::to_string(func) + "\n").c_str());
+    printf(("[" + std::to_string(CurrentThreadId()) + "]: " + "Entered: " + std::to_string(func) + "\n").c_str());
 }
 
 void HandleFunctionLeave2(FunctionID funcId,
                           UINT_PTR clientData,
                           COR_PRF_FRAME_INFO func,
                           COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
-    printf(("Left: " + std::to_string(func) + "\n").c_str());
+    printf(("[" + std::to_string(CurrentThreadId()) + "]: " + "Left: " + std::to_string(func) + "\n").c_str());
 }
 
 void HandleFunctionTailCall(FunctionID funcId,
                             UINT_PTR clientData,
                             COR_PRF_FRAME_INFO func) {
-    printf(("Tail call: " + std::to_string(func) + "\n").c_str());
+    printf(("[" + std::to_string(CurrentThreadId()) + "]: " + "Tail call: " + std::to_string(func) + "\n").c_str());
 }
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
