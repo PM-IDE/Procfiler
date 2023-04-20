@@ -12,41 +12,35 @@ std::string GetEnvironmentValue(const std::string& name) {
     return std::string(cstr);
 }
 
-wstring ToString(const std::vector<WCHAR>& data, size_t length)
-{
-    if (data.empty() || length == 0)
-    {
+wstring ToString(const std::vector<WCHAR>& data, size_t length) {
+    if (data.empty() || length == 0) {
         return wstring();
     }
 
     auto result = wstring(data.begin(), data.begin() + length);
-    while (result[result.length() - 1] == 0)
-    {
+    while (result[result.length() - 1] == 0) {
         result.resize(result.length() - 1);
     }
 
     return result;
 }
 
-std::vector<WCHAR> ToRaw(const wstring& str)
-{
+std::vector<WCHAR> ToRaw(const wstring& str) {
     return std::vector<WCHAR>(str.begin(), str.end());
 }
 
-std::vector<BYTE> ToRaw(PCCOR_SIGNATURE signature, ULONG length)
-{
+std::vector<BYTE> ToRaw(PCCOR_SIGNATURE signature, ULONG length) {
     return std::vector<BYTE>(&signature[0], &signature[length]);
 }
 
-WCHAR operator"" _W(const char c) { return WCHAR(c); }
+WCHAR operator "" _W(const char c) { return WCHAR(c); }
 
-wstring operator"" _W(const char* arr, size_t size) {
+wstring operator "" _W(const char* arr, size_t size) {
     std::string str(arr, size);
     return ToWSTRING(str);
 }
 
-wstring ToWSTRING(const char* str)
-{
+wstring ToWSTRING(const char* str) {
     return ToWSTRING(std::string(str));
 }
 

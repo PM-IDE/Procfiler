@@ -95,7 +95,7 @@ FunctionInfo FunctionInfo::GetFunctionInfo(IMetaDataImport2* metadataImport, mdT
             MethodSignature(ToRaw(rawSignature, rawSignatureLength)), attributes};
 }
 
-std::unordered_set<wstring> ExtractAttributes(const ComPtr<IMetaDataImport2>& metadataImport, mdToken token) {
+std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, mdToken token) {
     std::unordered_set<wstring> attributes{};
     HRESULT hr;
 

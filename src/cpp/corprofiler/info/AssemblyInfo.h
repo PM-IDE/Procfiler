@@ -3,7 +3,6 @@
 #include "cor.h"
 #include "corprof.h"
 #include "../../util/util.h"
-#include "../../util/ComPtr.h"
 
 
 struct AssemblyInfo {

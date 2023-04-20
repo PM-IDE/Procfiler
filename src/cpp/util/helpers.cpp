@@ -5,56 +5,58 @@
 #include "helpers.h"
 #include "util.h"
 
-namespace util
-{
-    HRESULT CreateAssemblyRef(const ComPtr<IMetaDataAssemblyEmit> metadataAssemblyEmit, mdAssemblyRef* libRef, const std::vector<BYTE>& public_key, ASSEMBLYMETADATA metadata, const wstring& assemblyName) {
-        HRESULT hr = metadataAssemblyEmit->DefineAssemblyRef(
-            (void*)public_key.data(),
-            (ULONG)public_key.size(),
+HRESULT CreateAssemblyRef(IMetaDataAssemblyEmit* metadataAssemblyEmit,
+                          mdAssemblyRef* libRef,
+                          const std::vector<BYTE>& public_key,
+                          ASSEMBLYMETADATA metadata,
+                          const wstring& assemblyName) {
+    HRESULT hr = metadataAssemblyEmit->DefineAssemblyRef(
+            (void*) public_key.data(),
+            (ULONG) public_key.size(),
             assemblyName.c_str(), &metadata, NULL, 0, 0,
             libRef);
 
-        return hr;
+    return hr;
+}
+
+void GetMsCorLibRef(HRESULT& hr, IMetaDataAssemblyEmit* metadataAssemblyEmit, mdModuleRef& libRef) {
+    ASSEMBLYMETADATA metadata{};
+    metadata.usMajorVersion = 4;
+    metadata.usMinorVersion = 0;
+    metadata.usBuildNumber = 0;
+    metadata.usRevisionNumber = 0;
+
+    hr = CreateAssemblyRef(metadataAssemblyEmit,
+                           &libRef,
+                           std::vector<BYTE>{0xB7, 0x7A, 0x5C, 0x56, 0x19, 0x34, 0xE0, 0x89},
+                           metadata,
+                           mscorlib);
+}
+
+void GetWrapperRef(HRESULT& hr,
+                   IMetaDataAssemblyEmit* metadataAssemblyEmit,
+                   mdModuleRef& libRef,
+                   const wstring& assemblyName) {
+    ASSEMBLYMETADATA metadata{};
+    metadata.usMajorVersion = 1;
+    metadata.usMinorVersion = 0;
+    metadata.usBuildNumber = 0;
+    metadata.usRevisionNumber = 0;
+
+    hr = CreateAssemblyRef(metadataAssemblyEmit, &libRef, std::vector<BYTE>(), metadata, assemblyName);
+}
+
+mdToken GetTypeToken(IMetaDataEmit2* metadataEmit, mdAssemblyRef mscorlibRef, std::vector<BYTE>& type) {
+    mdToken token = mdTokenNil;
+    auto iter = type.begin();
+
+    if (*iter == ELEMENT_TYPE_BYREF) {
+        std::advance(iter, 1);
     }
 
-    void GetMsCorLibRef(HRESULT& hr, const ComPtr<IMetaDataAssemblyEmit>& metadataAssemblyEmit, mdModuleRef& libRef)
-    {
-        ASSEMBLYMETADATA metadata{};
-        metadata.usMajorVersion = 4;
-        metadata.usMinorVersion = 0;
-        metadata.usBuildNumber = 0;
-        metadata.usRevisionNumber = 0;
+    PCCOR_SIGNATURE temp;
 
-        hr = CreateAssemblyRef(metadataAssemblyEmit,
-                               &libRef,
-                               std::vector<BYTE> { 0xB7, 0x7A, 0x5C, 0x56, 0x19, 0x34, 0xE0, 0x89 },
-                               metadata,
-                               mscorlib);
-    }
-
-    void GetWrapperRef(HRESULT& hr, const ComPtr<IMetaDataAssemblyEmit>& metadataAssemblyEmit, mdModuleRef& libRef, const wstring& assemblyName)
-    {
-        ASSEMBLYMETADATA metadata{};
-        metadata.usMajorVersion = 1;
-        metadata.usMinorVersion = 0;
-        metadata.usBuildNumber = 0;
-        metadata.usRevisionNumber = 0;
-
-        hr = CreateAssemblyRef(metadataAssemblyEmit, &libRef, std::vector<BYTE>(), metadata, assemblyName);
-    }
-
-    mdToken GetTypeToken(ComPtr<IMetaDataEmit2>& metadataEmit, mdAssemblyRef mscorlibRef, std::vector<BYTE>& type)
-    {
-        mdToken token = mdTokenNil;
-        auto iter = type.begin();
-
-        if (*iter == ELEMENT_TYPE_BYREF) {
-            std::advance(iter, 1);
-        }
-
-        PCCOR_SIGNATURE temp;
-
-        switch (*iter) {
+    switch (*iter) {
         case ELEMENT_TYPE_BOOLEAN:
             metadataEmit->DefineTypeRefByName(mscorlibRef, SystemBoolean.data(), &token);
             break;
@@ -117,11 +119,11 @@ namespace util
         case ELEMENT_TYPE_SZARRAY:
         case ELEMENT_TYPE_MVAR:
         case ELEMENT_TYPE_VAR:
-            metadataEmit->GetTokenFromTypeSpec((PCCOR_SIGNATURE) & *iter, type.size() - std::distance(type.begin(), iter), &token);
+            metadataEmit->GetTokenFromTypeSpec((PCCOR_SIGNATURE) &*iter,
+                                               type.size() - std::distance(type.begin(), iter), &token);
             break;
         default:
             break;
-        }
-        return token;
     }
+    return token;
 }

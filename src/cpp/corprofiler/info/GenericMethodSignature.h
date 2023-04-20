@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../util/ComPtr.h"
 #include "../../util/util.h"
 #include "TypeInfo.h"
 

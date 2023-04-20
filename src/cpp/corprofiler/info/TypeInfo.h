@@ -2,7 +2,6 @@
 
 #include "cor.h"
 #include "../../util/util.h"
-#include "../../util/ComPtr.h"
 
 struct TypeInfo {
     mdToken Id;
