@@ -1,28 +1,48 @@
 #include "ProcfilerCorProfilerCallback.h"
-#include "thread"
 
-size_t CurrentThreadId() {
-    return std::hash<std::thread::id>()(std::this_thread::get_id());
+void StaticHandleFunctionEnter2(FunctionID funcId,
+                                UINT_PTR clientData,
+                                COR_PRF_FRAME_INFO func,
+                                COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
+    ProcfilerCorProfilerCallback::GetInstance()->HandleFunctionEnter2(funcId, clientData, func, argumentInfo);
 }
 
-void HandleFunctionEnter2(FunctionID funcId,
-                          UINT_PTR clientData,
-                          COR_PRF_FRAME_INFO func,
-                          COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
-    printf(("[" + std::to_string(CurrentThreadId()) + "]: " + "Entered: " + std::to_string(func) + "\n").c_str());
+void StaticHandleFunctionLeave2(FunctionID funcId,
+                                UINT_PTR clientData,
+                                COR_PRF_FRAME_INFO func,
+                                COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
+    ProcfilerCorProfilerCallback::GetInstance()->HandleFunctionLeave2(funcId, clientData, funcId, retvalRange);
 }
 
-void HandleFunctionLeave2(FunctionID funcId,
-                          UINT_PTR clientData,
-                          COR_PRF_FRAME_INFO func,
-                          COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
-    printf(("[" + std::to_string(CurrentThreadId()) + "]: " + "Left: " + std::to_string(func) + "\n").c_str());
+void StaticHandleFunctionTailCall(FunctionID funcId,
+                                  UINT_PTR clientData,
+                                  COR_PRF_FRAME_INFO func) {
+    ProcfilerCorProfilerCallback::GetInstance()->HandleFunctionTailCall(funcId, clientData, func);
 }
 
-void HandleFunctionTailCall(FunctionID funcId,
-                            UINT_PTR clientData,
-                            COR_PRF_FRAME_INFO func) {
-    printf(("[" + std::to_string(CurrentThreadId()) + "]: " + "Tail call: " + std::to_string(func) + "\n").c_str());
+void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
+                                                        UINT_PTR clientData,
+                                                        COR_PRF_FRAME_INFO func,
+                                                        COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
+
+}
+
+void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
+                                                        UINT_PTR clientData,
+                                                        COR_PRF_FRAME_INFO func,
+                                                        COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
+
+}
+
+void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
+                                                          UINT_PTR clientData,
+                                                          COR_PRF_FRAME_INFO func) {
+
+}
+
+
+ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
+    return myProfilerInfo;
 }
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
@@ -42,9 +62,9 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
-    result = myProfilerInfo->SetEnterLeaveFunctionHooks2(HandleFunctionEnter2,
-                                                         HandleFunctionLeave2,
-                                                         HandleFunctionTailCall);
+    result = myProfilerInfo->SetEnterLeaveFunctionHooks2(StaticHandleFunctionEnter2,
+                                                         StaticHandleFunctionLeave2,
+                                                         StaticHandleFunctionTailCall);
 
     if (FAILED(result)) {
         myLogger->Log("Failed to set enter-leave hooks: " + std::to_string(result));
@@ -54,6 +74,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     myLogger->Log("Initialized CorProfiler callback");
     return S_OK;
 }
+
 
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
@@ -67,9 +88,10 @@ HRESULT ProcfilerCorProfilerCallback::Shutdown() {
 }
 
 ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logger) :
-    myRefCount(0),
-    myProfilerInfo(nullptr),
-    myLogger(logger) {
+        myRefCount(0),
+        myProfilerInfo(nullptr),
+        myLogger(logger) {
+    ProcfilerCorProfilerCallback::ourInstance = this;
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
@@ -504,4 +526,8 @@ HRESULT ProcfilerCorProfilerCallback::EventPipeEventDelivered(EVENTPIPE_PROVIDER
 ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
     myProfilerInfo = nullptr;
     myLogger = nullptr;
+}
+
+ProcfilerCorProfilerCallback* ProcfilerCorProfilerCallback::GetInstance() {
+    return ProcfilerCorProfilerCallback::ourInstance;
 }

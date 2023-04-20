@@ -9,7 +9,22 @@ set(SOURCES
     dllmain.cpp
     corprofiler/ProcfilerCorProfilerCallback.cpp
     guids.cpp
-    logging/ProcfilerLogger.cpp)
+    logging/ProcfilerLogger.cpp
+    corprofiler/info/FunctionInfo.h
+    corprofiler/info/FunctionInfo.cpp
+    corprofiler/info/FunctionInfo.h
+    corprofiler/info/TypeInfo.cpp
+    corprofiler/info/TypeInfo.h
+    corprofiler/info/MethodSignature.cpp
+    corprofiler/info/MethodSignature.h
+    corprofiler/info/GenericMethodSignature.cpp
+    corprofiler/info/GenericMethodSignature.h
+    util/const.h
+    util/util.cpp
+    util/helpers.cpp
+    corprofiler/info/AssemblyInfo.cpp
+    corprofiler/info/ModuleInfo.cpp
+    corprofiler/info/parser.cpp)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 
@@ -18,6 +33,7 @@ if(NOT WIN32)
                         ./3rdparty/coreclr/pal/inc
                         ./3rdparty/coreclr/inc)
     add_compile_options(-DPAL_STDCPP_COMPAT)
+
     IF (APPLE)
         add_compile_options(-std=c++11 -fPIC -fms-extensions -stdlib=libc++)
         add_compile_options(-DHOST_64BIT -DPAL_STDCPP_COMPAT -DPLATFORM_UNIX -DUNICODE -DHOST_ARM64)

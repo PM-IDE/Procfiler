@@ -1,0 +1,27 @@
+#pragma once
+
+#include "cor.h"
+#include "corprof.h"
+#include "../../util/util.h"
+#include "../../util/ComPtr.h"
+
+
+struct AssemblyInfo {
+    AssemblyID id;
+    wstring name;
+    ModuleID manifestModuleId;
+    AppDomainID appDomainId;
+    wstring appDomainName;
+
+    AssemblyInfo() : id(0), name(""_W), manifestModuleId(0), appDomainId(0), appDomainName(""_W) {}
+
+    AssemblyInfo(AssemblyID id, wstring name, ModuleID manifestModuleId, AppDomainID appDomainId,
+        wstring appDomainName)
+        : id(id),
+        name(name),
+        manifestModuleId(manifestModuleId),
+        appDomainId(appDomainId),
+        appDomainName(appDomainName) {}
+
+    static AssemblyInfo GetAssemblyInfo(ICorProfilerInfo11* info, AssemblyID assemblyId);
+};

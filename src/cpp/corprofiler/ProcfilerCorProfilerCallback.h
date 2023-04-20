@@ -3,15 +3,33 @@
 #include "../logging/ProcfilerLogger.h"
 #include <atomic>
 
+
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {
 private:
+    static ProcfilerCorProfilerCallback* ourInstance;
+
     ProcfilerLogger* myLogger;
     ICorProfilerInfo11* myProfilerInfo;
     std::atomic<int> myRefCount;
-
 public:
     explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
     ~ProcfilerCorProfilerCallback();
+
+    static ProcfilerCorProfilerCallback* GetInstance();
+
+    ICorProfilerInfo11* GetProfilerInfo();
+
+    void HandleFunctionEnter2(FunctionID funcId,
+                              UINT_PTR clientData,
+                              COR_PRF_FRAME_INFO func,
+                              COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo);
+
+    void HandleFunctionLeave2(FunctionID funcId,
+                              UINT_PTR clientData,
+                              COR_PRF_FRAME_INFO func,
+                              COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange);
+
+    void HandleFunctionTailCall(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func);
 
     HRESULT STDMETHODCALLTYPE Initialize(IUnknown* pICorProfilerInfoUnk) override;
     HRESULT STDMETHODCALLTYPE Shutdown() override;
