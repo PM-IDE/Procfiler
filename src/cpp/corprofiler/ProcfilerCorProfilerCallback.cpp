@@ -1,23 +1,29 @@
 #include "ProcfilerCorProfilerCallback.h"
 
+ProcfilerCorProfilerCallback* ourCallback;
+
+ProcfilerCorProfilerCallback* GetCallbackInstance() {
+    return ourCallback;
+}
+
 void StaticHandleFunctionEnter2(FunctionID funcId,
                                 UINT_PTR clientData,
                                 COR_PRF_FRAME_INFO func,
                                 COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
-    ProcfilerCorProfilerCallback::GetInstance()->HandleFunctionEnter2(funcId, clientData, func, argumentInfo);
+    GetCallbackInstance()->HandleFunctionEnter2(funcId, clientData, func, argumentInfo);
 }
 
 void StaticHandleFunctionLeave2(FunctionID funcId,
                                 UINT_PTR clientData,
                                 COR_PRF_FRAME_INFO func,
                                 COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
-    ProcfilerCorProfilerCallback::GetInstance()->HandleFunctionLeave2(funcId, clientData, funcId, retvalRange);
+    GetCallbackInstance()->HandleFunctionLeave2(funcId, clientData, func, retvalRange);
 }
 
 void StaticHandleFunctionTailCall(FunctionID funcId,
                                   UINT_PTR clientData,
                                   COR_PRF_FRAME_INFO func) {
-    ProcfilerCorProfilerCallback::GetInstance()->HandleFunctionTailCall(funcId, clientData, func);
+    GetCallbackInstance()->HandleFunctionTailCall(funcId, clientData, func);
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
@@ -91,7 +97,7 @@ ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logg
         myRefCount(0),
         myProfilerInfo(nullptr),
         myLogger(logger) {
-    ProcfilerCorProfilerCallback::ourInstance = this;
+    ourCallback = this;
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
@@ -526,8 +532,4 @@ HRESULT ProcfilerCorProfilerCallback::EventPipeEventDelivered(EVENTPIPE_PROVIDER
 ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
     myProfilerInfo = nullptr;
     myLogger = nullptr;
-}
-
-ProcfilerCorProfilerCallback* ProcfilerCorProfilerCallback::GetInstance() {
-    return ProcfilerCorProfilerCallback::ourInstance;
 }

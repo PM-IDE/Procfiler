@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <iostream>
 #include "util.h"
 
 
@@ -42,6 +41,11 @@ wstring operator "" _W(const char* arr, size_t size) {
 
 wstring ToWSTRING(const char* str) {
     return ToWSTRING(std::string(str));
+}
+
+wstring ToWSTRING(const std::string& str) {
+    auto ustr = miniutf::to_utf16(str);
+    return wstring(reinterpret_cast<const WCHAR*>(ustr.c_str()));
 }
 
 wstring Trim(const wstring& str) {

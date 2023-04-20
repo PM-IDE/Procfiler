@@ -24,7 +24,9 @@ set(SOURCES
     util/helpers.cpp
     corprofiler/info/AssemblyInfo.cpp
     corprofiler/info/ModuleInfo.cpp
-    corprofiler/info/parser.cpp)
+    corprofiler/info/parser.cpp
+    miniutf/miniutf.cpp
+    miniutf/miniutf.hpp)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 

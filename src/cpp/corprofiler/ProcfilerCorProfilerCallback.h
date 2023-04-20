@@ -3,19 +3,14 @@
 #include "../logging/ProcfilerLogger.h"
 #include <atomic>
 
-
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {
 private:
-    static ProcfilerCorProfilerCallback* ourInstance;
-
     ProcfilerLogger* myLogger;
     ICorProfilerInfo11* myProfilerInfo;
     std::atomic<int> myRefCount;
 public:
     explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
     ~ProcfilerCorProfilerCallback();
-
-    static ProcfilerCorProfilerCallback* GetInstance();
 
     ICorProfilerInfo11* GetProfilerInfo();
 
