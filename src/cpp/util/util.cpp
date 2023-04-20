@@ -39,6 +39,11 @@ wstring operator "" _W(const char* arr, size_t size) {
     return ToWSTRING(str);
 }
 
+std::string ToString(const wstring& wstr) {
+    std::u16string ustr(reinterpret_cast<const char16_t*>(wstr.c_str()));
+    return miniutf::to_utf8(ustr);
+}
+
 wstring ToWSTRING(const char* str) {
     return ToWSTRING(std::string(str));
 }

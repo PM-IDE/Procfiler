@@ -12,8 +12,9 @@ FunctionInfo FunctionInfo::GetFunctionInfo(ICorProfilerInfo11* info, FunctionID 
 
     IUnknown* unknown;
     info->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, &unknown);
-    IMetaDataImport2* metadataImport;
-    void** ptr = reinterpret_cast<void**>(metadataImport);
+
+    IMetaDataImport2* metadataImport = nullptr;
+    void** ptr = reinterpret_cast<void**>(&metadataImport);
     unknown->QueryInterface(IID_IMetaDataImport, ptr);
 
     return GetFunctionInfo(metadataImport, functionToken);
@@ -170,4 +171,8 @@ TypeInfo FunctionInfo::ResolveParameterType(const TypeInfo& typeInfo) const {
     }
 
     return typeInfo;
+}
+
+std::string FunctionInfo::GetFullName() {
+    return ToString(Type.Name) + "." + ToString(Name);
 }

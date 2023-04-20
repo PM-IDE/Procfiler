@@ -1,4 +1,5 @@
 #include "ProcfilerCorProfilerCallback.h"
+#include "info/FunctionInfo.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -30,22 +31,24 @@ void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
                                                         UINT_PTR clientData,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
-
+    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
+    printf(("Enter " + functionName + "\n").c_str());
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
                                                         UINT_PTR clientData,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
-
+    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
+    printf(("Leave " + functionName + "\n").c_str());
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
                                                           UINT_PTR clientData,
                                                           COR_PRF_FRAME_INFO func) {
-
+    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
+    printf(("Tail call " + functionName + "\n").c_str());
 }
-
 
 ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
     return myProfilerInfo;
