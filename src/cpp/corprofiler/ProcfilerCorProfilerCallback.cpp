@@ -33,7 +33,7 @@ void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
                                                         COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
     myShadowStack->AddFunctionEnter(funcId, GetCurrentManagedThreadId());
     auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("Enter " + functionName + "\n").c_str());
+    printf(("Enter[" + std::to_string(GetCurrentManagedThreadId()) + "]: " + functionName + "\n").c_str());
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
@@ -42,7 +42,7 @@ void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
                                                         COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
     myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
     auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("Leave " + functionName + "\n").c_str());
+    printf(("Leave[" + std::to_string(GetCurrentManagedThreadId()) + "]: " + functionName + "\n").c_str());
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
@@ -50,7 +50,7 @@ void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
                                                           COR_PRF_FRAME_INFO func) {
     myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
     auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("Tail call (Leave)" + functionName + "\n").c_str());
+    printf(("TailCall[" + std::to_string(GetCurrentManagedThreadId()) + "]: " + functionName + "\n").c_str());
 }
 
 ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
@@ -550,4 +550,41 @@ ThreadID ProcfilerCorProfilerCallback::GetCurrentManagedThreadId() {
     ThreadID threadId;
     myProfilerInfo->GetCurrentThreadID(&threadId);
     return threadId;
+}
+
+
+HRESULT STDMETHODCALLTYPE ProcfilerCorProfilerCallback::QueryInterface(REFIID riid, void** ppvObject) {
+    if (riid == IID_ICorProfilerCallback11 ||
+        riid == IID_ICorProfilerCallback10 ||
+        riid == IID_ICorProfilerCallback9 ||
+        riid == IID_ICorProfilerCallback8 ||
+        riid == IID_ICorProfilerCallback7 ||
+        riid == IID_ICorProfilerCallback6 ||
+        riid == IID_ICorProfilerCallback5 ||
+        riid == IID_ICorProfilerCallback4 ||
+        riid == IID_ICorProfilerCallback3 ||
+        riid == IID_ICorProfilerCallback2 ||
+        riid == IID_ICorProfilerCallback ||
+        riid == IID_IUnknown) {
+        *ppvObject = this;
+        this->AddRef();
+        return S_OK;
+    }
+
+    *ppvObject = nullptr;
+    return E_NOINTERFACE;
+}
+
+ULONG STDMETHODCALLTYPE ProcfilerCorProfilerCallback::AddRef() {
+    return std::atomic_fetch_add(&this->myRefCount, 1) + 1;
+}
+
+ULONG STDMETHODCALLTYPE ProcfilerCorProfilerCallback::Release() {
+    int count = std::atomic_fetch_sub(&this->myRefCount, 1) - 1;
+
+    if (count <= 0) {
+        delete this;
+    }
+
+    return count;
 }

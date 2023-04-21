@@ -142,44 +142,7 @@ public:
                                                       ULONG numStackFrames,
                                                       UINT_PTR stackFrames[]) override;
 
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
-    {
-        if (riid == IID_ICorProfilerCallback11 ||
-            riid == IID_ICorProfilerCallback10 ||
-            riid == IID_ICorProfilerCallback9 ||
-            riid == IID_ICorProfilerCallback8 ||
-            riid == IID_ICorProfilerCallback7 ||
-            riid == IID_ICorProfilerCallback6 ||
-            riid == IID_ICorProfilerCallback5 ||
-            riid == IID_ICorProfilerCallback4 ||
-            riid == IID_ICorProfilerCallback3 ||
-            riid == IID_ICorProfilerCallback2 ||
-            riid == IID_ICorProfilerCallback ||
-            riid == IID_IUnknown)
-        {
-            *ppvObject = this;
-            this->AddRef();
-            return S_OK;
-        }
-
-        *ppvObject = nullptr;
-        return E_NOINTERFACE;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef() override
-    {
-        return std::atomic_fetch_add(&this->myRefCount, 1) + 1;
-    }
-
-    ULONG STDMETHODCALLTYPE Release() override
-    {
-        int count = std::atomic_fetch_sub(&this->myRefCount, 1) - 1;
-
-        if (count <= 0)
-        {
-            delete this;
-        }
-
-        return count;
-    }
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override;
+    ULONG STDMETHODCALLTYPE AddRef() override;
+    ULONG STDMETHODCALLTYPE Release() override;
 };
