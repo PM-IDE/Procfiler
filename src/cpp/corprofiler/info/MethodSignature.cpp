@@ -2,12 +2,14 @@
 
 #include "FunctionInfo.h"
 #include "MethodSignature.h"
+
+#include <utility>
 #include "TypeInfo.h"
 #include "parser.h"
 #include "../../util/const.h"
 
 
-MethodSignature::MethodSignature(std::vector<BYTE> rawSignature) : myRawSignature(rawSignature) {
+MethodSignature::MethodSignature(std::vector<BYTE> rawSignature) : myRawSignature(std::move(rawSignature)) {
     auto begin = myRawSignature.begin() + 2 + (IsGeneric() ? 1 : 0);
     auto iter = begin;
     if (ParseRetType(iter)) {
@@ -28,7 +30,7 @@ void MethodSignature::ParseArguments() {
             break;
         }
 
-        myArguments.push_back(TypeInfo(std::vector<BYTE>(begin, iter)));
+        myArguments.emplace_back(std::vector<BYTE>(begin, iter));
     }
 }
 

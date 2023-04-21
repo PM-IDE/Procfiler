@@ -1,8 +1,10 @@
 #include "GenericMethodSignature.h"
+
+#include <utility>
 #include "parser.h"
 
 
-GenericMethodSignature::GenericMethodSignature(std::vector<BYTE> rawSignature) : myRawSignature(rawSignature) {
+GenericMethodSignature::GenericMethodSignature(std::vector<BYTE> rawSignature) : myRawSignature(std::move(rawSignature)) {
     auto iter = this->myRawSignature.begin();
     ULONG skip = 0;
     ParseNumber(iter, skip);
@@ -18,7 +20,7 @@ GenericMethodSignature::GenericMethodSignature(std::vector<BYTE> rawSignature) :
             break;
         }
 
-        myGenerics.push_back(TypeInfo(std::vector<BYTE>(begin, iter)));
+        myGenerics.emplace_back(std::vector<BYTE>(begin, iter));
     }
 }
 

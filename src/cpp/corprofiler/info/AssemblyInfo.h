@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "cor.h"
 #include "corprof.h"
 #include "../../util/util.h"
@@ -18,10 +20,10 @@ public:
 
     AssemblyInfo(AssemblyID id, wstring name, ModuleID manifestModuleId, AppDomainID appDomainId, wstring appDomainName)
         : myAssemblyId(id),
-          myName(name),
+          myName(std::move(name)),
           myManifestModuleId(manifestModuleId),
           myAppDomainId(appDomainId),
-          myAppDomainName(appDomainName) {}
+          myAppDomainName(std::move(appDomainName)) {}
 
     static AssemblyInfo GetAssemblyInfo(ICorProfilerInfo11* info, AssemblyID assemblyId);
 

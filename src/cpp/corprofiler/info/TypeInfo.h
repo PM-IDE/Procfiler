@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "cor.h"
 #include "../../util/util.h"
 
@@ -23,7 +25,7 @@ private:
 public:
     TypeInfo() : myToken(0), myName(""_W) {}
 
-    TypeInfo(mdToken id, wstring name, const std::vector<BYTE>& raw) : myToken(id), myName(name), myRaw(raw) {}
+    TypeInfo(mdToken id, wstring name, const std::vector<BYTE>& raw) : myToken(id), myName(std::move(name)), myRaw(raw) {}
 
     TypeInfo(const std::vector<BYTE>& raw);
 

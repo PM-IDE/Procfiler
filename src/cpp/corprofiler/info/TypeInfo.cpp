@@ -5,9 +5,9 @@
 
 
 TypeInfo::TypeInfo(const std::vector<BYTE>& raw) : myRaw(raw) {
-    myIsRefType = raw.size() > 0 && raw[0] == ELEMENT_TYPE_BYREF;
+    myIsRefType = !raw.empty() && raw[0] == ELEMENT_TYPE_BYREF;
 
-    myIsVoid = raw.size() > 0 && raw[0] == ELEMENT_TYPE_VOID;
+    myIsVoid = !raw.empty() && raw[0] == ELEMENT_TYPE_VOID;
 
     auto shift = myIsRefType ? 1 : 0;
 
@@ -75,7 +75,7 @@ void TypeInfo::TryParseGeneric() {
             break;
         }
 
-        myGenerics.push_back(TypeInfo(std::vector<BYTE>(begin, iter)));
+        myGenerics.emplace_back(std::vector<BYTE>(begin, iter));
     }
 }
 

@@ -1,4 +1,5 @@
 #include <unordered_set>
+#include <utility>
 #include "iostream"
 #include "corhlpr.h"
 #include "corhdr.h"
@@ -22,27 +23,26 @@ public:
     FunctionInfo()
             : myId(0), myName(""_W), myMethodDefId(0) {}
 
-    FunctionInfo(mdToken id, wstring name, TypeInfo type,
-                 MethodSignature signature,
+    FunctionInfo(mdToken id, wstring name, TypeInfo type, MethodSignature signature,
                  GenericMethodSignature functionSpecSignature, mdToken methodDefId,
                  const std::unordered_set<wstring>& attributes)
-            : myId(id),
-              myName(name),
-              myType(type),
-              mySignature(signature),
-              myFunctionSpecSignature(functionSpecSignature),
-              myMethodDefId(methodDefId),
-              myAttributes(attributes) {}
+        : myId(id),
+          myName(std::move(name)),
+          myType(std::move(type)),
+          mySignature(std::move(signature)),
+          myFunctionSpecSignature(std::move(functionSpecSignature)),
+          myMethodDefId(methodDefId),
+          myAttributes(attributes) {}
 
-    FunctionInfo(mdToken id, wstring name, TypeInfo type,
-                 MethodSignature signature,
+    FunctionInfo(mdToken id, wstring name, TypeInfo type, MethodSignature signature,
                  const std::unordered_set<wstring>& attributes)
-            : myId(id),
-              myName(name),
-              myType(type),
-              mySignature(signature),
-              myMethodDefId(0),
-              myAttributes(attributes) {}
+        : myId(id),
+          myName(std::move(name)),
+          myType(std::move(type)),
+          mySignature(std::move(signature)),
+          myMethodDefId(0),
+          myAttributes(attributes) {}
+
 
     static FunctionInfo GetFunctionInfo(IMetaDataImport2* metadataImport, mdToken token);
     static FunctionInfo GetFunctionInfo(ICorProfilerInfo11* info, FunctionID funcId);

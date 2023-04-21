@@ -22,8 +22,8 @@ public:
     TypeInfo GetReturnTypeInfo();
     std::vector<TypeInfo> GetArguments();
 
-    COR_SIGNATURE MethodSignature::CallingConvention() const;
-    bool MethodSignature::IsInstanceMethod() const;
-    bool MethodSignature::IsGeneric() const;
-    ULONG MethodSignature::NumberOfArguments() const;
+    COR_SIGNATURE CallingConvention() const;
+    bool IsInstanceMethod() const;
+    bool IsGeneric() const;
+    ULONG NumberOfArguments() const;
 };
