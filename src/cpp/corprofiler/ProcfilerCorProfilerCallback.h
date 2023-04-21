@@ -1,5 +1,6 @@
 #include "cor.h"
 #include "corprof.h"
+#include "./shadowstack/ShadowStack.h"
 #include "../logging/ProcfilerLogger.h"
 #include <atomic>
 
@@ -8,6 +9,10 @@ private:
     ProcfilerLogger* myLogger;
     ICorProfilerInfo11* myProfilerInfo;
     std::atomic<int> myRefCount;
+    ShadowStack* myShadowStack;
+
+    ThreadID GetCurrentManagedThreadId();
+
 public:
     explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
     ~ProcfilerCorProfilerCallback();

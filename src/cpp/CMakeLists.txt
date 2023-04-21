@@ -26,7 +26,8 @@ set(SOURCES
     corprofiler/info/ModuleInfo.cpp
     corprofiler/info/parser.cpp
     miniutf/miniutf.cpp
-    miniutf/miniutf.hpp)
+    miniutf/miniutf.hpp
+    corprofiler/shadowstack/ShadowStack.cpp)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 

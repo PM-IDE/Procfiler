@@ -31,6 +31,7 @@ void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
                                                         UINT_PTR clientData,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
+    myShadowStack->AddFunctionEnter(funcId, GetCurrentManagedThreadId());
     auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
     printf(("Enter " + functionName + "\n").c_str());
 }
@@ -39,6 +40,7 @@ void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
                                                         UINT_PTR clientData,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
+    myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
     auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
     printf(("Leave " + functionName + "\n").c_str());
 }
@@ -46,8 +48,9 @@ void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
 void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
                                                           UINT_PTR clientData,
                                                           COR_PRF_FRAME_INFO func) {
+    myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
     auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("Tail call " + functionName + "\n").c_str());
+    printf(("Tail call (Leave)" + functionName + "\n").c_str());
 }
 
 ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
@@ -101,6 +104,7 @@ ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logg
         myProfilerInfo(nullptr),
         myLogger(logger) {
     ourCallback = this;
+    myShadowStack = new ShadowStack();
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
@@ -534,5 +538,16 @@ HRESULT ProcfilerCorProfilerCallback::EventPipeEventDelivered(EVENTPIPE_PROVIDER
 
 ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
     myProfilerInfo = nullptr;
+
+    delete myLogger;
     myLogger = nullptr;
+
+    delete myShadowStack;
+    myShadowStack = nullptr;
+}
+
+ThreadID ProcfilerCorProfilerCallback::GetCurrentManagedThreadId() {
+    ThreadID threadId;
+    myProfilerInfo->GetCurrentThreadID(&threadId);
+    return threadId;
 }
