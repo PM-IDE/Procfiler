@@ -4,14 +4,14 @@
 #include "../../util/helpers.h"
 
 
-TypeInfo::TypeInfo(const std::vector<BYTE>& raw) : Raw(raw) {
-    IsRefType = raw.size() > 0 && raw[0] == ELEMENT_TYPE_BYREF;
+TypeInfo::TypeInfo(const std::vector<BYTE>& raw) : myRaw(raw) {
+    myIsRefType = raw.size() > 0 && raw[0] == ELEMENT_TYPE_BYREF;
 
-    IsVoid = raw.size() > 0 && raw[0] == ELEMENT_TYPE_VOID;
+    myIsVoid = raw.size() > 0 && raw[0] == ELEMENT_TYPE_VOID;
 
-    auto shift = IsRefType ? 1 : 0;
+    auto shift = myIsRefType ? 1 : 0;
 
-    switch (raw[IsRefType]) {
+    switch (raw[myIsRefType]) {
         case ELEMENT_TYPE_VOID:
         case ELEMENT_TYPE_BOOLEAN:
         case ELEMENT_TYPE_CHAR:
@@ -29,41 +29,41 @@ TypeInfo::TypeInfo(const std::vector<BYTE>& raw) : Raw(raw) {
         case ELEMENT_TYPE_U:
         case ELEMENT_TYPE_STRING:
             //case ELEMENT_TYPE_VALUETYPE:
-            TypeDef = raw[IsRefType];
-            IsBoxed = true;
+            myTypeDef = raw[myIsRefType];
+            myIsBoxed = true;
             break;
         case ELEMENT_TYPE_MVAR: {
-            IsGenericMethodRef = true;
-            auto iter = this->Raw.begin();
+            myIsGenericMethodRef = true;
+            auto iter = this->myRaw.begin();
             std::advance(iter, 1 + shift);
-            ParseNumber(iter, GenericRefNumber);
+            ParseNumber(iter, myGenericRefNumber);
             break;
         }
         case ELEMENT_TYPE_VAR: {
-            IsGenericClassRef = true;
-            auto iter = this->Raw.begin();
+            myIsGenericClassRef = true;
+            auto iter = this->myRaw.begin();
             std::advance(iter, 1 + shift);
-            ParseNumber(iter, GenericRefNumber);
+            ParseNumber(iter, myGenericRefNumber);
             break;
         }
         default:
-            TypeDef = ELEMENT_TYPE_OBJECT;
-            IsBoxed = false;
+            myTypeDef = ELEMENT_TYPE_OBJECT;
+            myIsBoxed = false;
             break;
     }
 }
 
 void TypeInfo::TryParseGeneric() {
-    auto iter = Raw.begin();
-    ULONG elemenType = 0;
-    ParseNumber(iter, elemenType); // => ELEMENT_TYPE_GENERICINST
-    ParseNumber(iter, elemenType); // => ELEMENT_TYPE_CLASS, ELEMENT_TYPE_VALUETYPE
+    auto iter = myRaw.begin();
+    ULONG elementType = 0;
+    ParseNumber(iter, elementType); // => ELEMENT_TYPE_GENERICINST
+    ParseNumber(iter, elementType); // => ELEMENT_TYPE_CLASS, ELEMENT_TYPE_VALUETYPE
 
-    if (elemenType != ELEMENT_TYPE_CLASS && elemenType != ELEMENT_TYPE_VALUETYPE) {
+    if (elementType != ELEMENT_TYPE_CLASS && elementType != ELEMENT_TYPE_VALUETYPE) {
         return;
     }
 
-    ParseNumber(iter, elemenType); // => token
+    ParseNumber(iter, elementType); // => token
 
     ULONG number = 0;
 
@@ -75,7 +75,7 @@ void TypeInfo::TryParseGeneric() {
             break;
         }
 
-        Generics.push_back(TypeInfo(std::vector<BYTE>(begin, iter)));
+        myGenerics.push_back(TypeInfo(std::vector<BYTE>(begin, iter)));
     }
 }
 
@@ -109,7 +109,7 @@ TypeInfo TypeInfo::GetTypeInfo(IMetaDataImport2* metadataImport, mdToken token) 
                 mdToken typeToken;
                 auto length = CorSigUncompressToken(&signature[2], &typeToken);
                 auto ti = GetTypeInfo(metadataImport, typeToken);
-                ti.Raw = ToRaw(signature, signature_length);
+                ti.myRaw = ToRaw(signature, signature_length);
                 ti.TryParseGeneric();
 
                 return ti;
@@ -120,7 +120,7 @@ TypeInfo TypeInfo::GetTypeInfo(IMetaDataImport2* metadataImport, mdToken token) 
             metadataImport->GetModuleRefProps(token, &typeName[0], MAX_CLASS_NAME, &typeNameLength);
             break;
         case mdtMemberRef:
-            return FunctionInfo::GetFunctionInfo(metadataImport, token).Type;
+            return FunctionInfo::GetFunctionInfo(metadataImport, token).GetTypeInfo();
     }
 
     if (FAILED(hr) || typeNameLength == 0) {
@@ -128,4 +128,52 @@ TypeInfo TypeInfo::GetTypeInfo(IMetaDataImport2* metadataImport, mdToken token) 
     }
 
     return {token, ToString(typeName, typeNameLength), {}};
+}
+
+mdToken TypeInfo::GetToken() {
+    return myToken;
+}
+
+wstring TypeInfo::GetName() {
+    return myName;
+}
+
+std::vector<BYTE> TypeInfo::GetRawInfo() {
+    return myRaw;
+}
+
+std::vector<TypeInfo> TypeInfo::GetGenerics() {
+    return myGenerics;
+}
+
+bool TypeInfo::IsRefType() {
+    return myIsRefType;
+}
+
+void TypeInfo::SetRefType(bool isRefType) {
+    myIsRefType = isRefType;
+}
+
+bool TypeInfo::IsBoxed() {
+    return myIsBoxed;
+}
+
+bool TypeInfo::IsVoid() {
+    return myIsVoid;
+}
+
+bool TypeInfo::IsGenericClassRef() {
+    return myIsGenericClassRef;
+}
+
+bool TypeInfo::IsGenericMethodRef() {
+    return myIsGenericMethodRef;
+}
+
+BYTE TypeInfo::GetTypeDef() {
+    return myTypeDef;
+}
+
+ULONG TypeInfo::GetGenericRefNumber() {
+    return myGenericRefNumber;
 }

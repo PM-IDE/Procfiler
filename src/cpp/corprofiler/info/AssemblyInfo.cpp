@@ -28,3 +28,23 @@ AssemblyInfo AssemblyInfo::GetAssemblyInfo(ICorProfilerInfo11* info, AssemblyID 
     return { assemblyId, ToString(assemblyName, assemblyNameLength), manifestModuleId, appDomainId,
             ToString(appDomainName, appDomainNameLength) };
 }
+
+AssemblyID AssemblyInfo::GetAssemblyId() {
+    return myAssemblyId;
+}
+
+wstring AssemblyInfo::GetName() {
+    return myName;
+}
+
+ModuleID AssemblyInfo::GetModuleId() {
+    return myManifestModuleId;
+}
+
+AppDomainID AssemblyInfo::GetAppDomainId() {
+    return myAppDomainId;
+}
+
+wstring AssemblyInfo::GetAppDomainName() {
+    return myAppDomainName;
+}

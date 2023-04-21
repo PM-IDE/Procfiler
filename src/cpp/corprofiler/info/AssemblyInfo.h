@@ -6,21 +6,28 @@
 
 
 struct AssemblyInfo {
-    AssemblyID id;
-    wstring name;
-    ModuleID manifestModuleId;
-    AppDomainID appDomainId;
-    wstring appDomainName;
+private:
+    AssemblyID myAssemblyId;
+    wstring myName;
+    ModuleID myManifestModuleId;
+    AppDomainID myAppDomainId;
+    wstring myAppDomainName;
 
-    AssemblyInfo() : id(0), name(""_W), manifestModuleId(0), appDomainId(0), appDomainName(""_W) {}
+public:
+    AssemblyInfo() : myAssemblyId(0), myName(""_W), myManifestModuleId(0), myAppDomainId(0), myAppDomainName(""_W) {}
 
-    AssemblyInfo(AssemblyID id, wstring name, ModuleID manifestModuleId, AppDomainID appDomainId,
-        wstring appDomainName)
-        : id(id),
-        name(name),
-        manifestModuleId(manifestModuleId),
-        appDomainId(appDomainId),
-        appDomainName(appDomainName) {}
+    AssemblyInfo(AssemblyID id, wstring name, ModuleID manifestModuleId, AppDomainID appDomainId, wstring appDomainName)
+        : myAssemblyId(id),
+          myName(name),
+          myManifestModuleId(manifestModuleId),
+          myAppDomainId(appDomainId),
+          myAppDomainName(appDomainName) {}
 
     static AssemblyInfo GetAssemblyInfo(ICorProfilerInfo11* info, AssemblyID assemblyId);
+
+    AssemblyID GetAssemblyId();
+    wstring GetName();
+    ModuleID GetModuleId();
+    AppDomainID GetAppDomainId();
+    wstring GetAppDomainName();
 };

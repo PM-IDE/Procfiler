@@ -8,45 +8,51 @@
 #include "GenericMethodSignature.h"
 
 struct FunctionInfo {
-    mdToken Id;
-    wstring Name;
-    TypeInfo Type{};
-    MethodSignature Signature{};
-    GenericMethodSignature FunctionSpecSignature{};
-    mdToken MethodDefId;
-    std::unordered_set<wstring> Attributes{};
+private:
+    mdToken myId;
+    wstring myName;
+    TypeInfo myType{};
+    MethodSignature mySignature{};
+    GenericMethodSignature myFunctionSpecSignature{};
+    mdToken myMethodDefId;
+    std::unordered_set<wstring> myAttributes{};
 
+    TypeInfo ResolveParameterType(TypeInfo& typeInfo);
+public:
     FunctionInfo()
-            : Id(0), Name(""_W), MethodDefId(0) {}
+            : myId(0), myName(""_W), myMethodDefId(0) {}
 
     FunctionInfo(mdToken id, wstring name, TypeInfo type,
                  MethodSignature signature,
                  GenericMethodSignature functionSpecSignature, mdToken methodDefId,
                  const std::unordered_set<wstring>& attributes)
-            : Id(id),
-              Name(name),
-              Type(type),
-              Signature(signature),
-              FunctionSpecSignature(functionSpecSignature),
-              MethodDefId(methodDefId),
-              Attributes(attributes) {}
+            : myId(id),
+              myName(name),
+              myType(type),
+              mySignature(signature),
+              myFunctionSpecSignature(functionSpecSignature),
+              myMethodDefId(methodDefId),
+              myAttributes(attributes) {}
 
     FunctionInfo(mdToken id, wstring name, TypeInfo type,
                  MethodSignature signature,
                  const std::unordered_set<wstring>& attributes)
-            : Id(id),
-              Name(name),
-              Type(type),
-              Signature(signature),
-              MethodDefId(0),
-              Attributes(attributes) {}
+            : myId(id),
+              myName(name),
+              myType(type),
+              mySignature(signature),
+              myMethodDefId(0),
+              myAttributes(attributes) {}
 
     static FunctionInfo GetFunctionInfo(IMetaDataImport2* metadataImport, mdToken token);
     static FunctionInfo GetFunctionInfo(ICorProfilerInfo11* info, FunctionID funcId);
 
     std::string GetFullName();
-private:
-    TypeInfo ResolveParameterType(const TypeInfo& typeInfo) const;
+    mdToken GetId();
+    wstring GetName();
+    TypeInfo GetTypeInfo();
+    MethodSignature GetMethodSignature();
+    std::unordered_set<wstring> GetAttributes();
 };
 
 std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, mdToken token);

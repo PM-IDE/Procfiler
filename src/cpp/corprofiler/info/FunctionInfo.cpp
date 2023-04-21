@@ -68,11 +68,11 @@ FunctionInfo FunctionInfo::GetFunctionInfo(IMetaDataImport2* metadataImport, mdT
             }
 
             auto genericInfo = GetFunctionInfo(metadataImport, parentToken);
-            functionName = ToRaw(genericInfo.Name);
+            functionName = ToRaw(genericInfo.GetName());
             functionNameLength = functionName.size();
             methodSpecToken = functionToken;
-            methodDefToken = genericInfo.Id;
-            finalSignature = genericInfo.Signature.Raw;
+            methodDefToken = genericInfo.GetId();
+            finalSignature = genericInfo.GetMethodSignature().GetRawSignature();
             methodSpecSignature = ToRaw(rawSignature, rawSignatureLength);
             break;
         }
@@ -157,16 +157,16 @@ std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, 
     return attributes;
 }
 
-TypeInfo FunctionInfo::ResolveParameterType(const TypeInfo& typeInfo) const {
-    if (typeInfo.IsGenericClassRef) {
-        auto parameterType = Type.Generics[typeInfo.GenericRefNumber];
-        parameterType.IsRefType = typeInfo.IsRefType;
+TypeInfo FunctionInfo::ResolveParameterType(TypeInfo& typeInfo) {
+    if (typeInfo.IsGenericClassRef()) {
+        auto parameterType = myType.GetGenerics()[typeInfo.GetGenericRefNumber()];
+        parameterType.SetRefType(typeInfo.IsRefType());
         return parameterType;
     }
 
-    if (typeInfo.IsGenericMethodRef) {
-        auto parameterType = FunctionSpecSignature.Generics[typeInfo.GenericRefNumber];
-        parameterType.IsRefType = typeInfo.IsRefType;
+    if (typeInfo.IsGenericMethodRef()) {
+        auto parameterType = myFunctionSpecSignature.GetGenericsTypes()[typeInfo.GetGenericRefNumber()];
+        parameterType.SetRefType(typeInfo.IsRefType());
         return parameterType;
     }
 
@@ -174,5 +174,25 @@ TypeInfo FunctionInfo::ResolveParameterType(const TypeInfo& typeInfo) const {
 }
 
 std::string FunctionInfo::GetFullName() {
-    return ToString(Type.Name) + "." + ToString(Name);
+    return ToString(myType.GetName()) + "." + ToString(myName);
+}
+
+mdToken FunctionInfo::GetId() {
+    return myId;
+}
+
+wstring FunctionInfo::GetName() {
+    return myName;
+}
+
+TypeInfo FunctionInfo::GetTypeInfo() {
+    return myType;
+}
+
+MethodSignature FunctionInfo::GetMethodSignature() {
+    return mySignature;
+}
+
+std::unordered_set<wstring> FunctionInfo::GetAttributes() {
+    return myAttributes;
 }

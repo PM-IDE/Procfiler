@@ -18,3 +18,19 @@ ModuleInfo ModuleInfo::GetModuleInfo(ICorProfilerInfo11* info, ModuleID moduleId
 
     return { moduleId, ToString(modulePath, length), AssemblyInfo::GetAssemblyInfo(info, assemblyId), moduleFlags };
 }
+
+ModuleID ModuleInfo::GetId() {
+    return myId;
+}
+
+wstring ModuleInfo::GetPath() {
+    return myPath;
+}
+
+AssemblyInfo ModuleInfo::GetAssemblyInfo() {
+    return myAssembly;
+}
+
+DWORD ModuleInfo::GetFlags() {
+    return myFlags;
+}
