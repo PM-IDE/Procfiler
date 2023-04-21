@@ -13,7 +13,6 @@ MethodSignature::MethodSignature(std::vector<BYTE> rawSignature) : myRawSignatur
     auto begin = myRawSignature.begin() + 2 + (IsGeneric() ? 1 : 0);
     auto iter = begin;
     if (ParseRetType(iter)) {
-        auto distance = std::distance(begin, iter);
         myReturnType = std::vector<BYTE>(begin, iter);
 
         myArgumentsOffset = std::distance(myRawSignature.begin(), iter);
