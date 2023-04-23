@@ -86,7 +86,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
-    myShadowStack->DebugWriteToFile("/Users/aero/stack.txt");
+    myShadowStack->DebugWriteToFile();
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();

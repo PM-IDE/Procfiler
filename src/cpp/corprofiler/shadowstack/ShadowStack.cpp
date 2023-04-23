@@ -18,6 +18,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId) {
 }
 
 ShadowStack::ShadowStack(ICorProfilerInfo11* profilerInfo) {
+    myDebugCallStacksSavePath = std::getenv("PROCFILER_DEBUG_SAVE_CALL_STACKS_PATH");
     myProfilerInfo = profilerInfo;
 }
 
@@ -36,8 +37,12 @@ std::vector<FunctionEvent>* ShadowStack::GetOrCreatePerThreadEvents(ThreadID thr
     return ourEvents->Events;
 }
 
-void ShadowStack::DebugWriteToFile(const std::string& filePath) {
-    std::ofstream fout(filePath);
+void ShadowStack::DebugWriteToFile() {
+    if (myDebugCallStacksSavePath.length() == 0) {
+        return;
+    }
+
+    std::ofstream fout(myDebugCallStacksSavePath);
     std::map<FunctionID, FunctionInfo> resolvedFunctions;
     const std::string startPrefix = "[START]: ";
     const std::string endPrefix = "[ END ]: ";

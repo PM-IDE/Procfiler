@@ -2,6 +2,7 @@
 #include "corprof.h"
 #include <vector>
 #include <map>
+#include <string>
 
 enum FunctionEventKind {
     Started,
@@ -29,6 +30,7 @@ class ShadowStack {
 private:
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(ThreadID threadId);
 
+    std::string myDebugCallStacksSavePath;
     ICorProfilerInfo11* myProfilerInfo;
 public:
     explicit ShadowStack(ICorProfilerInfo11* profilerInfo);
@@ -36,5 +38,5 @@ public:
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, ThreadID threadId);
     void AddFunctionFinished(FunctionID id, ThreadID threadId);
-    void DebugWriteToFile(const std::string& filePath);
+    void DebugWriteToFile();
 };
