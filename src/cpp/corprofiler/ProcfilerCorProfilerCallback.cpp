@@ -32,8 +32,6 @@ void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
     myShadowStack->AddFunctionEnter(funcId, GetCurrentManagedThreadId());
-    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("Enter[" + std::to_string(GetCurrentManagedThreadId()) + "]: " + functionName + "\n").c_str());
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
@@ -41,16 +39,12 @@ void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
     myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
-    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("Leave[" + std::to_string(GetCurrentManagedThreadId()) + "]: " + functionName + "\n").c_str());
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
                                                           UINT_PTR clientData,
                                                           COR_PRF_FRAME_INFO func) {
     myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
-    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, funcId).GetFullName();
-    printf(("TailCall[" + std::to_string(GetCurrentManagedThreadId()) + "]: " + functionName + "\n").c_str());
 }
 
 ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
@@ -66,6 +60,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
+    myShadowStack = new ShadowStack(myProfilerInfo);
     DWORD eventMask = COR_PRF_ALL;
 
     result = myProfilerInfo->SetEventMask(eventMask);
@@ -91,6 +86,8 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
+    myShadowStack->DebugWriteToFile("/Users/aero/stack.txt");
+
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
         myProfilerInfo = nullptr;
@@ -104,7 +101,6 @@ ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logg
         myProfilerInfo(nullptr),
         myLogger(logger) {
     ourCallback = this;
-    myShadowStack = new ShadowStack();
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {

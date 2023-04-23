@@ -18,8 +18,7 @@ AssemblyInfo AssemblyInfo::GetAssemblyInfo(ICorProfilerInfo11* info, AssemblyID 
     std::vector<WCHAR> appDomainName(MAX_CLASS_NAME, (WCHAR)0);
     DWORD appDomainNameLength = 0;
 
-    hr = info->GetAppDomainInfo(appDomainId, MAX_CLASS_NAME, &appDomainNameLength,
-        &appDomainName[0], nullptr);
+    hr = info->GetAppDomainInfo(appDomainId, MAX_CLASS_NAME, &appDomainNameLength, &appDomainName[0], nullptr);
 
     if (FAILED(hr) || appDomainNameLength == 0) {
         return {};

@@ -19,7 +19,7 @@ struct EventsWithThreadId {
     std::vector<FunctionEvent>* Events;
     ThreadID ThreadId;
 
-    EventsWithThreadId(ThreadID threadId) {
+    explicit EventsWithThreadId(ThreadID threadId) {
         Events = new std::vector<FunctionEvent>();
         ThreadId = threadId;
     }
@@ -28,9 +28,13 @@ struct EventsWithThreadId {
 class ShadowStack {
 private:
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(ThreadID threadId);
+
+    ICorProfilerInfo11* myProfilerInfo;
 public:
+    explicit ShadowStack(ICorProfilerInfo11* profilerInfo);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, ThreadID threadId);
     void AddFunctionFinished(FunctionID id, ThreadID threadId);
+    void DebugWriteToFile(const std::string& filePath);
 };
