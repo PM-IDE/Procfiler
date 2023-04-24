@@ -18,7 +18,8 @@ void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId) {
 }
 
 ShadowStack::ShadowStack(ICorProfilerInfo11* profilerInfo) {
-    myDebugCallStacksSavePath = std::getenv(shadowStackDebugSavePath.c_str());
+    auto rawEnvVar = std::getenv(shadowStackDebugSavePath.c_str());
+    myDebugCallStacksSavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
     myProfilerInfo = profilerInfo;
 }
 
