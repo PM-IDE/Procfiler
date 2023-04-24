@@ -1,8 +1,10 @@
 #include "ClassFactory.h"
 #include <cstdio>
 
+HINSTANCE DllHandle;
 
 BOOL STDMETHODCALLTYPE DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+    DllHandle = hModule;
     return TRUE;
 }
 

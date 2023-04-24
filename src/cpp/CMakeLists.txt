@@ -3,10 +3,15 @@ cmake_minimum_required(VERSION 3.14.5)
 add_compile_options(-fpermissive)
 project(Procfiler)
 
+IF (WIN32)
+    add_definitions(-DUNICODE -D_UNICODE -DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -D_WIN32 -DWINVER=0x0602 -D_WIN32_WINNT=0x0602 -DWIN32_LEAN_AND_MEAN -D_CRT_SECURE_NO_WARNINGS)
+ENDIF()
+
 set(SOURCES
+    dllmain.cpp
+    dllmain.h
     procfiler.def
     ClassFactory.cpp
-    dllmain.cpp
     corprofiler/ProcfilerCorProfilerCallback.cpp
     guids.cpp
     logging/ProcfilerLogger.cpp
@@ -27,7 +32,7 @@ set(SOURCES
     corprofiler/info/parser.cpp
     miniutf/miniutf.cpp
     miniutf/miniutf.hpp
-    corprofiler/shadowstack/ShadowStack.cpp util/env_constants.h)
+    corprofiler/shadowstack/ShadowStack.cpp util/env_constants.h dllmain.h)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 include_directories(./3rdparty/coreclr/inc)
@@ -64,6 +69,6 @@ target_link_libraries(Procfiler PUBLIC ${DEPENDENCIES})
 
 install(TARGETS Procfiler DESTINATION bin)
 
-#if(WIN32)
-#    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
-#endif(WIN32)
+if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
+endif(MSVC)

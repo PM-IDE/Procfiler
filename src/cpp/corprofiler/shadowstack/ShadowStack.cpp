@@ -1,4 +1,3 @@
-#include <thread>
 #include "ShadowStack.h"
 #include "../../util/env_constants.h"
 #include "../info/FunctionInfo.h"

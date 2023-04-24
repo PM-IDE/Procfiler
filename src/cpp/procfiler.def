@@ -1,4 +1,4 @@
-LIBRARY     Procfiler.dll
+LIBRARY     "Procfiler.dll"
 
 EXPORTS
             DllGetClassObject       PRIVATE
