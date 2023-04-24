@@ -30,11 +30,12 @@ set(SOURCES
     corprofiler/shadowstack/ShadowStack.cpp util/env_constants.h)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
+include_directories(./3rdparty/coreclr/inc)
 
 if(NOT WIN32)
     include_directories(./3rdparty/coreclr/pal/inc/rt
-                        ./3rdparty/coreclr/pal/inc
-                        ./3rdparty/coreclr/inc)
+                        ./3rdparty/coreclr/pal/inc)
+
     add_compile_options(-DPAL_STDCPP_COMPAT)
 
     IF (APPLE)
