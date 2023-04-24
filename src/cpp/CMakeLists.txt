@@ -3,13 +3,8 @@ cmake_minimum_required(VERSION 3.14.5)
 add_compile_options(-fpermissive)
 project(Procfiler)
 
-IF (WIN32)
-    add_definitions(-DUNICODE -D_UNICODE -DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -D_WIN32 -DWINVER=0x0602 -D_WIN32_WINNT=0x0602 -DWIN32_LEAN_AND_MEAN -D_CRT_SECURE_NO_WARNINGS)
-ENDIF()
-
 set(SOURCES
     dllmain.cpp
-    dllmain.h
     procfiler.def
     ClassFactory.cpp
     corprofiler/ProcfilerCorProfilerCallback.cpp
@@ -32,7 +27,8 @@ set(SOURCES
     corprofiler/info/parser.cpp
     miniutf/miniutf.cpp
     miniutf/miniutf.hpp
-    corprofiler/shadowstack/ShadowStack.cpp util/env_constants.h dllmain.h)
+    corprofiler/shadowstack/ShadowStack.cpp
+    util/env_constants.h)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 include_directories(./3rdparty/coreclr/inc)
@@ -56,7 +52,6 @@ if(NOT WIN32)
     endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif(NOT WIN32)
 
-# add the executable
 add_library(Procfiler SHARED ${SOURCES})
 
 if(WIN32)
@@ -69,6 +64,6 @@ target_link_libraries(Procfiler PUBLIC ${DEPENDENCIES})
 
 install(TARGETS Procfiler DESTINATION bin)
 
-if(MSVC)
+if(WIN32)
     install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
-endif(MSVC)
+endif(WIN32)
