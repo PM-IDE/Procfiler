@@ -1,8 +1,11 @@
 #include "iostream"
 
 class ProcfilerLogger {
+private:
+    bool myIsEnabled;
+
 public:
-    ProcfilerLogger() = default;
+    ProcfilerLogger();
 
     void Log(const std::string& message);
 };

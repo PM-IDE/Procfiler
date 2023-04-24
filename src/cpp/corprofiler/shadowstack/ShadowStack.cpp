@@ -1,5 +1,6 @@
 #include <thread>
 #include "ShadowStack.h"
+#include "../../util/env_constants.h"
 #include "../info/FunctionInfo.h"
 #include <mutex>
 #include <fstream>
@@ -18,7 +19,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId) {
 }
 
 ShadowStack::ShadowStack(ICorProfilerInfo11* profilerInfo) {
-    myDebugCallStacksSavePath = std::getenv("PROCFILER_DEBUG_SAVE_CALL_STACKS_PATH");
+    myDebugCallStacksSavePath = std::getenv(shadowStackDebugSavePath.c_str());
     myProfilerInfo = profilerInfo;
 }
 

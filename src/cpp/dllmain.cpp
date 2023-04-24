@@ -3,15 +3,10 @@
 
 
 BOOL STDMETHODCALLTYPE DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
-    printf("Profiler.dll!DllGetClassObject\n");
-    fflush(stdout);
     return TRUE;
 }
 
 extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
-    printf("Profiler.dll!DllGetClassObject\n");
-    fflush(stdout);
-
     auto factory = new ClassFactory();
     return factory->QueryInterface(riid, ppv);
 }

@@ -101,6 +101,7 @@ ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logg
         myProfilerInfo(nullptr),
         myLogger(logger) {
     ourCallback = this;
+    myShadowStack = nullptr;
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
