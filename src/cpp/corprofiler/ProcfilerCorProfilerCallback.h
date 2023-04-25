@@ -12,6 +12,7 @@ private:
     ShadowStack* myShadowStack;
 
     ThreadID GetCurrentManagedThreadId();
+    int64_t GetCurrentTimestamp();
 
 public:
     explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);

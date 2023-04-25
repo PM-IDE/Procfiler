@@ -1,5 +1,6 @@
 #include "ProcfilerCorProfilerCallback.h"
 #include "info/FunctionInfo.h"
+#include "profileapi.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -27,24 +28,37 @@ void StaticHandleFunctionTailCall(FunctionID funcId,
     GetCallbackInstance()->HandleFunctionTailCall(funcId, clientData, func);
 }
 
+int64_t ProcfilerCorProfilerCallback::GetCurrentTimestamp() {
+    LARGE_INTEGER value;
+    if (!QueryPerformanceCounter(&value)) {
+        myLogger->Log("Failed to get current timestamp");
+        return -1;
+    }
+
+    return value.QuadPart;
+}
+
 void ProcfilerCorProfilerCallback::HandleFunctionEnter2(FunctionID funcId,
                                                         UINT_PTR clientData,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo) {
-    myShadowStack->AddFunctionEnter(funcId, GetCurrentManagedThreadId());
+    auto timestamp = GetCurrentTimestamp();
+    myShadowStack->AddFunctionEnter(funcId, GetCurrentManagedThreadId(), timestamp);
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionLeave2(FunctionID funcId,
                                                         UINT_PTR clientData,
                                                         COR_PRF_FRAME_INFO func,
                                                         COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange) {
-    myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
+    auto timestamp = GetCurrentTimestamp();
+    myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId(), timestamp);
 }
 
 void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
                                                           UINT_PTR clientData,
                                                           COR_PRF_FRAME_INFO func) {
-    myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId());
+    auto timestamp = GetCurrentTimestamp();
+    myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId(), timestamp);
 }
 
 ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {

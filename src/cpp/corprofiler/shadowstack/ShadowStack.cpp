@@ -9,12 +9,12 @@ static thread_local EventsWithThreadId* ourEvents;
 static std::map<ThreadID, EventsWithThreadId*> ourEventsPerThreads;
 static std::mutex ourEventsPerThreadMutex;
 
-void ShadowStack::AddFunctionEnter(FunctionID id, ThreadID threadId) {
-    GetOrCreatePerThreadEvents(threadId)->emplace_back(FunctionEvent(id, FunctionEventKind::Started));
+void ShadowStack::AddFunctionEnter(FunctionID id, ThreadID threadId, int64_t timestamp) {
+    GetOrCreatePerThreadEvents(threadId)->emplace_back(FunctionEvent(id, FunctionEventKind::Started, timestamp));
 }
 
-void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId) {
-    GetOrCreatePerThreadEvents(threadId)->emplace_back(FunctionEvent(id, FunctionEventKind::Finished));
+void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId, int64_t timestamp) {
+    GetOrCreatePerThreadEvents(threadId)->emplace_back(FunctionEvent(id, FunctionEventKind::Finished, timestamp));
 }
 
 ShadowStack::ShadowStack(ICorProfilerInfo13* profilerInfo) {

@@ -12,8 +12,12 @@ enum FunctionEventKind {
 struct FunctionEvent {
     FunctionID Id;
     FunctionEventKind EventKind;
+    int64_t Timestamp;
 
-    FunctionEvent(FunctionID id, FunctionEventKind eventKind) : Id(id), EventKind(eventKind) {}
+    FunctionEvent(FunctionID id, FunctionEventKind eventKind, int64_t timestamp) :
+        Id(id),
+        EventKind(eventKind),
+        Timestamp(timestamp) {}
 };
 
 struct EventsWithThreadId {
@@ -23,6 +27,10 @@ struct EventsWithThreadId {
     explicit EventsWithThreadId(ThreadID threadId) {
         Events = new std::vector<FunctionEvent>();
         ThreadId = threadId;
+    }
+
+    ~EventsWithThreadId() {
+        delete Events;
     }
 };
 
@@ -36,7 +44,7 @@ public:
     explicit ShadowStack(ICorProfilerInfo13* profilerInfo);
 
     ~ShadowStack();
-    void AddFunctionEnter(FunctionID id, ThreadID threadId);
-    void AddFunctionFinished(FunctionID id, ThreadID threadId);
+    void AddFunctionEnter(FunctionID id, ThreadID threadId, int64_t timestamp);
+    void AddFunctionFinished(FunctionID id, ThreadID threadId, int64_t timestamp);
     void DebugWriteToFile();
 };
