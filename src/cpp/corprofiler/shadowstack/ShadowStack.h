@@ -31,9 +31,9 @@ private:
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(ThreadID threadId);
 
     std::string myDebugCallStacksSavePath;
-    ICorProfilerInfo11* myProfilerInfo;
+    ICorProfilerInfo13* myProfilerInfo;
 public:
-    explicit ShadowStack(ICorProfilerInfo11* profilerInfo);
+    explicit ShadowStack(ICorProfilerInfo13* profilerInfo);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, ThreadID threadId);

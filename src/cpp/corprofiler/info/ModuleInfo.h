@@ -20,7 +20,7 @@ public:
         : myId(id), myPath(std::move(path)), myAssembly(std::move(assembly)), myFlags(flags) {}
 
 
-    static ModuleInfo GetModuleInfo(ICorProfilerInfo11* info, ModuleID moduleId);
+    static ModuleInfo GetModuleInfo(ICorProfilerInfo13* info, ModuleID moduleId);
 
     ModuleID GetId();
     wstring GetPath();

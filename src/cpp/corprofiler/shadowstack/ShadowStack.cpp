@@ -17,7 +17,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId) {
     GetOrCreatePerThreadEvents(threadId)->emplace_back(FunctionEvent(id, FunctionEventKind::Finished));
 }
 
-ShadowStack::ShadowStack(ICorProfilerInfo11* profilerInfo) {
+ShadowStack::ShadowStack(ICorProfilerInfo13* profilerInfo) {
     auto rawEnvVar = std::getenv(shadowStackDebugSavePath.c_str());
     myDebugCallStacksSavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
     myProfilerInfo = profilerInfo;

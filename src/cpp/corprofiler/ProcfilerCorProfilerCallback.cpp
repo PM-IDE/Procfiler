@@ -54,7 +54,7 @@ ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
     myLogger->Log("Started initializing CorProfiler callback");
     void** ptr = reinterpret_cast<void**>(&this->myProfilerInfo);
-    HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo11, ptr);
+    HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo13, ptr);
     if (FAILED(result)) {
         myLogger->Log("Failed to query interface: " + std::to_string(result));
         return E_FAIL;

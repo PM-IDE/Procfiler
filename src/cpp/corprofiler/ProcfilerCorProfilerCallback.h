@@ -7,7 +7,7 @@
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {
 private:
     ProcfilerLogger* myLogger;
-    ICorProfilerInfo11* myProfilerInfo;
+    ICorProfilerInfo13* myProfilerInfo;
     std::atomic<int> myRefCount;
     ShadowStack* myShadowStack;
 
