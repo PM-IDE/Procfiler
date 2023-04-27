@@ -181,7 +181,7 @@ mdToken FunctionInfo::GetId() {
     return myId;
 }
 
-wstring FunctionInfo::GetName() {
+wstring FunctionInfo::GetName() const {
     return myName;
 }
 

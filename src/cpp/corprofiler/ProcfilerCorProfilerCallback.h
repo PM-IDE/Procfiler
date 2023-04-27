@@ -1,7 +1,6 @@
 #include "cor.h"
 #include "corprof.h"
 #include "./shadowstack/ShadowStack.h"
-#include "../logging/ProcfilerLogger.h"
 #include <atomic>
 
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {

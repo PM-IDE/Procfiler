@@ -49,7 +49,7 @@ public:
 
     std::string GetFullName();
     mdToken GetId();
-    wstring GetName();
+    wstring GetName() const;
     TypeInfo GetTypeInfo();
     MethodSignature GetMethodSignature();
     std::unordered_set<wstring> GetAttributes();

@@ -1,6 +1,5 @@
 #include "ProcfilerCorProfilerCallback.h"
 #include "info/FunctionInfo.h"
-#include "profileapi.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -74,7 +73,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
-    myShadowStack = new ShadowStack(myProfilerInfo);
+    myShadowStack = new ShadowStack(myProfilerInfo, myLogger);
     DWORD eventMask = COR_PRF_ALL;
 
     result = myProfilerInfo->SetEventMask(eventMask);
