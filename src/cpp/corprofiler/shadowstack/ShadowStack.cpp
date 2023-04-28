@@ -8,12 +8,12 @@ static thread_local EventsWithThreadId* ourEvents;
 static std::map<ThreadID, EventsWithThreadId*> ourEventsPerThreads;
 static std::mutex ourEventsPerThreadMutex;
 
-void ShadowStack::AddFunctionEnter(FunctionID id, ThreadID threadId, int64_t timestamp) {
+void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp) {
     const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
     GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
 }
 
-void ShadowStack::AddFunctionFinished(FunctionID id, ThreadID threadId, int64_t timestamp) {
+void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp) {
     const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
     GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
 }
@@ -31,7 +31,7 @@ ShadowStack::~ShadowStack() {
     //TODO: proper destructor
 }
 
-std::vector<FunctionEvent>* ShadowStack::GetOrCreatePerThreadEvents(ThreadID threadId) {
+std::vector<FunctionEvent>* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId) {
     if (!ourIsInitialized) {
         ourEvents = new EventsWithThreadId(threadId);
         ourIsInitialized = true;
@@ -90,7 +90,7 @@ void ShadowStack::DebugWriteToFile() {
     fout.close();
 }
 
-void ShadowStack::WriteMethodsEventsToEventPipe() {
+void ShadowStack::WriteEventsToEventPipe() {
     HRESULT hr;
 
     for (const auto& pair: ourEventsPerThreads) {
@@ -217,7 +217,7 @@ HRESULT ShadowStack::InitializeProvidersAndEvents() {
     return S_OK;
 }
 
-HRESULT ShadowStack::LogFunctionEvent(const FunctionEvent& event, const ThreadID& threadId) {
+HRESULT ShadowStack::LogFunctionEvent(const FunctionEvent& event, const DWORD& threadId) {
     if (!myResolvedFunctions.count(event.Id)) {
         myResolvedFunctions[event.Id] = FunctionInfo::GetFunctionInfo(myProfilerInfo, event.Id);
     }
@@ -233,7 +233,7 @@ HRESULT ShadowStack::LogFunctionEvent(const FunctionEvent& event, const ThreadID
     eventData[1].size = sizeof(FunctionID);
 
     eventData[2].ptr = reinterpret_cast<UINT64>(&threadId);
-    eventData[2].size = sizeof(ThreadID);
+    eventData[2].size = sizeof(DWORD);
 
     auto dataCount = sizeof(eventData) / sizeof(COR_PRF_EVENT_DATA);
 
