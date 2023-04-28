@@ -88,6 +88,8 @@ void ShadowStack::DebugWriteToFile() {
 }
 
 void ShadowStack::WriteMethodsEventsToEventPipe() {
+    myLogger->Log("Starting writing shadow stack to event pipe");
+
     HRESULT hr;
     if ((hr = DefineProcfilerEventPipeProvider()) != S_OK) {
         auto logMessage = "Failed to initialize Event Pipe Provider, HR = " + std::to_string(hr);
@@ -113,10 +115,12 @@ void ShadowStack::WriteMethodsEventsToEventPipe() {
         return;
     }
 
+    myLogger->Log("Initialized provider and all needed events");
+
     std::map<FunctionID, FunctionInfo> resolvedFunctions;
     for (const auto& pair: ourEventsPerThreads) {
         auto threadId = pair.first;
-        for (auto event : *(pair.second->Events)) {
+        for (const auto& event : *(pair.second->Events)) {
             if (!resolvedFunctions.count(event.Id)) {
                 resolvedFunctions[event.Id] = FunctionInfo::GetFunctionInfo(myProfilerInfo, event.Id);
             }
@@ -129,7 +133,7 @@ void ShadowStack::WriteMethodsEventsToEventPipe() {
             eventData[0].size = sizeof(int64_t);
 
             eventData[1].ptr = reinterpret_cast<UINT64>(&event.Id);
-            eventData[1].ptr = sizeof(FunctionID);
+            eventData[1].size = sizeof(FunctionID);
 
             eventData[2].ptr = reinterpret_cast<UINT64>(&threadId);
             eventData[2].size = sizeof(ThreadID);
@@ -139,6 +143,8 @@ void ShadowStack::WriteMethodsEventsToEventPipe() {
             myProfilerInfo->EventPipeWriteEvent(eventPipeEvent, dataCount, eventData, NULL, NULL);
         }
     }
+
+    myLogger->Log("Logged method start and end events to event pipe");
 
     for (const auto& pair : resolvedFunctions) {
         COR_PRF_EVENT_DATA eventData[2];
@@ -154,6 +160,8 @@ void ShadowStack::WriteMethodsEventsToEventPipe() {
 
         myProfilerInfo->EventPipeWriteEvent(myMethodInfoEvent, dataCount, eventData, NULL, NULL);
     }
+
+    myLogger->Log("Logged all method info events");
 }
 
 HRESULT ShadowStack::DefineProcfilerMethodStartEvent() {
