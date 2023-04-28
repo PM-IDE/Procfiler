@@ -51,11 +51,14 @@ public abstract partial class CollectCommandBase
     var clearBefore = parseResult.GetValueForOption(ClearPathBefore);
     var category = parseResult.GetValueForOption(ProvidersCategory);
     var arguments = parseResult.GetValueForOption(ArgumentsOption) ?? string.Empty;
+    var printOutput = parseResult.GetValueForOption(PrintProcessOutputOption);
+    
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
-      outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout);
+      outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout, 
+      printOutput);
   }
   
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)

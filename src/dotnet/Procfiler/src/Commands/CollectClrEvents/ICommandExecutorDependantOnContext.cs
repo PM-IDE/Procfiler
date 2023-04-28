@@ -18,16 +18,16 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   private readonly IProcfilerLogger myLogger;
   private readonly IClrEventsCollector myClrEventsCollector;
   private readonly IDotnetProjectBuilder myProjectBuilder;
-  private readonly IProcessLauncher myProcessLauncher;
+  private readonly IDotnetProcessLauncher myDotnetProcessLauncher;
 
 
   public CommandExecutorImpl(
-    IProcessLauncher processLauncher, 
+    IDotnetProcessLauncher dotnetProcessLauncher, 
     IClrEventsCollector clrEventsCollector,
     IDotnetProjectBuilder projectBuilder,
     IProcfilerLogger logger)
   {
-    myProcessLauncher = processLauncher;
+    myDotnetProcessLauncher = dotnetProcessLauncher;
     myClrEventsCollector = clrEventsCollector;
     myProjectBuilder = projectBuilder;
     myLogger = logger;
@@ -82,7 +82,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
   private ValueTask<CollectedEvents> CollectEventsFromProcess(CollectClrEventsContext context, int processId)
   {
-    var (_, _, _, _, category, _, duration, timeout) = context.CommonContext;
+    var (_, _, _, _, category, _, duration, timeout, _) = context.CommonContext;
     return myClrEventsCollector.CollectEventsAsync(processId, duration, timeout, category);
   }
 
@@ -99,11 +99,17 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     }
 
     var buildResult = buildResultNullable.Value;
-    var arguments = context.CommonContext.Arguments;
-    
+
     try
     {
-      if (myProcessLauncher.TryStartDotnetProcess(buildResult.BuiltDllPath, arguments) is not { } process)
+      var launcherDto = new DotnetProcessLauncherDto
+      {
+        Arguments = context.CommonContext.Arguments,
+        RedirectOutput = context.CommonContext.PrintProcessOutput,
+        PathToDotnetExecutable = buildResult.BuiltDllPath
+      };
+      
+      if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
       {
         myLogger.LogError("Failed to start or to find process");
         return;
@@ -118,21 +124,19 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       }
       catch (Exception ex)
       {
-        myLogger.LogError(ex, ex.Message);
+        myLogger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
       }
       finally
       {
         process.Kill();
         await process.WaitForExitAsync();
-      
-        if (myLogger.IsEnabled(LogLevel.Trace))
-        {
-          myLogger.LogTrace("The process {Pid} output", process.Id);
-          myLogger.LogTrace(await process.StandardOutput.ReadToEndAsync()); 
-      
-          myLogger.LogTrace("The process {Pid} errors: ", process.Id);
-          myLogger.LogTrace(await process.StandardError.ReadToEndAsync());
-        }
+      }
+
+      if (context.CommonContext.PrintProcessOutput)
+      {
+        var output = await process.StandardOutput.ReadToEndAsync();
+        myLogger.LogInformation("Process output:");
+        myLogger.LogInformation(output);
       }
 
       if (!process.HasExited)

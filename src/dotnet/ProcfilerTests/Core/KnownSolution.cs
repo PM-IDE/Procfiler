@@ -78,7 +78,7 @@ public class KnownSolution
   {
     var serializationContext = new SerializationContext(FileFormat.Csv);
     return new CollectingClrEventsCommonContext(
-      string.Empty, serializationContext, null, string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000);
+      string.Empty, serializationContext, null, string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000, false);
   }
 
   public override string ToString()

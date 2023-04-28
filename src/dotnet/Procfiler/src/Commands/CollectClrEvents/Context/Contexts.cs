@@ -14,7 +14,8 @@ public record struct CollectingClrEventsCommonContext(
   ProvidersCategoryKind ProviderCategory,
   bool ClearPathBefore,
   int DurationMs,
-  int MaxWaitForLogWriteTimeoutMs
+  int MaxWaitForLogWriteTimeoutMs,
+  bool PrintProcessOutput
 );
 
 public record struct ProjectBuildInfo(
