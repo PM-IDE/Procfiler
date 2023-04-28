@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include "../../util/util.h"
+#include "../info/FunctionInfo.h"
 
 enum FunctionEventKind {
     Started,
@@ -49,6 +50,8 @@ private:
     const wstring ourMethodInfoEventName = ToWString("ProcfilerMethodInfo");
     const wstring ourEventPipeProviderName = ToWString("ProcfilerCppEventPipeProvider");
 
+    std::map<FunctionID, FunctionInfo> myResolvedFunctions;
+
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(ThreadID threadId);
 
     std::string myDebugCallStacksSavePath;
@@ -60,11 +63,15 @@ private:
     EVENTPIPE_EVENT myMethodEndEvent;
     EVENTPIPE_EVENT myMethodInfoEvent;
 
+    HRESULT InitializeProvidersAndEvents();
     HRESULT DefineProcfilerEventPipeProvider();
     HRESULT DefineProcfilerMethodInfoEvent();
 
     HRESULT DefineProcfilerMethodStartEvent();
     HRESULT DefineProcfilerMethodEndEvent();
+
+    HRESULT LogFunctionEvent(const FunctionEvent& event, const ThreadID& threadId);
+    HRESULT LogMethodInfo(const FunctionID& functionId, const FunctionInfo& functionInfo);
 
     static HRESULT DefineMethodStartOrEndEventInternal(const wstring& eventName,
                                                        EVENTPIPE_PROVIDER provider,

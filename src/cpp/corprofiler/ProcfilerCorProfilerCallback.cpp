@@ -1,5 +1,4 @@
 #include "ProcfilerCorProfilerCallback.h"
-#include "info/FunctionInfo.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
