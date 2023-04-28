@@ -157,7 +157,7 @@ void ShadowStack::WriteMethodsEventsToEventPipe() {
 }
 
 HRESULT ShadowStack::DefineProcfilerMethodStartEvent() {
-    return DefineMethodStartOrEndEventInternal(W("ProcfilerMethodStart"),
+    return DefineMethodStartOrEndEventInternal(ToWString("ProcfilerMethodStart"),
                                                myEventPipeProvider,
                                                &myMethodStartEvent,
                                                myProfilerInfo,
@@ -165,7 +165,7 @@ HRESULT ShadowStack::DefineProcfilerMethodStartEvent() {
 }
 
 HRESULT ShadowStack::DefineProcfilerMethodEndEvent() {
-    return DefineMethodStartOrEndEventInternal(W("ProcfilerMethodEnd"),
+    return DefineMethodStartOrEndEventInternal(ToWString("ProcfilerMethodEnd"),
                                                myEventPipeProvider,
                                                &myMethodStartEvent,
                                                myProfilerInfo,
@@ -174,24 +174,24 @@ HRESULT ShadowStack::DefineProcfilerMethodEndEvent() {
 
 HRESULT ShadowStack::DefineProcfilerMethodInfoEvent() {
     COR_PRF_EVENTPIPE_PARAM_DESC eventParameters[] = {
-            {COR_PRF_EVENTPIPE_UINT64, 0, W("FunctionId")},
-            {COR_PRF_EVENTPIPE_STRING, 0, W("FunctionName")},
+        {COR_PRF_EVENTPIPE_UINT64, 0, ToWString("FunctionId").c_str()},
+        {COR_PRF_EVENTPIPE_STRING, 0, ToWString("FunctionName").c_str()},
     };
 
     auto paramsCount = sizeof(eventParameters) / sizeof(COR_PRF_EVENTPIPE_PARAM_DESC);
 
     return myProfilerInfo->EventPipeDefineEvent(
-            myEventPipeProvider,             // Provider
-            W("ProcfilerMethodInfo"),        // Name
-            ourMethodInfoEventId,            // ID
-            0,                               // Keywords
-            1,                               // Version
-            COR_PRF_EVENTPIPE_LOGALWAYS,     // Level
-            0,                               // opcode
-            false,                           // Needs stack
-            paramsCount,                     // size of params
-            eventParameters,                 // Param descriptors
-            &myMethodInfoEvent               // [OUT] event ID
+        myEventPipeProvider,
+        ourMethodInfoEventName.c_str(),
+        ourMethodInfoEventId,
+        0,
+        1,
+        COR_PRF_EVENTPIPE_LOGALWAYS,
+        0,
+        false,
+        paramsCount,
+        eventParameters,
+        &myMethodInfoEvent
     );
 }
 
@@ -205,24 +205,24 @@ HRESULT ShadowStack::DefineMethodStartOrEndEventInternal(const wstring& eventNam
                                                          ICorProfilerInfo13* profilerInfo,
                                                          UINT32 eventId) {
     COR_PRF_EVENTPIPE_PARAM_DESC eventParameters[] = {
-            {COR_PRF_EVENTPIPE_UINT64, 0, W("Timestamp")},
-            {COR_PRF_EVENTPIPE_UINT64, 0, W("FunctionId")},
-            {COR_PRF_EVENTPIPE_UINT64, 0, W("ThreadId")},
+        {COR_PRF_EVENTPIPE_UINT64, 0, ToWString("Timestamp").c_str()},
+        {COR_PRF_EVENTPIPE_UINT64, 0, ToWString("FunctionId").c_str()},
+        {COR_PRF_EVENTPIPE_UINT64, 0, ToWString("ThreadId").c_str()},
     };
 
     auto paramsCount = sizeof(eventParameters) / sizeof(COR_PRF_EVENTPIPE_PARAM_DESC);
 
     return profilerInfo->EventPipeDefineEvent(
-            provider,                        // Provider
-            eventName.c_str(),               // Name
-            eventId,                            // ID
-            0,                               // Keywords
-            1,                               // Version
-            COR_PRF_EVENTPIPE_LOGALWAYS,     // Level
-            0,                               // opcode
-            false,                           // Needs stack
-            paramsCount,                     // size of params
-            eventParameters,                 // Param descriptors
-            outEventId                          // [OUT] event ID
+        provider,
+        eventName.c_str(),
+        eventId,
+        0,
+        1,
+        COR_PRF_EVENTPIPE_LOGALWAYS,
+        0,
+        false,
+        paramsCount,
+        eventParameters,
+        outEventId
     );
 }

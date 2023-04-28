@@ -100,6 +100,7 @@ HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
     myShadowStack->DebugWriteToFile();
+    myShadowStack->WriteMethodsEventsToEventPipe();
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();

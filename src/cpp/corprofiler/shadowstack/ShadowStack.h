@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "../../util/util.h"
 
 enum FunctionEventKind {
     Started,
@@ -19,7 +20,8 @@ struct FunctionEvent {
     FunctionEvent(FunctionID id, FunctionEventKind eventKind, int64_t timestamp) :
         Id(id),
         EventKind(eventKind),
-        Timestamp(timestamp) {}
+        Timestamp(timestamp) {
+    }
 };
 
 struct EventsWithThreadId {
@@ -42,10 +44,10 @@ private:
     const UINT32 ourMethodEndEventId = 8001;
     const UINT32 ourMethodInfoEventId = 8002;
 
-    const wstring ourMethodStartEventName = W("ProcfilerMethodStart");
-    const wstring ourMethodEndEventName = W("ProcfilerMethodEnd");
-    const wstring ourMethodInfoEventName = W("ProcfilerMethodInfo");
-    const wstring ourEventPipeProviderName = W("ProcfilerCppEventPipeProvider");
+    const wstring ourMethodStartEventName = ToWString("ProcfilerMethodStart");
+    const wstring ourMethodEndEventName = ToWString("ProcfilerMethodEnd");
+    const wstring ourMethodInfoEventName = ToWString("ProcfilerMethodInfo");
+    const wstring ourEventPipeProviderName = ToWString("ProcfilerCppEventPipeProvider");
 
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(ThreadID threadId);
 
