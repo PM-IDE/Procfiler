@@ -18,7 +18,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t tim
     GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
 }
 
-ShadowStack::ShadowStack(ICorProfilerInfo13* profilerInfo, ProcfilerLogger* logger) {
+ShadowStack::ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger) {
     auto rawEnvVar = std::getenv(shadowStackDebugSavePath.c_str());
     myDebugCallStacksSavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
     myProfilerInfo = profilerInfo;
@@ -159,7 +159,7 @@ HRESULT ShadowStack::DefineProcfilerEventPipeProvider() {
 HRESULT ShadowStack::DefineMethodStartOrEndEventInternal(const wstring& eventName,
                                                          EVENTPIPE_PROVIDER provider,
                                                          EVENTPIPE_EVENT* outEventId,
-                                                         ICorProfilerInfo13* profilerInfo,
+                                                         ICorProfilerInfo12* profilerInfo,
                                                          UINT32 eventId) {
     COR_PRF_EVENTPIPE_PARAM_DESC eventParameters[] = {
         {COR_PRF_EVENTPIPE_UINT64, 0, ToWString("Timestamp").c_str()},

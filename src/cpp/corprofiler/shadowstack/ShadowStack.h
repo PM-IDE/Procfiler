@@ -55,7 +55,7 @@ private:
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(DWORD threadId);
 
     std::string myDebugCallStacksSavePath;
-    ICorProfilerInfo13* myProfilerInfo;
+    ICorProfilerInfo12* myProfilerInfo;
     ProcfilerLogger* myLogger;
 
     EVENTPIPE_PROVIDER myEventPipeProvider{};
@@ -76,10 +76,10 @@ private:
     static HRESULT DefineMethodStartOrEndEventInternal(const wstring& eventName,
                                                        EVENTPIPE_PROVIDER provider,
                                                        EVENTPIPE_EVENT* ourEventId,
-                                                       ICorProfilerInfo13* profilerInfo,
+                                                       ICorProfilerInfo12* profilerInfo,
                                                        UINT32 eventId);
 public:
-    explicit ShadowStack(ICorProfilerInfo13* profilerInfo, ProcfilerLogger* logger);
+    explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);
