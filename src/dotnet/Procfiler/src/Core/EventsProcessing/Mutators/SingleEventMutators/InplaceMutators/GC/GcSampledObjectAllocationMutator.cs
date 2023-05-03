@@ -12,7 +12,7 @@ public class GcSampledObjectAllocationMutator : MetadataValueToNameAppenderBase
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
   
-  public override string EventClass => TraceEventsConstants.GcSampledObjectAllocation;
+  public override string EventType => TraceEventsConstants.GcSampledObjectAllocation;
 
   
   public GcSampledObjectAllocationMutator(IProcfilerLogger logger) : base(logger)

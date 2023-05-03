@@ -9,7 +9,7 @@ public abstract class MetadataValuesRemover : SingleEventMutatorBase, ISingleEve
   protected abstract string[] MetadataKeys { get; }
   
   
-  public override IEnumerable<EventLogMutation> Mutations => MetadataKeys.Select(key => new AttributeRemovalMutation(EventClass, key));
+  public override IEnumerable<EventLogMutation> Mutations => MetadataKeys.Select(key => new AttributeRemovalMutation(EventType, key));
   
 
   protected MetadataValuesRemover(IProcfilerLogger logger) : base(logger)
@@ -24,7 +24,7 @@ public abstract class MetadataValuesRemover : SingleEventMutatorBase, ISingleEve
     {
       if (!metadata.Remove(metadataKey))
       {
-        Logger.LogAbsenceOfMetadata(EventClass, metadataKey);
+        Logger.LogAbsenceOfMetadata(EventType, metadataKey);
       }
     }
   }

@@ -15,8 +15,7 @@ public abstract class MethodTailCallNameMutatorBase : MetadataValueToNameAppende
   {
     Transformations = new[]
     {
-      MetadataKeysWithTransform.CreateForTypeLikeName(
-        TraceEventsConstants.MethodBeingCompiledNamespace, EventClassKind.Zero),
+      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodBeingCompiledNamespace, EventClassKind.Zero),
       MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodBeingCompiledName, EventClassKind.Zero)
     };
   }
@@ -25,7 +24,7 @@ public abstract class MethodTailCallNameMutatorBase : MetadataValueToNameAppende
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodTailCallSucceededNameMutator : MethodTailCallNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.MethodTailCallSucceeded;
+  public override string EventType => TraceEventsConstants.MethodTailCallSucceeded;
 
 
   public MethodTailCallSucceededNameMutator(IProcfilerLogger logger) : base(logger)
@@ -36,7 +35,7 @@ public class MethodTailCallSucceededNameMutator : MethodTailCallNameMutatorBase
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodTailCallFailedNameMutator : MethodTailCallNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.MethodTailCallFailed;
+  public override string EventType => TraceEventsConstants.MethodTailCallFailed;
 
 
   public MethodTailCallFailedNameMutator(IProcfilerLogger logger) : base(logger)

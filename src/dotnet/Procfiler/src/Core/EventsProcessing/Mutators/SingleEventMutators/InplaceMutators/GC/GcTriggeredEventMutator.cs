@@ -9,7 +9,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class GcTriggeredEventMutator : MetadataValueToNameAppenderBase
 {
-  public override string EventClass => TraceEventsConstants.GcTriggered;
+  public override string EventType => TraceEventsConstants.GcTriggered;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
   
   

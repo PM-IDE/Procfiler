@@ -17,7 +17,7 @@ public abstract class MutatorBase
 
 public abstract class SingleEventMutatorBase : MutatorBase, ISingleEventMutator
 {
-  public abstract string EventClass { get; }
+  public abstract string EventType { get; }
   public abstract IEnumerable<EventLogMutation> Mutations { get; }
 
 
@@ -28,7 +28,7 @@ public abstract class SingleEventMutatorBase : MutatorBase, ISingleEventMutator
 
   public void Process(EventRecordWithMetadata eventRecord, SessionGlobalData context)
   {
-    if (eventRecord.EventClass == EventClass)
+    if (eventRecord.EventClass == EventType)
     {
       ProcessInternal(eventRecord, context);
     }
