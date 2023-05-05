@@ -3,18 +3,18 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Processes;
 
-public interface IProcessLauncher
+public interface IDotnetProcessLauncher
 {
   Process? TryStartDotnetProcess(string pathToExecutable, string arguments);
 }
 
 [AppComponent]
-public class ProcessLauncher : IProcessLauncher
+public class DotnetDotnetProcessLauncher : IDotnetProcessLauncher
 {
   private readonly IProcfilerLogger myLogger;
 
   
-  public ProcessLauncher(IProcfilerLogger logger)
+  public DotnetDotnetProcessLauncher(IProcfilerLogger logger)
   {
     myLogger = logger;
   }
@@ -32,7 +32,7 @@ public class ProcessLauncher : IProcessLauncher
       Arguments = $"{pathToExecutable} {arguments}",
       Environment =
       {
-        ["DOTNET_DefaultDiagnosticPortSuspend"] = "1",
+        ["DOTNET_DefaultDiagnosticPortSuspend"] = "1"
       }
     };
 

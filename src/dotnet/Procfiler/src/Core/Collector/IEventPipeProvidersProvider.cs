@@ -24,6 +24,7 @@ public class EventPipeProvidersProviderImpl : IEventPipeProvidersProvider
   private const string NetSockets = "System.Net.Sockets";
   private const string Runtime = "System.Runtime";
   private const string ArrayPoolSource = "System.Buffers.ArrayPoolEventSource";
+  private const string ProcfilerCppProvider = "ProcfilerCppEventPipeProvider";
 
 
   private static readonly IReadOnlyDictionary<ProvidersCategoryKind, EventPipeProvider[]> ourProvidersForCategories =
@@ -40,7 +41,8 @@ public class EventPipeProvidersProviderImpl : IEventPipeProvidersProvider
         new(NetSockets, EventLevel.Verbose),
         new(Runtime, EventLevel.Verbose),
         new(ArrayPoolSource, EventLevel.Verbose),
-        new(nameof(MethodStartEndEventSource), EventLevel.LogAlways)
+        new(nameof(MethodStartEndEventSource), EventLevel.LogAlways),
+        new(ProcfilerCppProvider, EventLevel.LogAlways)
       },
       [ProvidersCategoryKind.Gc] = new EventPipeProvider[]
       {

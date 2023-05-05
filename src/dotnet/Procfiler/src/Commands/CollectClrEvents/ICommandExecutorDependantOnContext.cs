@@ -18,16 +18,16 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   private readonly IProcfilerLogger myLogger;
   private readonly IClrEventsCollector myClrEventsCollector;
   private readonly IDotnetProjectBuilder myProjectBuilder;
-  private readonly IProcessLauncher myProcessLauncher;
+  private readonly IDotnetProcessLauncher myDotnetProcessLauncher;
 
 
   public CommandExecutorImpl(
-    IProcessLauncher processLauncher, 
+    IDotnetProcessLauncher dotnetProcessLauncher, 
     IClrEventsCollector clrEventsCollector,
     IDotnetProjectBuilder projectBuilder,
     IProcfilerLogger logger)
   {
-    myProcessLauncher = processLauncher;
+    myDotnetProcessLauncher = dotnetProcessLauncher;
     myClrEventsCollector = clrEventsCollector;
     myProjectBuilder = projectBuilder;
     myLogger = logger;
@@ -103,7 +103,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     
     try
     {
-      if (myProcessLauncher.TryStartDotnetProcess(buildResult.BuiltDllPath, arguments) is not { } process)
+      if (myDotnetProcessLauncher.TryStartDotnetProcess(buildResult.BuiltDllPath, arguments) is not { } process)
       {
         myLogger.LogError("Failed to start or to find process");
         return;
