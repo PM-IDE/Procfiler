@@ -69,7 +69,7 @@ public class KnownSolution
   {
     var csprojPath = Path.Combine(solutionsDir, Name, Name + ".csproj");
     var projectBuildInfo = new ProjectBuildInfo(
-      csprojPath, Tfm, BuildConfiguration.Debug, InstrumentationKind.None, true, null);
+      csprojPath, Tfm, BuildConfiguration.Debug, InstrumentationKind.None, true, null, false);
     
     return new CollectClrEventsFromExeContext(projectBuildInfo, CreateCommonContext());
   }

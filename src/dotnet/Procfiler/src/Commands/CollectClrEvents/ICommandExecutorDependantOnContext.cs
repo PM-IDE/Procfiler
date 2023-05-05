@@ -90,7 +90,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     CollectClrEventsFromExeContext context,
     Func<CollectedEvents, ValueTask> func)
   {
-    var (pathToCsproj, tfm, _, _, clearTemp, _) = context.ProjectBuildInfo;
+    var (pathToCsproj, tfm, _, _, clearTemp, _, _) = context.ProjectBuildInfo;
     var buildResultNullable = myProjectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
     if (!buildResultNullable.HasValue)
     {

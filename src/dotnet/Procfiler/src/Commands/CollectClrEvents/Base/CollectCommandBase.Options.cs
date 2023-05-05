@@ -20,12 +20,16 @@ public partial class CollectCommandBase
     command.AddOption(ConfigurationOption);
     command.AddOption(ProvidersCategory);
     command.AddOption(InstrumentCodeOption);
+    command.AddOption(SelfContainedOption);
     command.AddOption(TempPathOption);
     command.AddOption(RemoveTempFolder);
     command.AddOption(ArgumentsOption);
     command.AddOption(ArgumentsFileOption);
     command.AddOption(PrintProcessOutputOption);
   }
+
+  private Option<bool> SelfContainedOption { get; } =
+    new("--self-contained", static () => false, "Whether to build application in a self-contained mode");
 
   private Option<bool> PrintProcessOutputOption { get; } = 
     new("--print-process-output", static () => true, "Whether to print the output of a profiled application");
