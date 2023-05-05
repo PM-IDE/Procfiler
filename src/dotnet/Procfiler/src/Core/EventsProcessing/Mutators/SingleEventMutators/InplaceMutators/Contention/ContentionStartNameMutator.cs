@@ -31,7 +31,7 @@ public abstract class ContentionStartStopNameMutatorBase : MetadataValueToNameAp
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class ContentionStartNameMutator : ContentionStartStopNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.ContentionStart;
+  public override string EventType => TraceEventsConstants.ContentionStart;
 
 
   public ContentionStartNameMutator(IProcfilerLogger logger) : base(logger)
@@ -42,7 +42,7 @@ public class ContentionStartNameMutator : ContentionStartStopNameMutatorBase
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class ContentionEndNameMutator : ContentionStartStopNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.ContentionStop;
+  public override string EventType => TraceEventsConstants.ContentionStop;
 
 
   public ContentionEndNameMutator(IProcfilerLogger logger) : base(logger)

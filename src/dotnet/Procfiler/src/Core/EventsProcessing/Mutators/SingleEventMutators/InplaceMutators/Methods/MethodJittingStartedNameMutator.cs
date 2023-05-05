@@ -9,7 +9,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodJittingStartedNameMutator : MetadataValueToNameAppenderBase
 {
-  public override string EventClass => TraceEventsConstants.MethodJittingStarted;
+  public override string EventType => TraceEventsConstants.MethodJittingStarted;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
 

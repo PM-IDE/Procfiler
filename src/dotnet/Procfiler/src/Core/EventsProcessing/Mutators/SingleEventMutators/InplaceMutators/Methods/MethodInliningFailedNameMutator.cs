@@ -26,7 +26,7 @@ public abstract class MethodInliningNameMutatorBase : MetadataValueToNameAppende
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodInliningFailedNameMutator : MethodInliningNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.MethodInliningFailed;
+  public override string EventType => TraceEventsConstants.MethodInliningFailed;
 
 
   public MethodInliningFailedNameMutator(IProcfilerLogger logger) : base(logger)
@@ -37,7 +37,7 @@ public class MethodInliningFailedNameMutator : MethodInliningNameMutatorBase
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodInliningSucceededNameMutator : MethodInliningNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.MethodInliningSucceeded;
+  public override string EventType => TraceEventsConstants.MethodInliningSucceeded;
 
 
   public MethodInliningSucceededNameMutator(IProcfilerLogger logger) : base(logger)

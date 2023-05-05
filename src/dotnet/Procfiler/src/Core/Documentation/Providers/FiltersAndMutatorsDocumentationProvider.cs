@@ -68,7 +68,7 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
   private IEnumerable<string> GetEventsNames(IEnumerable<EventLogMutation> allMutations)
   {
     return allMutations
-      .Select(m => m.EventClass)
+      .Select(m => m.EventType)
       .Concat(myFilters.SelectMany(filter => filter.AllowedEventsNames))
       .ToHashSet();
   }
@@ -80,7 +80,7 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
     foreach (var eventLogMutation in allMutations)
     {
       eventsMutations
-        .GetOrCreate(eventLogMutation.EventClass, static () => new List<EventLogMutation>())
+        .GetOrCreate(eventLogMutation.EventType, static () => new List<EventLogMutation>())
         .Add(eventLogMutation);
     }
     
@@ -142,12 +142,47 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
   
   private static string CreateNewNameCell(ICollection<EventLogMutation> list)
   {
-    var attributesToName = list.OfType<AttributeToNameAppendMutation>().Select(m => m.AttributeName).ToList();
+    var attributesToName = list.OfType<AttributeToNameAppendMutation>().OrderBy(m => m.EventClassKind).ToList();
 
     if (attributesToName.Count <= 0) return string.Empty;
     
     const string BaseName = "BaseName";
-    return $"{BaseName}_{string.Join('_', attributesToName)}";
+    var sb = new StringBuilder($"{BaseName}");
+
+    var index = 0;
+    if (attributesToName[index].EventClassKind == EventClassKind.NotEventClass)
+    {
+      sb.Append('{');
+    }
+    
+    while (index < attributesToName.Count && attributesToName[index].EventClassKind == EventClassKind.NotEventClass)
+    {
+      sb.Append(attributesToName[index++].AttributeName);
+    }
+
+    var lastKind = EventClassKind.NotEventClass;
+    for (var i = index; i < attributesToName.Count; ++i)
+    {
+      if (attributesToName[i].EventClassKind != lastKind)
+      {
+        lastKind = attributesToName[i].EventClassKind;
+        sb.Append("_{");
+      }
+
+      sb.Append(attributesToName[i].AttributeName);
+
+      if (i + 1 < attributesToName.Count && attributesToName[i + 1].EventClassKind != lastKind)
+      {
+        sb.Append('}');
+      }
+    }
+
+    if (sb[^1] != '}')
+    {
+      sb.Append('}');
+    }
+
+    return sb.ToString();
   }
   
   private static string CreateAttributesToRemoveCell(ICollection<EventLogMutation> mutations)

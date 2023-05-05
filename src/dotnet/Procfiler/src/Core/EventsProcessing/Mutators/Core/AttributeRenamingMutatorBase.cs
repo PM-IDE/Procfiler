@@ -11,7 +11,7 @@ public abstract class AttributeRenamingMutatorBase : SingleEventMutatorBase
 
 
   public override IEnumerable<EventLogMutation> Mutations =>
-    new[] { new AttributeRenameMutation(EventClass, myInitialName, myFinalName) };
+    new[] { new AttributeRenameMutation(EventType, myInitialName, myFinalName) };
 
   
   protected AttributeRenamingMutatorBase(IProcfilerLogger logger, string initialName, string finalName) : base(logger)

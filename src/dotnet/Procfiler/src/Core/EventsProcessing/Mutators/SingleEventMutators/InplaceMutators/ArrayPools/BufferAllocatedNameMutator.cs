@@ -9,7 +9,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class BufferAllocatedNameMutator : MetadataValueToNameAppenderBase
 {
-  public override string EventClass => TraceEventsConstants.BufferAllocated;
+  public override string EventType => TraceEventsConstants.BufferAllocated;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
   
