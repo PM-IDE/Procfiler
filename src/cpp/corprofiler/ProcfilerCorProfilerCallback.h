@@ -6,18 +6,18 @@
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {
 private:
     ProcfilerLogger* myLogger;
-    ICorProfilerInfo13* myProfilerInfo;
+    ICorProfilerInfo12* myProfilerInfo;
     std::atomic<int> myRefCount;
     ShadowStack* myShadowStack;
 
-    ThreadID GetCurrentManagedThreadId();
+    DWORD GetCurrentManagedThreadId();
     int64_t GetCurrentTimestamp();
 
 public:
     explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
     ~ProcfilerCorProfilerCallback();
 
-    ICorProfilerInfo11* GetProfilerInfo();
+    ICorProfilerInfo12* GetProfilerInfo();
 
     void HandleFunctionEnter2(FunctionID funcId,
                               UINT_PTR clientData,

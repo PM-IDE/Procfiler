@@ -1,6 +1,7 @@
 using System.CommandLine.Binding;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Exceptions;
+using Procfiler.Utils;
 
 namespace Procfiler.Commands.CollectClrEvents.Base;
 
@@ -51,11 +52,14 @@ public abstract partial class CollectCommandBase
     var clearBefore = parseResult.GetValueForOption(ClearPathBefore);
     var category = parseResult.GetValueForOption(ProvidersCategory);
     var arguments = parseResult.GetValueForOption(ArgumentsOption) ?? string.Empty;
+    var printOutput = parseResult.GetValueForOption(PrintProcessOutputOption);
+    
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
-      outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout);
+      outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout, 
+      printOutput);
   }
   
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
@@ -83,7 +87,8 @@ public abstract partial class CollectCommandBase
       var projectBuildInfo = CreateProjectBuildInfo(parseResult, pathToCsproj);
       if (parseResult.HasOption(RepeatOption) && 
           parseResult.GetValueForOption(RepeatOption) > 1 && 
-          parseResult.HasOption(ArgumentsFileOption))
+          parseResult.HasOption(ArgumentsFileOption) &&
+          !Equals(parseResult.GetValueForOption(ArgumentsFileOption), ArgumentsFileOption.GetDefaultValue()))
       {
         Logger.LogError("Executing with arguments file and repeat count is not yet supported");
         throw new ArgumentOutOfRangeException();
@@ -92,7 +97,7 @@ public abstract partial class CollectCommandBase
       if (parseResult.HasOption(ArgumentsFileOption))
       {
         var filePath = parseResult.GetValueForOption(ArgumentsFileOption);
-        if (!Equals(filePath, ((IValueDescriptor)ArgumentsFileOption).GetDefaultValue()))
+        if (!Equals(filePath, ArgumentsFileOption.GetDefaultValue()))
         {
           if (!File.Exists(filePath))
           {

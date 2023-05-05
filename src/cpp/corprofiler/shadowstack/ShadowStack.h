@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "../../util/util.h"
+#include "../info/FunctionInfo.h"
 
 enum FunctionEventKind {
     Started,
@@ -19,14 +21,15 @@ struct FunctionEvent {
     FunctionEvent(FunctionID id, FunctionEventKind eventKind, int64_t timestamp) :
         Id(id),
         EventKind(eventKind),
-        Timestamp(timestamp) {}
+        Timestamp(timestamp) {
+    }
 };
 
 struct EventsWithThreadId {
     std::vector<FunctionEvent>* Events;
-    ThreadID ThreadId;
+    DWORD ThreadId;
 
-    explicit EventsWithThreadId(ThreadID threadId) {
+    explicit EventsWithThreadId(DWORD threadId) {
         Events = new std::vector<FunctionEvent>();
         ThreadId = threadId;
     }
@@ -42,39 +45,45 @@ private:
     const UINT32 ourMethodEndEventId = 8001;
     const UINT32 ourMethodInfoEventId = 8002;
 
-    const wstring ourMethodStartEventName = W("ProcfilerMethodStart");
-    const wstring ourMethodEndEventName = W("ProcfilerMethodEnd");
-    const wstring ourMethodInfoEventName = W("ProcfilerMethodInfo");
-    const wstring ourEventPipeProviderName = W("ProcfilerCppEventPipeProvider");
+    const wstring ourMethodStartEventName = ToWString("ProcfilerMethodStart");
+    const wstring ourMethodEndEventName = ToWString("ProcfilerMethodEnd");
+    const wstring ourMethodInfoEventName = ToWString("ProcfilerMethodInfo");
+    const wstring ourEventPipeProviderName = ToWString("ProcfilerCppEventPipeProvider");
 
-    static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(ThreadID threadId);
+    std::map<FunctionID, FunctionInfo> myResolvedFunctions;
+
+    static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(DWORD threadId);
 
     std::string myDebugCallStacksSavePath;
-    ICorProfilerInfo13* myProfilerInfo;
+    ICorProfilerInfo12* myProfilerInfo;
     ProcfilerLogger* myLogger;
 
-    EVENTPIPE_PROVIDER myEventPipeProvider;
-    EVENTPIPE_EVENT myMethodStartEvent;
-    EVENTPIPE_EVENT myMethodEndEvent;
-    EVENTPIPE_EVENT myMethodInfoEvent;
+    EVENTPIPE_PROVIDER myEventPipeProvider{};
+    EVENTPIPE_EVENT myMethodStartEvent{};
+    EVENTPIPE_EVENT myMethodEndEvent{};
+    EVENTPIPE_EVENT myMethodInfoEvent{};
 
+    HRESULT InitializeProvidersAndEvents();
     HRESULT DefineProcfilerEventPipeProvider();
     HRESULT DefineProcfilerMethodInfoEvent();
 
     HRESULT DefineProcfilerMethodStartEvent();
     HRESULT DefineProcfilerMethodEndEvent();
 
+    HRESULT LogFunctionEvent(const FunctionEvent& event, const DWORD& threadId);
+    HRESULT LogMethodInfo(const FunctionID& functionId, const FunctionInfo& functionInfo);
+
     static HRESULT DefineMethodStartOrEndEventInternal(const wstring& eventName,
                                                        EVENTPIPE_PROVIDER provider,
                                                        EVENTPIPE_EVENT* ourEventId,
-                                                       ICorProfilerInfo13* profilerInfo,
+                                                       ICorProfilerInfo12* profilerInfo,
                                                        UINT32 eventId);
 public:
-    explicit ShadowStack(ICorProfilerInfo13* profilerInfo, ProcfilerLogger* logger);
+    explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
 
     ~ShadowStack();
-    void AddFunctionEnter(FunctionID id, ThreadID threadId, int64_t timestamp);
-    void AddFunctionFinished(FunctionID id, ThreadID threadId, int64_t timestamp);
+    void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);
+    void AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp);
     void DebugWriteToFile();
-    void WriteMethodsEventsToEventPipe();
+    void WriteEventsToEventPipe();
 };

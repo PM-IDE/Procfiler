@@ -15,7 +15,7 @@ public class GcFinalizeObjectMutator : MetadataValuesRemover
     TraceEventsConstants.CommonObjectId
   };
 
-  public override string EventClass => TraceEventsConstants.GcFinalizeObject;
+  public override string EventType => TraceEventsConstants.GcFinalizeObject;
   
 
   public GcFinalizeObjectMutator(IProcfilerLogger logger) : base(logger)
@@ -26,7 +26,7 @@ public class GcFinalizeObjectMutator : MetadataValuesRemover
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class GcFinalizeObjectNameMutator : MetadataValueToNameAppenderBase
 {
-  public override string EventClass => TraceEventsConstants.GcFinalizeObject;
+  public override string EventType => TraceEventsConstants.GcFinalizeObject;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
   
   

@@ -16,7 +16,6 @@ public abstract class AssemblyLoaderStartStopNameMutatorBase : MetadataValueToNa
     Transformations = new[]
     {
       MetadataKeysWithTransform.CreateForAssemblyName(TraceEventsConstants.AssemblyName, EventClassKind.Zero),
-      MetadataKeysWithTransform.CreateForModuleILPath(TraceEventsConstants.AssemblyPath, EventClassKind.Zero),
     };
   }
 }
@@ -24,7 +23,7 @@ public abstract class AssemblyLoaderStartStopNameMutatorBase : MetadataValueToNa
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class AssemblyLoaderStartNameMutator : AssemblyLoaderStartStopNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.AssemblyLoaderStart;
+  public override string EventType => TraceEventsConstants.AssemblyLoaderStart;
 
 
   public AssemblyLoaderStartNameMutator(IProcfilerLogger logger) : base(logger)
@@ -35,7 +34,7 @@ public class AssemblyLoaderStartNameMutator : AssemblyLoaderStartStopNameMutator
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class AssemblyLoaderStopNameMutator : AssemblyLoaderStartStopNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.AssemblyLoaderStop;
+  public override string EventType => TraceEventsConstants.AssemblyLoaderStop;
 
 
   public AssemblyLoaderStopNameMutator(IProcfilerLogger logger) : base(logger)
@@ -48,7 +47,7 @@ public class AssemblyLoaderKnownPathProbedNameMutator : MetadataValueToNameAppen
 {
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
-  public override string EventClass => TraceEventsConstants.AssemblyLoaderKnownPathProbed;
+  public override string EventType => TraceEventsConstants.AssemblyLoaderKnownPathProbed;
 
 
   public AssemblyLoaderKnownPathProbedNameMutator(IProcfilerLogger logger) : base(logger)
@@ -66,7 +65,7 @@ public class AssemblyLoaderResolutionAttemptedNameMutator : MetadataValueToNameA
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
   
   
-  public override string EventClass => TraceEventsConstants.AssemblyLoaderResolutionAttempted;
+  public override string EventType => TraceEventsConstants.AssemblyLoaderResolutionAttempted;
 
 
   public AssemblyLoaderResolutionAttemptedNameMutator(IProcfilerLogger logger) : base(logger)
@@ -86,7 +85,7 @@ public class AssemblyLoaderAppDomainAssemblyResolveHandlerInvokeNameMutator : Me
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
   
-  public override string EventClass => TraceEventsConstants.AssemblyLoaderAppDomainAssemblyResolveHandlerInvoked;
+  public override string EventType => TraceEventsConstants.AssemblyLoaderAppDomainAssemblyResolveHandlerInvoked;
 
 
   public AssemblyLoaderAppDomainAssemblyResolveHandlerInvokeNameMutator(IProcfilerLogger logger) : base(logger)
@@ -105,7 +104,7 @@ public class AssemblyLoaderLoadContextResolvingHandlerInvokedNameMutator : Metad
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
   
-  public override string EventClass => TraceEventsConstants.AssemblyLoaderAssemblyLoadFromResolveHandlerInvoked;
+  public override string EventType => TraceEventsConstants.AssemblyLoaderAssemblyLoadFromResolveHandlerInvoked;
   
   
   public AssemblyLoaderLoadContextResolvingHandlerInvokedNameMutator(IProcfilerLogger logger, bool removeProperties = false) : base(logger, removeProperties)

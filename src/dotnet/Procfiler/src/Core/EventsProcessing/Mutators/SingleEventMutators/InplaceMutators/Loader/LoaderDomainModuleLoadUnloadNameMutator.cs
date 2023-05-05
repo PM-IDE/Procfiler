@@ -23,7 +23,7 @@ public abstract class LoaderDomainModuleLoadUnloadNameMutatorBase : MetadataValu
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class LoaderDomainModuleLoadNameMutator : LoaderDomainModuleLoadUnloadNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.LoaderDomainModuleLoad;
+  public override string EventType => TraceEventsConstants.LoaderDomainModuleLoad;
 
 
   public LoaderDomainModuleLoadNameMutator(IProcfilerLogger logger) : base(logger)
@@ -34,7 +34,7 @@ public class LoaderDomainModuleLoadNameMutator : LoaderDomainModuleLoadUnloadNam
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class LoaderDomainModuleUnloadNameMutator : LoaderDomainModuleLoadUnloadNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.LoaderDomainModuleUnload;
+  public override string EventType => TraceEventsConstants.LoaderDomainModuleUnload;
 
 
   public LoaderDomainModuleUnloadNameMutator(IProcfilerLogger logger) : base(logger)

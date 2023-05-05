@@ -36,7 +36,7 @@ WCHAR operator "" _W(const char c) { return WCHAR(c); }
 
 wstring operator "" _W(const char* arr, size_t size) {
     std::string str(arr, size);
-    return ToWSTRING(str);
+    return ToWString(str);
 }
 
 std::string ToString(const wstring& wstr) {
@@ -44,11 +44,11 @@ std::string ToString(const wstring& wstr) {
     return miniutf::to_utf8(ustr);
 }
 
-wstring ToWSTRING(const char* str) {
-    return ToWSTRING(std::string(str));
+wstring ToWString(const char* str) {
+    return ToWString(std::string(str));
 }
 
-wstring ToWSTRING(const std::string& str) {
+wstring ToWString(const std::string& str) {
     auto ustr = miniutf::to_utf16(str);
     return wstring(reinterpret_cast<const WCHAR*>(ustr.c_str()));
 }

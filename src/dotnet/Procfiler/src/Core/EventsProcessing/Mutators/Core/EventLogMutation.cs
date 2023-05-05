@@ -1,18 +1,19 @@
 ﻿namespace Procfiler.Core.EventsProcessing.Mutators.Core;
 
-public record EventLogMutation(string EventClass);
+public record EventLogMutation(string EventType);
 
-public record AttributeRemovalMutation(string EventClass, string AttributeName) : EventLogMutation(EventClass);
+public record AttributeRemovalMutation(string EventType, string AttributeName) : EventLogMutation(EventType);
 
-public record AttributeRenameMutation(string EventClass, string OldName, string NewName) : EventLogMutation(EventClass);
+public record AttributeRenameMutation(string EventType, string OldName, string NewName) : EventLogMutation(EventType);
 
 public record AttributeToNameAppendMutation(
-  string EventClass, 
-  string AttributeName, 
+  string EventType,
+  EventClassKind EventClassKind,
+  string AttributeName,
   bool RemoveFromMetadata
-) : EventLogMutation(EventClass);
+) : EventLogMutation(EventType);
 
-public record NewAttributeCreationMutation(string EventClass, string AttributeName) : EventLogMutation(EventClass);
-public record AddEventMutation(string EventClass) : EventLogMutation(EventClass);
-public record AddLifecycleTransitionAttributeMutation(string EventClass, string LifecycleTransition) : EventLogMutation(EventClass);
-public record ActivityIdCreation(string EventClass, string ActivityIdTemplate) : EventLogMutation(EventClass);
+public record NewAttributeCreationMutation(string EventType, string AttributeName) : EventLogMutation(EventType);
+public record AddEventMutation(string EventType) : EventLogMutation(EventType);
+public record AddLifecycleTransitionAttributeMutation(string EventType, string LifecycleTransition) : EventLogMutation(EventType);
+public record ActivityIdCreation(string EventType, string ActivityIdTemplate) : EventLogMutation(EventType);

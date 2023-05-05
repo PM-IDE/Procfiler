@@ -24,7 +24,7 @@ public abstract class MethodLoadUnloadNameMutatorBase : MetadataValueToNameAppen
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodLoadVerboseNameMutator : MethodLoadUnloadNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.MethodLoadVerbose;
+  public override string EventType => TraceEventsConstants.MethodLoadVerbose;
 
 
   public MethodLoadVerboseNameMutator(IProcfilerLogger logger) : base(logger)
@@ -35,7 +35,7 @@ public class MethodLoadVerboseNameMutator : MethodLoadUnloadNameMutatorBase
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class MethodUnloadVerboseNameMutator : MethodLoadUnloadNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.MethodUnloadVerbose;
+  public override string EventType => TraceEventsConstants.MethodUnloadVerbose;
 
   
   public MethodUnloadVerboseNameMutator(IProcfilerLogger logger) : base(logger)

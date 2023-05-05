@@ -3,36 +3,42 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Processes;
 
+public readonly struct DotnetProcessLauncherDto
+{
+  public required string PathToDotnetExecutable { get; init; }
+  public required string Arguments { get; init; }
+  public required bool RedirectOutput { get; init; }
+}
+
 public interface IDotnetProcessLauncher
 {
-  Process? TryStartDotnetProcess(string pathToExecutable, string arguments);
+  Process? TryStartDotnetProcess(DotnetProcessLauncherDto launcherDto);
 }
 
 [AppComponent]
-public class DotnetDotnetProcessLauncher : IDotnetProcessLauncher
+public class DotnetProcessLauncher : IDotnetProcessLauncher
 {
   private readonly IProcfilerLogger myLogger;
 
   
-  public DotnetDotnetProcessLauncher(IProcfilerLogger logger)
+  public DotnetProcessLauncher(IProcfilerLogger logger)
   {
     myLogger = logger;
   }
   
 
-  public Process? TryStartDotnetProcess(string pathToExecutable, string arguments)
+  public Process? TryStartDotnetProcess(DotnetProcessLauncherDto launcherDto)
   {
     var startInfo = new ProcessStartInfo
     {
       FileName = "dotnet",
-      WorkingDirectory = Path.GetDirectoryName(pathToExecutable),
-      RedirectStandardOutput = true,
-      RedirectStandardError = true,
+      WorkingDirectory = Path.GetDirectoryName(launcherDto.PathToDotnetExecutable),
+      RedirectStandardOutput = launcherDto.RedirectOutput,
       CreateNoWindow = true,
-      Arguments = $"{pathToExecutable} {arguments}",
+      Arguments = $"{launcherDto.PathToDotnetExecutable} {launcherDto.Arguments}",
       Environment =
       {
-        ["DOTNET_DefaultDiagnosticPortSuspend"] = "1"
+        ["DOTNET_DefaultDiagnosticPortSuspend"] = "1",
       }
     };
 
@@ -43,7 +49,7 @@ public class DotnetDotnetProcessLauncher : IDotnetProcessLauncher
 
     if (!process.Start())
     {
-      myLogger.LogError("Failed to start process {Path}", pathToExecutable);
+      myLogger.LogError("Failed to start process {Path}", launcherDto.PathToDotnetExecutable);
       return null;
     }
 

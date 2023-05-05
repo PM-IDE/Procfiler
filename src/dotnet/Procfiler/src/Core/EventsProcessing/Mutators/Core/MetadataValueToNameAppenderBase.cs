@@ -12,7 +12,7 @@ public abstract class MetadataValueToNameAppenderBase : SingleEventMutatorBase, 
 
   
   public override IEnumerable<EventLogMutation> Mutations =>
-    Transformations.Select(t => new AttributeToNameAppendMutation(EventClass, t.MetadataKey, myRemoveProperties));
+    Transformations.Select(t => new AttributeToNameAppendMutation(EventType, t.EventClassKind, t.MetadataKey, myRemoveProperties));
   
 
   protected MetadataValueToNameAppenderBase(IProcfilerLogger logger, bool removeProperties = false) : base(logger)

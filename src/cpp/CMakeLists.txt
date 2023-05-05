@@ -35,12 +35,13 @@ include_directories(./3rdparty/coreclr/inc)
 
 if(NOT WIN32)
     include_directories(./3rdparty/coreclr/pal/inc/rt
-                        ./3rdparty/coreclr/pal/inc)
+                        ./3rdparty/coreclr/pal/inc
+                        ./3rdparty/coreclr/pal/src/include/)
 
     add_compile_options(-DPAL_STDCPP_COMPAT)
 
     IF (APPLE)
-        add_compile_options(-std=c++11 -fPIC -fms-extensions -stdlib=libc++)
+        add_compile_options(-std=c++11 -fPIC -fms-extensions -stdlib=libc++ -DHAVE_CLOCK_MONOTONIC)
         add_compile_options(-DHOST_64BIT -DPAL_STDCPP_COMPAT -DPLATFORM_UNIX -DUNICODE -DHOST_ARM64)
         add_compile_options(-Wno-invalid-noreturn -Wno-macro-redefined -Wno-pragma-pack)
     ENDIF()

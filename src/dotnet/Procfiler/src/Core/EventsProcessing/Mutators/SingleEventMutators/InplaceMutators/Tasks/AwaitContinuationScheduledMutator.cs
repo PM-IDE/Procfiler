@@ -9,7 +9,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class AwaitContinuationScheduledMutator : AttributeRenamingMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.AwaitTaskContinuationScheduledSend;
+  public override string EventType => TraceEventsConstants.AwaitTaskContinuationScheduledSend;
 
   
   public AwaitContinuationScheduledMutator(IProcfilerLogger logger) 

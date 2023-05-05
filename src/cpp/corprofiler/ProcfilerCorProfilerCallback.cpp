@@ -1,5 +1,4 @@
 #include "ProcfilerCorProfilerCallback.h"
-#include "info/FunctionInfo.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -60,14 +59,15 @@ void ProcfilerCorProfilerCallback::HandleFunctionTailCall(FunctionID funcId,
     myShadowStack->AddFunctionFinished(funcId, GetCurrentManagedThreadId(), timestamp);
 }
 
-ICorProfilerInfo11* ProcfilerCorProfilerCallback::GetProfilerInfo() {
+ICorProfilerInfo12* ProcfilerCorProfilerCallback::GetProfilerInfo() {
     return myProfilerInfo;
 }
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
     myLogger->Log("Started initializing CorProfiler callback");
     void** ptr = reinterpret_cast<void**>(&this->myProfilerInfo);
-    HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo13, ptr);
+
+    HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo12, ptr);
     if (FAILED(result)) {
         myLogger->Log("Failed to query interface: " + std::to_string(result));
         return E_FAIL;
@@ -95,11 +95,11 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     return S_OK;
 }
 
-
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
     myShadowStack->DebugWriteToFile();
+    myShadowStack->WriteEventsToEventPipe();
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
@@ -556,10 +556,14 @@ ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
     myShadowStack = nullptr;
 }
 
-ThreadID ProcfilerCorProfilerCallback::GetCurrentManagedThreadId() {
+DWORD ProcfilerCorProfilerCallback::GetCurrentManagedThreadId() {
     ThreadID threadId;
     myProfilerInfo->GetCurrentThreadID(&threadId);
-    return threadId;
+
+    DWORD id;
+    myProfilerInfo->GetThreadInfo(threadId, &id);
+
+    return id;
 }
 
 

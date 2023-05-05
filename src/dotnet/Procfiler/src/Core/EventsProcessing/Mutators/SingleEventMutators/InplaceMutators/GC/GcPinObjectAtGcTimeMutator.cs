@@ -9,7 +9,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class GcPinObjectAtGcTimeMutator : MetadataValuesRemover
 {
-  public override string EventClass => TraceEventsConstants.GcPinObjectAtGcTime;
+  public override string EventType => TraceEventsConstants.GcPinObjectAtGcTime;
   protected override string[] MetadataKeys { get; } =
   {
     TraceEventsConstants.CommonObjectId,
@@ -25,7 +25,7 @@ public class GcPinObjectAtGcTimeMutator : MetadataValuesRemover
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class GcPinObjectAtGcTimeNameMutator : MetadataValueToNameAppenderBase
 {
-  public override string EventClass => TraceEventsConstants.GcPinObjectAtGcTime;
+  public override string EventType => TraceEventsConstants.GcPinObjectAtGcTime;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
   
   

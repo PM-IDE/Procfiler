@@ -23,7 +23,7 @@ public abstract class LoaderAssemblyLoadUnloadNameMutatorBase : MetadataValueToN
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class LoaderAssemblyLoadNameMutator : LoaderAssemblyLoadUnloadNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.LoaderAssemblyLoad;
+  public override string EventType => TraceEventsConstants.LoaderAssemblyLoad;
 
 
   public LoaderAssemblyLoadNameMutator(IProcfilerLogger logger) : base(logger)
@@ -34,7 +34,7 @@ public class LoaderAssemblyLoadNameMutator : LoaderAssemblyLoadUnloadNameMutator
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class LoaderAssemblyUnloadNameMutator : LoaderAssemblyLoadUnloadNameMutatorBase
 {
-  public override string EventClass => TraceEventsConstants.LoaderAssemblyUnload;
+  public override string EventType => TraceEventsConstants.LoaderAssemblyUnload;
 
 
   public LoaderAssemblyUnloadNameMutator(IProcfilerLogger logger) : base(logger)

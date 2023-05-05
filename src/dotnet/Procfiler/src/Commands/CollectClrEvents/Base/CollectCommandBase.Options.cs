@@ -24,7 +24,11 @@ public partial class CollectCommandBase
     command.AddOption(RemoveTempFolder);
     command.AddOption(ArgumentsOption);
     command.AddOption(ArgumentsFileOption);
+    command.AddOption(PrintProcessOutputOption);
   }
+
+  private Option<bool> PrintProcessOutputOption { get; } = 
+    new("--print-process-output", static () => true, "Whether to print the output of a profiled application");
 
   private Option<string> ArgumentsFileOption { get; } =
     new("--arguments-file", static () => string.Empty, "File containing list of arguments which will be passed to program");
