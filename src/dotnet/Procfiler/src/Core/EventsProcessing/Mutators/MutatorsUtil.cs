@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Primitives;
 using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
