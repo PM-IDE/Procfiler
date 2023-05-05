@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Primitives;
 using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
@@ -28,34 +29,57 @@ public static class MutatorsUtil
     var sb = new StringBuilder();
     sb.Append(eventRecord.EventName);
 
-    var firstEventClass = orderedTransforms.First().EventClassKind;
-    var currentSeparator = firstEventClass switch
+    void TryAppendMetadata(EventRecordWithMetadata eventRecord, string metadataKey, Func<string, string> transformation)
     {
-      EventClassKind.NotEventClass => string.Empty,
-      _ => $"{TraceEventsConstants.Underscore}"
-    };
-
-    foreach (var (metadataKey, transformation, eventClass) in orderedTransforms)
-    {
-      if (eventClass != firstEventClass)
-      {
-        currentSeparator += TraceEventsConstants.Underscore;
-      }
-      
       var metadata = eventRecord.Metadata;
       if (!metadata.TryGetValue(metadataKey, out var value))
       {
         logger.LogAbsenceOfMetadata(eventRecord.EventClass, metadataKey);
-        continue;
+        return;
       }
 
       if (removeFromProperties)
       {
         metadata.Remove(metadataKey);
       }
+      
+      sb.Append(transformation(value));
+    }
+    
+    var index = 0;
+    while (index < orderedTransforms.Count && orderedTransforms[index].EventClassKind == EventClassKind.NotEventClass)
+    {
+      TryAppendMetadata(eventRecord, orderedTransforms[index].MetadataKey, orderedTransforms[index].Transformation);
+      ++index;
+    }
 
-      var namePart = transformation(value);
-      sb.Append(currentSeparator).Append(namePart);
+    var lastSeenEventClass = EventClassKind.NotEventClass;
+
+    const char EventClassOpenChar = '{';
+    const char EventClassCloseChar = '}';
+    
+    while (index < orderedTransforms.Count)
+    {
+      var (metadataKey, transformation, eventClass) = orderedTransforms[index];
+      if (eventClass != lastSeenEventClass)
+      {
+        lastSeenEventClass = eventClass;
+        if (eventClass != EventClassKind.Zero)
+        {
+          sb.Append(EventClassCloseChar);
+        }
+
+        sb.Append(TraceEventsConstants.Underscore)
+          .Append(EventClassOpenChar);
+      }
+      
+      TryAppendMetadata(eventRecord, metadataKey, transformation);
+      ++index;
+    }
+
+    if (sb[^1] != EventClassCloseChar)
+    {
+      sb.Append(EventClassCloseChar);
     }
 
     eventRecord.EventName = string.Intern(sb.ToString());
