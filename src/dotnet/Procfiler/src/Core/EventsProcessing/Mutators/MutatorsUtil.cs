@@ -29,7 +29,7 @@ public static class MutatorsUtil
     var sb = new StringBuilder();
     sb.Append(eventRecord.EventName);
 
-    void TryAppendMetadata(EventRecordWithMetadata eventRecord, string metadataKey, Func<string, string> transformation)
+    void TryAppendMetadata(string metadataKey, Func<string, string> transformation)
     {
       var metadata = eventRecord.Metadata;
       if (!metadata.TryGetValue(metadataKey, out var value))
@@ -47,9 +47,10 @@ public static class MutatorsUtil
     }
     
     var index = 0;
-    while (index < orderedTransforms.Count && orderedTransforms[index].EventClassKind == EventClassKind.NotEventClass)
+    while (index < orderedTransforms.Count && 
+           orderedTransforms[index] is { EventClassKind: EventClassKind.NotEventClass} transform)
     {
-      TryAppendMetadata(eventRecord, orderedTransforms[index].MetadataKey, orderedTransforms[index].Transformation);
+      TryAppendMetadata(transform.MetadataKey, transform.Transformation);
       ++index;
     }
 
@@ -73,7 +74,7 @@ public static class MutatorsUtil
           .Append(EventClassOpenChar);
       }
       
-      TryAppendMetadata(eventRecord, metadataKey, transformation);
+      TryAppendMetadata(metadataKey, transformation);
       ++index;
     }
 
@@ -97,7 +98,7 @@ public static class MutatorsUtil
     {
       if (sb[i] == ' ')
       {
-        sb[i] = TraceEventsConstants.Underscore;
+        sb[i] = TraceEventsConstants.Dot;
       }
 
       sb[i] = char.ToUpper(sb[i]);
@@ -113,13 +114,6 @@ public static class MutatorsUtil
 
   private static string TransformTypeLikeNameForEventNameConcatenation(StringBuilder sb)
   {
-    sb.Replace('.', '_');
-
-    for (var i = 0; i < sb.Length; ++i)
-    {
-      sb[i] = char.ToUpper(sb[i]);
-    }
-
     return string.Intern(sb.ToString());
   }
 
@@ -130,7 +124,7 @@ public static class MutatorsUtil
     {
       if (char.IsUpper(sb[i]))
       {
-        sb.Insert(i - 1, TraceEventsConstants.Underscore);
+        sb.Insert(i - 1, TraceEventsConstants.Dot);
         --i;
       }
     }
@@ -159,7 +153,7 @@ public static class MutatorsUtil
     var indexOfExtension = fileName.IndexOf(".dll", StringComparison.Ordinal);
     if (indexOfExtension == -1) return fileName;
 
-    StringBuilder sb = new(fileName);
+    var sb = new StringBuilder(fileName);
     sb.Remove(indexOfExtension, sb.Length - indexOfExtension);
     
     return TransformTypeLikeNameForEventNameConcatenation(sb);
@@ -170,7 +164,7 @@ public static class MutatorsUtil
     var indexOfLastSeparator = filePath.IndexOf("/", StringComparison.Ordinal);
     if (indexOfLastSeparator == -1) return filePath;
     
-    StringBuilder sb = new(filePath);
+    var sb = new StringBuilder(filePath);
     sb.Remove(0, indexOfLastSeparator + 1);
 
     return TransformModuleFileNameForEventNameConcatenation(sb.ToString());
