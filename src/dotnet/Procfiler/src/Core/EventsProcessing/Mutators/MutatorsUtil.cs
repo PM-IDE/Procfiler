@@ -87,7 +87,7 @@ public static class MutatorsUtil
 
   public static string TransformMethodLikeNameForEventNameConcatenation(string fullMethodName)
   {
-    StringBuilder sb = new(fullMethodName);
+    var sb = new StringBuilder(fullMethodName);
     if (fullMethodName.IndexOf('!') is var index and >= 0)
     {
       sb.Remove(0, index + 1);

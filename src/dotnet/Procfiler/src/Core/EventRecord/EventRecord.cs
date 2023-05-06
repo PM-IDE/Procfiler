@@ -34,7 +34,7 @@ public record StackTraceInfo(int StackTraceId, int ManagedThreadId, string[] Fra
 public class EventRecord
 {
   public long Stamp { get; }
-  public string EventClass { get; }
+  public string EventClass { get; set; }
   public int ManagedThreadId { get; }
   public int StackTraceId { get; }
   public Guid ActivityId { get; }

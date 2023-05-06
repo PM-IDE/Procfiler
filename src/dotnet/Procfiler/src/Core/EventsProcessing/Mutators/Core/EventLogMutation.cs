@@ -17,3 +17,4 @@ public record NewAttributeCreationMutation(string EventType, string AttributeNam
 public record AddEventMutation(string EventType) : EventLogMutation(EventType);
 public record AddLifecycleTransitionAttributeMutation(string EventType, string LifecycleTransition) : EventLogMutation(EventType);
 public record ActivityIdCreation(string EventType, string ActivityIdTemplate) : EventLogMutation(EventType);
+public record EventTypeNameMutation(string EventType, string NewEventTypeName) : EventLogMutation(EventType);

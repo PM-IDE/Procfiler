@@ -33,7 +33,7 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
     
     return new EventRecordWithMetadata(stamp, eventName, managedThreadId, stackTraceId, metadata)
     {
-      EventName = eventName + "_" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(methodName)
+      EventName = eventName + "_{" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(methodName) + "}"
     };
   }
   

@@ -38,7 +38,11 @@ public class DotnetProcessLauncher : IDotnetProcessLauncher
       Arguments = $"{launcherDto.PathToDotnetExecutable} {launcherDto.Arguments}",
       Environment =
       {
+        ["CORECLR_ENABLE_PROFILING"] = "1",
+        ["CORECLR_PROFILER"] = "{585022b6-31e9-4ddf-b35d-3c256d0a16f3}",
+        ["CORECLR_PROFILER_PATH"] = @"C:\Users\aeroo\Desktop\Programming\pmide\Procfiler\src\cpp\cmake-build-release-visual-studio\Release\Procfiler.dll",
         ["DOTNET_DefaultDiagnosticPortSuspend"] = "1",
+        ["PROCFILER_ENABLE_CONSOLE_LOGGING"] = "1"
       }
     };
 

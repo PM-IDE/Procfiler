@@ -25,20 +25,20 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
   public MdDocument CreateDocumentationFile()
   {
     var allMutations = GetAllMutations();
-    var allEventNames = GetEventsNames(allMutations);
+    var allEventTypes = GetEventsNames(allMutations);
     var eventClassToSingleEventMutationsMap = CreateEventClassToEventMutationsMap(allMutations);
     var headerCells = CreateHeaderCells();
     var table = new MdTable(headerCells.Count);
     
-    foreach (var eventName in allEventNames.OrderBy(static name => name))
+    foreach (var eventType in allEventTypes.OrderBy(static name => name))
     {
-      if (eventClassToSingleEventMutationsMap.TryGetValue(eventName, out var mutations))
+      if (eventClassToSingleEventMutationsMap.TryGetValue(eventType, out var mutations))
       {
-        table.Add(CreateRow(mutations, eventName));
+        table.Add(CreateRow(mutations, eventType));
       }
       else
       {
-        table.Add(CreateEmptyRow(eventName, headerCells.Count));
+        table.Add(CreateEmptyRow(eventType, headerCells.Count));
       }
     }
 
@@ -54,7 +54,7 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
 
   private static ICollection<MdTableCell> CreateHeaderCells() => new List<MdTableCell>
   {
-    new("Event name"),
+    new("Event type"),
     new("New event name after attributes to name move"),
     new("Activity name"),
     new("Lifecycle transition"),
@@ -63,9 +63,9 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
     new("Attributes which will be added")
   };
   
-  private IList<EventLogMutation> GetAllMutations() => myMutators.SelectMany(mutator => mutator.Mutations).ToList();
+  private IReadOnlyList<EventLogMutation> GetAllMutations() => myMutators.SelectMany(mutator => mutator.Mutations).ToList();
 
-  private IEnumerable<string> GetEventsNames(IEnumerable<EventLogMutation> allMutations)
+  private IEnumerable<string> GetEventsNames(IReadOnlyList<EventLogMutation> allMutations)
   {
     return allMutations
       .Select(m => m.EventType)
@@ -87,7 +87,7 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
     return eventsMutations;
   }
 
-  private static string[] CreateRow(IEnumerable<EventLogMutation> mutations, string eventName)
+  private static string[] CreateRow(IReadOnlyList<EventLogMutation> mutations, string eventName)
   {
     var listOfMutations = mutations.ToList();
 
@@ -97,6 +97,11 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
     var activityName = CreateActivityNameCell(listOfMutations);
     var newAttributesCell = CreateNewAttributesCell(listOfMutations);
     var renamesCell = CreateAttributeRenamesCell(listOfMutations);
+
+    if (mutations.OfType<EventTypeNameMutation>().FirstOrDefault() is { } eventTypeNameMutation)
+    {
+      eventName = eventTypeNameMutation.NewEventTypeName;
+    }
     
     return new[]
     {
