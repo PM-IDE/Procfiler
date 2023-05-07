@@ -49,7 +49,7 @@ public class CreateDocumentationCommand : IVisibleToUserCommand
 
   public Command CreateCommand()
   {
-    Command command = new(
+    var command = new Command(
       "create-documentation", "Generate documentation for filters, mutators and other application components");
     
     command.AddOption(myOutputPathOption);

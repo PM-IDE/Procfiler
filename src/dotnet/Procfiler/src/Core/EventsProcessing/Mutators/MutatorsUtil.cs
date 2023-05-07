@@ -118,7 +118,7 @@ public static class MutatorsUtil
 
   public static string TransformCamelCaseForEventNameConcatenation(string name)
   {
-    StringBuilder sb = new(name);
+    var sb = new StringBuilder(name);
     for (var i = sb.Length - 1; i >= 0; i--)
     {
       if (char.IsUpper(sb[i]))
@@ -141,7 +141,7 @@ public static class MutatorsUtil
     var index = assemblyName.IndexOf(',', StringComparison.Ordinal);
     if (index == -1) return assemblyName;
 
-    StringBuilder sb = new(assemblyName);
+    var sb = new StringBuilder(assemblyName);
     sb.Remove(index, sb.Length - index);
     
     return TransformTypeLikeNameForEventNameConcatenation(sb);

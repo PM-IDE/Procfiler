@@ -7,12 +7,12 @@ var builder = ProcfilerContainerBuilder.BuildFromAssembly(LogLevel.Information);
 builder.RegisterType(typeof(ProcfilerLogger)).As<IProcfilerLogger>();
 
 var container = builder.Build();
-Command root = new("procfiler");
-CommandLineBuilder cmdBuilder = new(root);
+var rootCommand = new Command("procfiler");
+var cmdBuilder = new CommandLineBuilder(rootCommand);
 
 foreach (var command in container.Resolve<IEnumerable<IVisibleToUserCommand>>())
 {
-  root.AddCommand(command.CreateCommand());
+  rootCommand.AddCommand(command.CreateCommand());
 }
 
 cmdBuilder.UseDefaults();

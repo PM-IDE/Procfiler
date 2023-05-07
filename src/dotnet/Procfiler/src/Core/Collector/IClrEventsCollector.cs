@@ -114,7 +114,7 @@ public class ClrEventsCollector : IClrEventsCollector
     myLogger.LogInformation(
       "We GOT {EventCount} events, We LOST {EventsLost} events", traceLog.EventCount, traceLog.EventsLost);
     
-    Statistics statistics = new();
+    var statistics = new Statistics();
     var events = new EventRecordWithMetadata[traceLog.EventCount];
     var context = new CreatingEventContext(stackSource, traceLog, new Dictionary<int, StackTraceInfo>());
     var globalData = new SessionGlobalData();

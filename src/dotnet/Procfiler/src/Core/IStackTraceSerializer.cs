@@ -15,7 +15,7 @@ public class StackTraceSerializer : IStackTraceSerializer
   public async ValueTask SerializeStackTracesAsync(IEnumerable<StackTraceInfo> stacks, Stream stream)
   {
     var encoding = Encoding.UTF8;
-    StringBuilder sb = new();
+    var sb = new StringBuilder();
     
     foreach (var stack in stacks)
     {
