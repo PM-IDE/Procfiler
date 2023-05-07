@@ -1,4 +1,6 @@
-namespace ProcfilerTests.Core;
+using NUnit.Framework;
+
+namespace TestsUtil;
 
 public static class TestPaths
 {

@@ -4,6 +4,7 @@ using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Utils;
 using ProcfilerTests.Core;
+using TestsUtil;
 
 namespace ProcfilerTests.Tests;
 

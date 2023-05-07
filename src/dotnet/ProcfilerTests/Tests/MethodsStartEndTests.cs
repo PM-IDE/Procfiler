@@ -3,6 +3,7 @@ using Procfiler.Core.Collector;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Utils;
 using ProcfilerTests.Core;
+using TestsUtil;
 
 namespace ProcfilerTests.Tests;
 

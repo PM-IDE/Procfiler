@@ -1,9 +1,4 @@
-using Procfiler.Commands.CollectClrEvents.Context;
-using Procfiler.Core.Collector;
-using Procfiler.Core.InstrumentalProfiler;
-using Procfiler.Utils;
-
-namespace ProcfilerTests.Core;
+﻿namespace TestsUtil;
 
 public class KnownSolution
 {
@@ -63,23 +58,7 @@ public class KnownSolution
     ExpectedEventsCount = expectedEventsCount;
     NamespaceFilterPattern = name.ToLower();
   }
-  
 
-  public CollectClrEventsFromExeContext CreateContext(string solutionsDir)
-  {
-    var csprojPath = Path.Combine(solutionsDir, Name, Name + ".csproj");
-    var projectBuildInfo = new ProjectBuildInfo(
-      csprojPath, Tfm, BuildConfiguration.Debug, InstrumentationKind.None, true, null, false);
-    
-    return new CollectClrEventsFromExeContext(projectBuildInfo, CreateCommonContext());
-  }
-
-  private static CollectingClrEventsCommonContext CreateCommonContext()
-  {
-    var serializationContext = new SerializationContext(FileFormat.Csv);
-    return new CollectingClrEventsCommonContext(
-      string.Empty, serializationContext, null, string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000, false);
-  }
 
   public override string ToString()
   {

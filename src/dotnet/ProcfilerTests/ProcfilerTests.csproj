@@ -36,6 +36,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Procfiler\Procfiler.csproj" />
+      <ProjectReference Include="..\TestsUtil\TestsUtil.csproj" />
     </ItemGroup>
 
 </Project>

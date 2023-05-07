@@ -2,6 +2,7 @@ using System.Text;
 using Procfiler.Core.Collector;
 using Procfiler.Utils;
 using ProcfilerTests.Core;
+using TestsUtil;
 
 namespace ProcfilerTests.Tests.SplitByMethods;
 

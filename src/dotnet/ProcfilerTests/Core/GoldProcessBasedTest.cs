@@ -1,6 +1,7 @@
 using System.Text;
 using Procfiler.Core.Collector;
 using Procfiler.Utils;
+using TestsUtil;
 
 namespace ProcfilerTests.Core;
 

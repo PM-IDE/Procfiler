@@ -1,5 +1,6 @@
 using Procfiler.Core.EventRecord;
 using ProcfilerTests.Core;
+using TestsUtil;
 
 namespace ProcfilerTests.Tests.EventMetadataTests;
 

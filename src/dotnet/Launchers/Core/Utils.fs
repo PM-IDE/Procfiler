@@ -11,6 +11,7 @@ module ProcfilerScriptsUtils =
 
     let private createProcess fileName args =
         let startInfo = ProcessStartInfo(fileName, args)
+        startInfo.UseShellExecute <- false
         startInfo.RedirectStandardOutput <- true
         startInfo.RedirectStandardError <- true
         new Process(StartInfo=startInfo)
@@ -32,11 +33,12 @@ module ProcfilerScriptsUtils =
         let parentDirectory = Directory.GetCurrentDirectory() |> Directory.GetParent
         parentDirectory.FullName |> Console.WriteLine
         let dir = parentDirectory.Parent.Parent.Parent.Parent.FullName
-        let procfilerSolutionPath = Path.Combine(dir, "Procfiler", "Procfiler", "src", "Procfiler")
+        let procfilerSolutionPath = Path.Combine(dir, "dotnet", "Procfiler")
         
+        let framework = net7
         printfn $"Started building Procfiler at {procfilerSolutionPath}"
-        buildSolutionFolder net6 procfilerSolutionPath
-        Path.Combine(procfilerSolutionPath, "bin", "Release", net6, "Procfiler.dll")
+        buildSolutionFolder framework procfilerSolutionPath
+        Path.Combine(procfilerSolutionPath, "bin", "Release", framework, "Procfiler.dll")
         
     let getAllCsprojFiles solutionsDirectory =
         Directory.GetDirectories(solutionsDirectory) |>
@@ -57,33 +59,35 @@ module ProcfilerScriptsUtils =
         
     let getAllSolutionsFrom directory =
         directory |> Directory.GetDirectories |> List.ofArray
-            
-    let createOutputDirectoryAndAppName solutionPath outputFolder =
-        let appName = applicationNameFromCsproj solutionPath
+    
+    let createOutputDirectoryForSolution csprojPath outputFolder =
+        let appName = applicationNameFromCsproj csprojPath
         let outputPathForSolution = Path.Combine(outputFolder, appName)
         ensureEmptyDirectory outputPathForSolution |> ignore
         outputPathForSolution
-        
+    
     let createArgumentsString solutionPath outputFolder createConfigFunc createArgsFunc =
-        let outputPathForSolution = createOutputDirectoryAndAppName solutionPath outputFolder
-        let config = createConfigFunc solutionPath outputPathForSolution
+        ensureEmptyDirectory outputFolder |> ignore
+        let config = createConfigFunc solutionPath outputFolder
         let sb = StringBuilder()
         createArgsFunc config |> List.iter (fun (arg: string) -> sb.Append arg |> ignore)
         sb.ToString()
         
     let launchProcfiler csprojPath outputFolder createConfig createArgsList =
         let args = createArgumentsString csprojPath outputFolder createConfig createArgsList
-        let runProcess = createProcess "dotnet" $"{buildProcfiler} {args}"
-        match runProcess.Start() with
+        let procfilerProcess = createProcess "dotnet" $"{buildProcfiler} {args}"
+        match procfilerProcess.Start() with
         | true ->
             let appName = applicationNameFromCsproj csprojPath
             printfn $"Started procfiler for {appName}"
         | false -> printfn "Failed to start procfiler"
         
-        runProcess.WaitForExit()
+        procfilerProcess.WaitForExit()
         
-        match runProcess.ExitCode with
+        match procfilerProcess.ExitCode with
         | 0 ->
             let appName = applicationNameFromCsproj csprojPath
             printfn $"Finished executing procfiler for {appName}"
-        | _ -> runProcess.StandardOutput.ReadToEnd() |> Console.WriteLine
+        | _ -> ()
+        
+        printfn $"Output: {procfilerProcess.StandardOutput.ReadToEnd()}"

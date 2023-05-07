@@ -1,6 +1,7 @@
 using Autofac;
 using Procfiler.Core.InstrumentalProfiler.DepsJson;
 using ProcfilerTests.Core;
+using TestsUtil;
 
 namespace ProcfilerTests.Tests.DepsJson;
 
@@ -19,7 +20,7 @@ public class ReadWriteDepsJsonTests : TestWithContainerBase
       var filePath = Path.Combine(depsJsonsDirectory, file);
       var depsJsonFile = reader.ReadOrThrowAsync(filePath).GetAwaiter().GetResult();
       using var ms = new MemoryStream();
-      writer.WriteAsync(ms, depsJsonFile);
+      writer.WriteAsync(ms, depsJsonFile).GetAwaiter().GetResult();
       ms.Position = 0;
       using var sr = new StreamReader(ms);
       var json = sr.ReadToEnd();
