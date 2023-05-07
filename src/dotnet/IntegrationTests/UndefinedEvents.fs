@@ -16,10 +16,8 @@ let source () = knownProjectsNamesTestCaseSource
 
 [<TestCaseSource("source")>]
 let UndefinedEventsTest projectName =
-    let path = getCsprojPathFromSource projectName
-    let tempDir = Directory.CreateTempSubdirectory().FullName
-    
-    try
+    let doTest tempDir =
+        let path = getCsprojPathFromSource projectName
         SerializeUndefinedThreadEvents.launchProcfilerCustomConfig path tempDir createCustomConfig
         
         let files = Directory.GetFiles(tempDir)
@@ -28,5 +26,5 @@ let UndefinedEventsTest projectName =
         Assert.That(Path.GetExtension files[0], Is.EqualTo ".xes")
         Assert.That(Path.GetFileNameWithoutExtension files[0], Is.EqualTo "UndefinedEvents")
         Assert.That(FileInfo(files[0]).Length, Is.GreaterThan(0))
-    finally
-        Directory.Delete(tempDir, true)
+        
+    executeTestWithTempFolder doTest

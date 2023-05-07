@@ -10,3 +10,11 @@ let getCsprojPathFromSource solutionName =
 
 let knownProjectsNamesTestCaseSource =
     KnownSolution.AllSolutions |> Seq.map (fun solution -> solution.Name)
+    
+let executeTestWithTempFolder test =
+    let tempDir = Directory.CreateTempSubdirectory().FullName
+    
+    try
+        test tempDir
+    finally
+        Directory.Delete(tempDir, true)

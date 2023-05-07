@@ -4,7 +4,7 @@ open System.IO
 open Microsoft.FSharp.Core
 
 module SplitByMethods =
-    type private Config = {
+    type Config = {
         OutputPath: string
         CsprojPath: string
         Inline: bool
@@ -54,8 +54,8 @@ module SplitByMethods =
         ("inline_no_merge", createInlineNoMerge)
     ]
         
-    let private launchProcfiler dllPath outputPath configFunc =
-        ProcfilerScriptsUtils.launchProcfiler dllPath outputPath configFunc createArgumentsList 
+    let launchProcfiler csprojPath outputPath configFunc =
+        ProcfilerScriptsUtils.launchProcfiler csprojPath outputPath configFunc createArgumentsList
     
     let launchProcfilerOnFolderOfSolutions solutionsFolder outputPath =
         let pathsToDlls = ProcfilerScriptsUtils.getAllCsprojFiles solutionsFolder
