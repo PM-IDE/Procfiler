@@ -1,7 +1,5 @@
 	[start] consoleapp1!Program.Main()
 		[start] consoleapp1!Program.Method1()
-			[start] consoleapp1!Program..ctor()
-			[ end ] consoleapp1!Program..ctor()
 			[start] consoleapp1!Program.Method2()
 			[ end ] consoleapp1!Program.Method2()
 		[ end ] consoleapp1!Program.Method1()

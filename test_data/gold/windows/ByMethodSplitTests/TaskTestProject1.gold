@@ -2,13 +2,5 @@ Method: tasktestproject1!Program.<Main>$(class System.String[])
 
 Trace 0
 	[start] tasktestproject1!Program.<Main>$(class System.String[])
-		[start] tasktestproject1!Program+<>c__DisplayClass0_0..ctor()
-		[ end ] tasktestproject1!Program+<>c__DisplayClass0_0..ctor()
 	[ end ] tasktestproject1!Program.<Main>$(class System.String[])
-
-Method: tasktestproject1!Program+<>c__DisplayClass0_0..ctor()
-
-Trace 0
-	[start] tasktestproject1!Program+<>c__DisplayClass0_0..ctor()
-	[ end ] tasktestproject1!Program+<>c__DisplayClass0_0..ctor()
 

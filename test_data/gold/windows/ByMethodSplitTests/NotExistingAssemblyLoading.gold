@@ -3,8 +3,6 @@ Method: notexistingassemblyloading!Program.<Main>$(class System.String[])
 Trace 0
 	[start] notexistingassemblyloading!Program.<Main>$(class System.String[])
 		[start] notexistingassemblyloading!Program+<>c..cctor()
-			[start] notexistingassemblyloading!Program+<>c..ctor()
-			[ end ] notexistingassemblyloading!Program+<>c..ctor()
 		[ end ] notexistingassemblyloading!Program+<>c..cctor()
 		[start] notexistingassemblyloading!Program+<>c.<<Main>$>b__0_1(class System.Runtime.Loader.AssemblyLoadContext,class System.Reflection.AssemblyName)
 		[ end ] notexistingassemblyloading!Program+<>c.<<Main>$>b__0_1(class System.Runtime.Loader.AssemblyLoadContext,class System.Reflection.AssemblyName)
@@ -14,15 +12,7 @@ Method: notexistingassemblyloading!Program+<>c..cctor()
 
 Trace 0
 	[start] notexistingassemblyloading!Program+<>c..cctor()
-		[start] notexistingassemblyloading!Program+<>c..ctor()
-		[ end ] notexistingassemblyloading!Program+<>c..ctor()
 	[ end ] notexistingassemblyloading!Program+<>c..cctor()
-
-Method: notexistingassemblyloading!Program+<>c..ctor()
-
-Trace 0
-	[start] notexistingassemblyloading!Program+<>c..ctor()
-	[ end ] notexistingassemblyloading!Program+<>c..ctor()
 
 Method: notexistingassemblyloading!Program+<>c.<<Main>$>b__0_1(class System.Runtime.Loader.AssemblyLoadContext,class System.Reflection.AssemblyName)
 

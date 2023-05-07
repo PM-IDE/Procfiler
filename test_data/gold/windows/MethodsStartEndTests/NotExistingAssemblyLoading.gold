@@ -1,7 +1,5 @@
 	[start] notexistingassemblyloading!Program.<Main>$(class System.String[])
 		[start] notexistingassemblyloading!Program+<>c..cctor()
-			[start] notexistingassemblyloading!Program+<>c..ctor()
-			[ end ] notexistingassemblyloading!Program+<>c..ctor()
 		[ end ] notexistingassemblyloading!Program+<>c..cctor()
 		[start] notexistingassemblyloading!Program+<>c.<<Main>$>b__0_1(class System.Runtime.Loader.AssemblyLoadContext,class System.Reflection.AssemblyName)
 		[ end ] notexistingassemblyloading!Program+<>c.<<Main>$>b__0_1(class System.Runtime.Loader.AssemblyLoadContext,class System.Reflection.AssemblyName)

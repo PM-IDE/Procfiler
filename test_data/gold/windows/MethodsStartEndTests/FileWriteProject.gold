@@ -1,7 +1,5 @@
 	[start] filewriteproject!Program.<Main>(class System.String[])
 		[start] filewriteproject!Program.<Main>$(class System.String[])
-			[start] filewriteproject!Program+<<Main>$>d__0..ctor()
-			[ end ] filewriteproject!Program+<<Main>$>d__0..ctor()
 			[start] filewriteproject!Program+<<Main>$>d__0.MoveNext()
 			[ end ] filewriteproject!Program+<<Main>$>d__0.MoveNext()
 		[ end ] filewriteproject!Program.<Main>$(class System.String[])
