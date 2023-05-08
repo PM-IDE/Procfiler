@@ -5,24 +5,20 @@ open Microsoft.FSharp.Core
 open Scripts.Core.ProcfilerScriptsUtils
 
 module SplitByMethods =
-    type Config = {
-        Base: ConfigBase
-        Inline: bool
-        FilterPattern: string
-        MergeUndefinedThreadEvents: bool
-    }
+    type Config =
+        { Base: ConfigBase
+          Inline: bool
+          FilterPattern: string
+          MergeUndefinedThreadEvents: bool }
         
-    let private createArgumentsList config = [
-        "split-by-methods"
-        $" -csproj {config.Base.PathConfig.CsprojPath}"
-        $" -o {config.Base.PathConfig.OutputPath}"
-        $" --inline {config.Inline}"
-        $" --filter {config.FilterPattern}"
-        $" --repeat {config.Base.Repeat}"
-        $" --duration {config.Base.Duration}"
-        $" --merge-undefined-events {config.MergeUndefinedThreadEvents}"
-    ]
+        interface ICommandConfig with
+            member this.CreateArguments () =
+                let args = [ "split-by-methods" ]
+                this.Base.AddArguments args @ [ $" --filter {this.FilterPattern}"
+                                                $" --inline {this.Inline}"
+                                                $" --merge-undefined-events {this.MergeUndefinedThreadEvents}" ]
 
+    
     let private createConfigInternal csprojPath outputPath doInline merge = {
         Base = createDefaultConfigBase csprojPath outputPath
         Inline = doInline
@@ -30,16 +26,16 @@ module SplitByMethods =
         MergeUndefinedThreadEvents = merge
     }
     
-    let private createInlineMerge solutionPath outputPath =
+    let private createInlineMerge solutionPath outputPath: ICommandConfig =
         createConfigInternal solutionPath outputPath true true
         
-    let private createNoInlineMerge solutionPath outputPath =
+    let private createNoInlineMerge solutionPath outputPath: ICommandConfig =
         createConfigInternal solutionPath outputPath false true
         
-    let private createInlineNoMerge solutionPath outputPath =
+    let private createInlineNoMerge solutionPath outputPath: ICommandConfig =
         createConfigInternal solutionPath outputPath true false
         
-    let private createNoInlineNoMerge solutionPath outputPath =
+    let private createNoInlineNoMerge solutionPath outputPath: ICommandConfig =
         createConfigInternal solutionPath outputPath false false
         
     let private allConfigs = [
@@ -51,7 +47,7 @@ module SplitByMethods =
         
     let launchProcfiler csprojPath outputPath configFunc =
         ensureEmptyDirectory outputPath |> ignore
-        launchProcfiler csprojPath outputPath configFunc createArgumentsList
+        launchProcfiler csprojPath outputPath configFunc
     
     let launchProcfilerOnFolderOfSolutions solutionsFolder outputPath =
         ensureEmptyDirectory outputPath |> ignore

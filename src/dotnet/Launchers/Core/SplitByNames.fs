@@ -3,16 +3,14 @@
 open Scripts.Core.ProcfilerScriptsUtils
 
 module SplitByNames =
-    type Config = {
-        PathConfig: PathConfigBase
-    }
-    
-    let private createArgumentsList config = [
-        "split-by-names"
-        $" -csproj {config.PathConfig.CsprojPath}"
-        $" -o {config.PathConfig.OutputPath}"
-    ]
-    
+    type Config =
+        { PathConfig: PathConfigBase }
+        
+        interface ICommandConfig with
+            member this.CreateArguments () =
+                [ "split-by-names" ] |> this.PathConfig.AddArguments
+        
+
     let private createConfig csprojPath outputPath = {
         PathConfig = {
             CsprojPath = csprojPath
@@ -21,7 +19,7 @@ module SplitByNames =
     }
 
     let launchProcfilerCustomConfig csprojPath outputPath createConfig =
-        launchProcfiler csprojPath outputPath createConfig createArgumentsList
+        launchProcfiler csprojPath outputPath createConfig
         
     let launchProcfiler csprojPath outputPath =
         launchProcfilerCustomConfig csprojPath outputPath

@@ -3,10 +3,11 @@
 open System.IO
 open NUnit.Framework
 open Scripts.Core
+open Scripts.Core.ProcfilerScriptsUtils
 open Util
 
-let private createConfigInternal solutionPath outputPath: CollectToXes.Config = {
-    Base = {
+let private createConfigInternal solutionPath outputPath: ICommandConfig = {
+    CollectToXes.Config.Base = {
         PathConfig = {
             OutputPath = outputPath
             CsprojPath = solutionPath

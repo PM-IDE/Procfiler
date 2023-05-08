@@ -2,10 +2,11 @@ module IntegrationTests.UndefinedEvents
 
 open NUnit.Framework
 open Scripts.Core
+open Scripts.Core.ProcfilerScriptsUtils
 open Util
     
-let createCustomConfig csprojPath outputPath: SerializeUndefinedThreadEvents.Config = {
-    Base = {
+let createCustomConfig csprojPath outputPath: ICommandConfig = {
+    SerializeUndefinedThreadEvents.Config.Base = {
         PathConfig = {
             OutputPath = outputPath
             CsprojPath = csprojPath

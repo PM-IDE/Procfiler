@@ -3,10 +3,11 @@
 open System.IO
 open NUnit.Framework
 open Scripts.Core
+open Scripts.Core.ProcfilerScriptsUtils
 open Util
 
-let private createConfigInternal solutionPath outputPath: SplitByNames.Config = {
-    PathConfig = {
+let private createConfigInternal solutionPath outputPath: ICommandConfig = {
+    SplitByNames.Config.PathConfig = {
         OutputPath = outputPath
         CsprojPath = solutionPath
     }

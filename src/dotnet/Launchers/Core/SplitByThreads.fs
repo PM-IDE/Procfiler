@@ -3,15 +3,13 @@
 open Scripts.Core.ProcfilerScriptsUtils
 
 module SplitByThreads =
-    type Config = {
-        PathConfig: PathConfigBase
-    }
+    type Config =
+        { PathConfig: PathConfigBase }
+        
+        interface ICommandConfig with
+            member this.CreateArguments () =
+                [ "split-by-threads" ] |> this.PathConfig.AddArguments
     
-    let private createArgumentsList config = [
-        "split-by-threads"
-        $" -csproj {config.PathConfig.CsprojPath}"
-        $" -o {config.PathConfig.OutputPath}"
-    ]
     
     let private createConfig csprojPath outputPath = {
         PathConfig = {
@@ -21,7 +19,7 @@ module SplitByThreads =
     }
 
     let launchProcfilerCustomConfig csprojPath outputPath createConfig =
-        launchProcfiler csprojPath outputPath createConfig createArgumentsList
+        launchProcfiler csprojPath outputPath createConfig
         
     let launchProcfiler csprojPath outputPath =
         launchProcfilerCustomConfig csprojPath outputPath

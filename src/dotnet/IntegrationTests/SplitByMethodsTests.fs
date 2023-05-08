@@ -3,10 +3,11 @@
 open System.IO
 open NUnit.Framework
 open Scripts.Core
+open Scripts.Core.ProcfilerScriptsUtils
 open Util
 
-let private createConfigInternal solutionPath outputPath: SplitByMethods.Config = {
-    Base = {
+let private createConfigInternal solutionPath outputPath: ICommandConfig = {
+    SplitByMethods.Config.Base = {
         PathConfig = {
             OutputPath = outputPath
             CsprojPath = solutionPath
@@ -15,9 +16,9 @@ let private createConfigInternal solutionPath outputPath: SplitByMethods.Config 
         Duration = 10_000
     }
 
-    Inline = true
-    FilterPattern = ProcfilerScriptsUtils.applicationNameFromCsproj solutionPath
-    MergeUndefinedThreadEvents = true
+    SplitByMethods.Config.Inline = true
+    SplitByMethods.Config.FilterPattern = applicationNameFromCsproj solutionPath
+    SplitByMethods.Config.MergeUndefinedThreadEvents = true
 }
 
 let source () =

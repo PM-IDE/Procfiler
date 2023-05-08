@@ -5,20 +5,29 @@ open System
 open System.Diagnostics
 open System.IO
 
+
 module ProcfilerScriptsUtils =
     let net7 = "net7.0"
     let net6 = "net6.0"
     
-    type PathConfigBase = {
-        CsprojPath: string
-        OutputPath: string
-    }
+    type PathConfigBase =
+        { CsprojPath: string
+          OutputPath: string }
+        
+        member this.AddArguments list =
+            list @ [ $" -csproj {this.CsprojPath}"; $" -o {this.OutputPath}" ]
     
-    type ConfigBase = {
-        PathConfig: PathConfigBase
-        Duration: int
-        Repeat: int
-    }
+    type ConfigBase =
+        { PathConfig: PathConfigBase
+          Duration: int
+          Repeat: int }
+        
+        member this.AddArguments list =
+            let toAdd = [ $" --repeat {this.Repeat}"; $" --duration {this.Duration}" ]
+            this.PathConfig.AddArguments list @ toAdd
+    
+    type ICommandConfig =
+        abstract member CreateArguments : unit -> string list
     
     let createDefaultConfigBase csprojPath outputPath = {
         PathConfig = {
@@ -87,14 +96,14 @@ module ProcfilerScriptsUtils =
         ensureEmptyDirectory outputPathForSolution |> ignore
         outputPathForSolution
     
-    let createArgumentsString solutionPath outputFolder createConfigFunc createArgsFunc =
+    let createArgumentsString solutionPath outputFolder (createConfigFunc: string -> string -> ICommandConfig) =
         let config = createConfigFunc solutionPath outputFolder
         let sb = StringBuilder()
-        createArgsFunc config |> List.iter (fun (arg: string) -> sb.Append arg |> ignore)
+        config.CreateArguments() |> List.iter (fun (arg: string) -> sb.Append arg |> ignore)
         sb.ToString()
         
-    let launchProcfiler csprojPath outputFolder createConfig createArgsList =
-        let args = createArgumentsString csprojPath outputFolder createConfig createArgsList
+    let launchProcfiler csprojPath outputFolder createConfig =
+        let args = createArgumentsString csprojPath outputFolder createConfig
         let procfilerProcess = createProcess "dotnet" $"{buildProcfiler} {args}"
         match procfilerProcess.Start() with
         | true ->

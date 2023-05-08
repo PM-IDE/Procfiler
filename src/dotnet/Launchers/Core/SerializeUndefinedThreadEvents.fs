@@ -3,25 +3,21 @@ namespace Scripts.Core
 open Scripts.Core.ProcfilerScriptsUtils
 
 module SerializeUndefinedThreadEvents =
-    type Config = {
-        Base: ConfigBase
-    }
-    
-    let private createArgumentsList config = [
-        "undefined-events-to-xes"
-        $" -csproj {config.Base.PathConfig.CsprojPath}"
-        $" -o {config.Base.PathConfig.OutputPath}"
-        $" --repeat {config.Base.Repeat}"
-        $" --duration {config.Base.Duration}"
-    ]
-    
-    let private createConfig csprojPath outputPath = {
+    type Config =
+        { Base: ConfigBase }
+        
+        interface ICommandConfig with
+            member this.CreateArguments () =
+                [ "undefined-events-to-xes" ] |> this.Base.AddArguments
+
+
+    let private createConfig csprojPath outputPath: ICommandConfig = {
         Base = createDefaultConfigBase csprojPath outputPath
     }
     
     let launchProcfilerCustomConfig csprojPath outputPath createCustomConfig =
         ensureEmptyDirectory outputPath |> ignore
-        launchProcfiler csprojPath outputPath createCustomConfig createArgumentsList
+        launchProcfiler csprojPath outputPath createCustomConfig
         
     let launchProcfiler csprojPath outputPath =
         launchProcfilerCustomConfig csprojPath outputPath createConfig
