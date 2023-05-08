@@ -1,36 +1,33 @@
 namespace Scripts.Core
 
+open Scripts.Core.ProcfilerScriptsUtils
+
 module SerializeUndefinedThreadEvents =
     type Config = {
-        OutputPath: string
-        CsprojPath: string
-        Repeat: int
-        Duration: int
+        Base: ConfigBase
     }
     
     let private createArgumentsList config = [
         "undefined-events-to-xes"
-        $" -csproj {config.CsprojPath}"
-        $" -o {config.OutputPath}"
-        $" --repeat {config.Repeat}"
-        $" --duration {config.Duration}"
+        $" -csproj {config.Base.CsprojPath}"
+        $" -o {config.Base.OutputPath}"
+        $" --repeat {config.Base.Repeat}"
+        $" --duration {config.Base.Duration}"
     ]
     
     let private createConfig csprojPath outputPath = {
-        OutputPath = outputPath
-        CsprojPath = csprojPath
-        Repeat = 50
-        Duration = 10_000
+        Base = createDefaultConfigBase csprojPath outputPath
     }
     
     let launchProcfilerCustomConfig csprojPath outputPath createCustomConfig =
-        ProcfilerScriptsUtils.launchProcfiler csprojPath outputPath createCustomConfig createArgumentsList
+        ensureEmptyDirectory outputPath |> ignore
+        launchProcfiler csprojPath outputPath createCustomConfig createArgumentsList
         
     let launchProcfiler csprojPath outputPath =
         launchProcfilerCustomConfig csprojPath outputPath createConfig
         
     let launchProcfilerOnFolderOfSolutions pathToFolderWithSolutions outputPath =
-        let pathsToCsprojFiles = ProcfilerScriptsUtils.getAllCsprojFiles pathToFolderWithSolutions
+        let pathsToCsprojFiles = getAllCsprojFiles pathToFolderWithSolutions
         pathsToCsprojFiles |> List.iter (fun csprojPath ->
-            let patchedOutputPath = ProcfilerScriptsUtils.createOutputDirectoryForSolution csprojPath outputPath
+            let patchedOutputPath = createOutputDirectoryForSolution csprojPath outputPath
             launchProcfiler csprojPath patchedOutputPath)

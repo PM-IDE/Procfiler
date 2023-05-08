@@ -6,11 +6,14 @@ open Scripts.Core
 open Util
 
 let private createConfigInternal solutionPath outputPath: SplitByMethods.Config = {
-    OutputPath = outputPath
-    CsprojPath = solutionPath
+    Base = {
+        OutputPath = outputPath
+        CsprojPath = solutionPath
+        Repeat = 1
+        Duration = 10_000
+    }
+
     Inline = true
-    Repeat = 1
-    Duration = 10_000
     FilterPattern = ProcfilerScriptsUtils.applicationNameFromCsproj solutionPath
     MergeUndefinedThreadEvents = true
 }

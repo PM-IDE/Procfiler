@@ -2,36 +2,31 @@
 
 open System.IO
 open Microsoft.FSharp.Core
+open Scripts.Core.ProcfilerScriptsUtils
 
 module SplitByMethods =
     type Config = {
-        OutputPath: string
-        CsprojPath: string
+        Base: ConfigBase
         Inline: bool
         FilterPattern: string
-        Repeat: int
-        Duration: int
         MergeUndefinedThreadEvents: bool
     }
         
     let private createArgumentsList config = [
         "split-by-methods"
-        $" -csproj {config.CsprojPath}"
-        $" -o {config.OutputPath}"
+        $" -csproj {config.Base.CsprojPath}"
+        $" -o {config.Base.OutputPath}"
         $" --inline {config.Inline}"
         $" --filter {config.FilterPattern}"
-        $" --repeat {config.Repeat}"
-        $" --duration {config.Duration}"
+        $" --repeat {config.Base.Repeat}"
+        $" --duration {config.Base.Duration}"
         $" --merge-undefined-events {config.MergeUndefinedThreadEvents}"
     ]
 
-    let private createConfigInternal solutionPath outputPath doInline merge = {
-        OutputPath = outputPath
-        CsprojPath = solutionPath
+    let private createConfigInternal csprojPath outputPath doInline merge = {
+        Base = createDefaultConfigBase csprojPath outputPath
         Inline = doInline
-        Repeat = 50
-        Duration = 10_000
-        FilterPattern = ProcfilerScriptsUtils.applicationNameFromCsproj solutionPath
+        FilterPattern = applicationNameFromCsproj csprojPath
         MergeUndefinedThreadEvents = merge
     }
     
@@ -55,19 +50,21 @@ module SplitByMethods =
     ]
         
     let launchProcfiler csprojPath outputPath configFunc =
-        ProcfilerScriptsUtils.launchProcfiler csprojPath outputPath configFunc createArgumentsList
+        ensureEmptyDirectory outputPath |> ignore
+        launchProcfiler csprojPath outputPath configFunc createArgumentsList
     
     let launchProcfilerOnFolderOfSolutions solutionsFolder outputPath =
-        let pathsToDlls = ProcfilerScriptsUtils.getAllCsprojFiles solutionsFolder
+        ensureEmptyDirectory outputPath |> ignore
+        let pathsToDlls = getAllCsprojFiles solutionsFolder
         pathsToDlls |> List.iter (fun solution -> launchProcfiler solution outputPath createInlineMerge)
     
     let launchProcfilerOnSolutionsFolderInAllConfigs solutionsFolder outputPath =
-        let pathsToDlls = ProcfilerScriptsUtils.getAllCsprojFiles solutionsFolder
+        let pathsToDlls = getAllCsprojFiles solutionsFolder
         allConfigs |>
         List.iter (fun configInfo ->
             match configInfo with
             | configName, configFunc ->
                 let outputPathForConfig = Path.Combine(outputPath, configName)
-                ProcfilerScriptsUtils.ensureEmptyDirectory outputPathForConfig |> ignore
+                ensureEmptyDirectory outputPathForConfig |> ignore
                 pathsToDlls |> List.iter (fun solution -> launchProcfiler solution outputPathForConfig configFunc)
         )

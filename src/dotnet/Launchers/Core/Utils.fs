@@ -8,6 +8,20 @@ open System.IO
 module ProcfilerScriptsUtils =
     let net7 = "net7.0"
     let net6 = "net6.0"
+    
+    type ConfigBase = {
+        CsprojPath: string
+        OutputPath: string
+        Duration: int
+        Repeat: int
+    }
+    
+    let createDefaultConfigBase csprojPath outputPath = {
+        CsprojPath = csprojPath
+        OutputPath = outputPath
+        Duration = 10_000
+        Repeat = 50 
+    }
 
     let private createProcess fileName args =
         let startInfo = ProcessStartInfo(fileName, args)
@@ -67,7 +81,6 @@ module ProcfilerScriptsUtils =
         outputPathForSolution
     
     let createArgumentsString solutionPath outputFolder createConfigFunc createArgsFunc =
-        ensureEmptyDirectory outputFolder |> ignore
         let config = createConfigFunc solutionPath outputFolder
         let sb = StringBuilder()
         createArgsFunc config |> List.iter (fun (arg: string) -> sb.Append arg |> ignore)

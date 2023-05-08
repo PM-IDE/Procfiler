@@ -49,7 +49,7 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
     });
     
     var path = context.CommonContext.OutputPath;
-    await using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+    await using var fs = File.OpenWrite(path);
     await myXesEventsSerializer.SerializeEventsAsync(sessionInfos, fs);
   }
 
