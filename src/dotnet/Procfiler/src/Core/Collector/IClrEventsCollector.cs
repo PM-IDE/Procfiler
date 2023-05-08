@@ -134,10 +134,10 @@ public class ClrEventsCollector : IClrEventsCollector
 
     statistics.LogMyself(myLogger);
 
-    return new CollectedEvents(GetSortedLinkedListOfEvents(events), globalData);
+    return new CollectedEvents(CreateEventCollection(events), globalData);
   }
   
-  private IEventsCollection GetSortedLinkedListOfEvents(EventRecordWithMetadata[] events)
+  private IEventsCollection CreateEventCollection(EventRecordWithMetadata[] events)
   {
     using (new PerformanceCookie($"{GetType()}::SortingEvents", myLogger))
     {
@@ -147,9 +147,9 @@ public class ClrEventsCollector : IClrEventsCollector
         if (first.Stamp < second.Stamp) return -1;
         return 0;
       });
-
-      return new EventsCollectionImpl(events, myLogger);
     }
+    
+    return new EventsCollectionImpl(events, myLogger);
   }
   
   private EventWithGlobalDataUpdate CreateEventWithMetadataFromClrEvent(
