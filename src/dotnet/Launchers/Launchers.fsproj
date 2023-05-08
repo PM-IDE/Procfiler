@@ -14,6 +14,7 @@
         <Compile Include="Core\SerializeUndefinedThreadEvents.fs" />
         <Compile Include="Core\CollectToXes.fs" />
         <Compile Include="Core\SplitByNames.fs" />
+        <Compile Include="Core\SplitByThreads.fs" />
     </ItemGroup>
 
 </Project>
