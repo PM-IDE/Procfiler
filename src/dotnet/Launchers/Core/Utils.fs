@@ -9,16 +9,23 @@ module ProcfilerScriptsUtils =
     let net7 = "net7.0"
     let net6 = "net6.0"
     
-    type ConfigBase = {
+    type PathConfigBase = {
         CsprojPath: string
         OutputPath: string
+    }
+    
+    type ConfigBase = {
+        PathConfig: PathConfigBase
         Duration: int
         Repeat: int
     }
     
     let createDefaultConfigBase csprojPath outputPath = {
-        CsprojPath = csprojPath
-        OutputPath = outputPath
+        PathConfig = {
+            CsprojPath = csprojPath
+            OutputPath = outputPath
+        }
+        
         Duration = 10_000
         Repeat = 50 
     }

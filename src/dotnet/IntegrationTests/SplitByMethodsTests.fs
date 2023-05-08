@@ -7,8 +7,10 @@ open Util
 
 let private createConfigInternal solutionPath outputPath: SplitByMethods.Config = {
     Base = {
-        OutputPath = outputPath
-        CsprojPath = solutionPath
+        PathConfig = {
+            OutputPath = outputPath
+            CsprojPath = solutionPath
+        }
         Repeat = 1
         Duration = 10_000
     }

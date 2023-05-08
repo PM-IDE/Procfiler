@@ -13,6 +13,7 @@
         <Compile Include="Core\SplitByMethods.fs" />
         <Compile Include="Core\SerializeUndefinedThreadEvents.fs" />
         <Compile Include="Core\CollectToXes.fs" />
+        <Compile Include="Core\SplitByNames.fs" />
     </ItemGroup>
 
 </Project>

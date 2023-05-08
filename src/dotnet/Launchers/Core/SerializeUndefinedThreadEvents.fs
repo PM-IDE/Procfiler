@@ -9,8 +9,8 @@ module SerializeUndefinedThreadEvents =
     
     let private createArgumentsList config = [
         "undefined-events-to-xes"
-        $" -csproj {config.Base.CsprojPath}"
-        $" -o {config.Base.OutputPath}"
+        $" -csproj {config.Base.PathConfig.CsprojPath}"
+        $" -o {config.Base.PathConfig.OutputPath}"
         $" --repeat {config.Base.Repeat}"
         $" --duration {config.Base.Duration}"
     ]

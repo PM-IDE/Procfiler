@@ -2,21 +2,22 @@
 
 open Scripts.Core.ProcfilerScriptsUtils
 
-module CollectToXes =
+module SplitByNames =
     type Config = {
-        Base: ConfigBase
+        PathConfig: PathConfigBase
     }
     
     let private createArgumentsList config = [
-        "collect-to-xes"
-        $" -csproj {config.Base.PathConfig.CsprojPath}"
-        $" -o {config.Base.PathConfig.OutputPath}"
-        $" --repeat {config.Base.Repeat}"
-        $" --duration {config.Base.Duration}"
+        "split-by-names"
+        $" -csproj {config.PathConfig.CsprojPath}"
+        $" -o {config.PathConfig.OutputPath}"
     ]
     
     let private createConfig csprojPath outputPath = {
-        Base = createDefaultConfigBase csprojPath outputPath
+        PathConfig = {
+            CsprojPath = csprojPath
+            OutputPath = outputPath 
+        }
     }
 
     let launchProcfilerCustomConfig csprojPath outputPath createConfig =

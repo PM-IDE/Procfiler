@@ -14,8 +14,8 @@ module SplitByMethods =
         
     let private createArgumentsList config = [
         "split-by-methods"
-        $" -csproj {config.Base.CsprojPath}"
-        $" -o {config.Base.OutputPath}"
+        $" -csproj {config.Base.PathConfig.CsprojPath}"
+        $" -o {config.Base.PathConfig.OutputPath}"
         $" --inline {config.Inline}"
         $" --filter {config.FilterPattern}"
         $" --repeat {config.Base.Repeat}"

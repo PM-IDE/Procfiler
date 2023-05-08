@@ -12,6 +12,7 @@
         <Compile Include="UndefinedEvents.fs" />
         <Compile Include="SplitByMethodsTests.fs" />
         <Compile Include="CollectToXesTests.fs" />
+        <Compile Include="SplitByNamesTests.fs" />
     </ItemGroup>
 
     <ItemGroup>

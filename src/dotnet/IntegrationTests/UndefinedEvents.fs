@@ -6,8 +6,10 @@ open Util
     
 let createCustomConfig csprojPath outputPath: SerializeUndefinedThreadEvents.Config = {
     Base = {
-        OutputPath = outputPath
-        CsprojPath = csprojPath
+        PathConfig = {
+            OutputPath = outputPath
+            CsprojPath = csprojPath
+        }
         Repeat = 1
         Duration = 10_000
     }
