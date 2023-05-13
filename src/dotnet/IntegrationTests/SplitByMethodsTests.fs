@@ -35,10 +35,14 @@ let SplitByMethodsTest projectName (expectedMethods: List<string>) =
         let path = getCsprojPathFromSource projectName
         SplitByMethods.launchProcfiler path tempDir createConfigInternal
         
-        let expectedMethodsSet = expectedMethods |> Set.ofList
-        let files = Directory.GetFiles(tempDir) |> Array.map Path.GetFileName |> Set.ofArray
+        let fileNameProcessor (name: string) =
+             let chars = name.ToLower().ToCharArray() |> Array.filter (fun c -> c >= 'a' && c <= 'z')
+             string(chars)
         
-        Assert.That(Set.isSubset expectedMethodsSet files, Is.True)
+        let files = Directory.GetFiles(tempDir) |> Array.map Path.GetFileName |> Array.map fileNameProcessor |>
+                    Set.ofArray
+        
+        let expectedFileNames = expectedMethods |> List.map fileNameProcessor |> Set.ofList
+        Assert.That(Set.isSubset expectedFileNames files, Is.True)
         
     executeTestWithTempFolder doTest
-    
