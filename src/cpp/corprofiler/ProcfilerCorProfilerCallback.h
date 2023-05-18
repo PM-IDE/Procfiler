@@ -1,6 +1,7 @@
 #include "cor.h"
 #include "corprof.h"
 #include "./shadowstack/ShadowStack.h"
+#include "shadowstack/serializers/ShadowStackSerializer.h"
 #include <atomic>
 
 class ProcfilerCorProfilerCallback : public ICorProfilerCallback11 {
@@ -9,6 +10,7 @@ private:
     ICorProfilerInfo12* myProfilerInfo;
     std::atomic<int> myRefCount;
     ShadowStack* myShadowStack;
+    ShadowStackSerializer* myShadowStackSerializer;
 
     DWORD GetCurrentManagedThreadId();
     int64_t GetCurrentTimestamp();

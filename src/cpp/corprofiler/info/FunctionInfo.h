@@ -8,6 +8,9 @@
 #include "MethodSignature.h"
 #include "GenericMethodSignature.h"
 
+#ifndef PROCFILER_FUNCTION_INFO_H
+#define PROCFILER_FUNCTION_INFO_H
+
 struct FunctionInfo {
 private:
     mdToken myId;
@@ -56,3 +59,5 @@ public:
 };
 
 std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, mdToken token);
+
+#endif

@@ -28,7 +28,10 @@ set(SOURCES
     miniutf/miniutf.cpp
     miniutf/miniutf.hpp
     corprofiler/shadowstack/ShadowStack.cpp
-    util/env_constants.h)
+    util/env_constants.h
+    corprofiler/shadowstack/serializers/EventPipeShadowStackSerializer.cpp
+    corprofiler/shadowstack/serializers/BinaryShadowStackSerializer.cpp
+    corprofiler/shadowstack/serializers/DebugShadowStackSerializer.cpp logging/asd.h)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 include_directories(./3rdparty/coreclr/inc)

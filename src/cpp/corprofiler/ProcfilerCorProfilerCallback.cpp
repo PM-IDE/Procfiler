@@ -73,7 +73,10 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
-    myShadowStack = new ShadowStack(myProfilerInfo, myLogger);
+    myShadowStack = new ShadowStack();
+    myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
+    myShadowStackSerializer->Init();
+
     DWORD eventMask = COR_PRF_ALL;
 
     result = myProfilerInfo->SetEventMask(eventMask);
@@ -98,8 +101,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
-    myShadowStack->DebugWriteToFile();
-    myShadowStack->WriteEventsToEventPipe();
+    myShadowStackSerializer->Serialize(*myShadowStack);
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
@@ -554,6 +556,9 @@ ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
 
     delete myShadowStack;
     myShadowStack = nullptr;
+    
+    delete myShadowStackSerializer;
+    myShadowStackSerializer = nullptr;
 }
 
 DWORD ProcfilerCorProfilerCallback::GetCurrentManagedThreadId() {
