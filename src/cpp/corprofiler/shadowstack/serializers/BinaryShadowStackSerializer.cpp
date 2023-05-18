@@ -1,6 +1,7 @@
 #include "ShadowStackSerializer.h"
 #include "../../../util/env_constants.h"
-
+#include <iostream>
+#include <fstream>
 
 BinaryShadowStackSerializer::BinaryShadowStackSerializer(ICorProfilerInfo12* profilerInfo,
                                                          ProcfilerLogger* logger) {
@@ -15,4 +16,22 @@ void BinaryShadowStackSerializer::Init() {
 
 void BinaryShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
     if (mySavePath.length() == 0) return;
+
+    std::ofstream fout(mySavePath, std::ios::binary);
+    const long long separator = 0L;
+
+    for (const auto& pair: *(shadowStack.GetAllStacks())) {
+        auto threadId = pair.first;
+        fout.write((char*)&threadId, sizeof(long));
+        for (const auto& event: *(pair.second->Events)) {
+            char startOrEnd = event.EventKind == FunctionEventKind::Started ? 1 : 0;
+            fout.write((char*)&startOrEnd, sizeof(char));
+            fout.write((char*)&event.Timestamp, sizeof(long long));
+            fout.write((char*)&event.Id, sizeof(long long));
+        }
+
+        fout.write((char*)&separator, sizeof(long long));
+    }
+
+    fout.close();
 }

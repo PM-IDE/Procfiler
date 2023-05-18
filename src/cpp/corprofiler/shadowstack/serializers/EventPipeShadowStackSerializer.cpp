@@ -14,10 +14,13 @@ void EventPipeShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
     HRESULT hr;
 
     auto events = shadowStack.GetAllStacks();
+    std::map<FunctionID, FunctionInfo> resolvedFunctions;
+
     for (const auto& pair: *events) {
         auto threadId = pair.first;
         for (const auto& event: *(pair.second->Events)) {
-            if (FAILED(LogFunctionEvent(event, threadId))) {
+            hr = FAILED(LogFunctionEvent(event, threadId, resolvedFunctions));
+            if (hr) {
                 myLogger->Log("Failed to send a method start or end event, error: " + std::to_string(hr));
             }
         }
@@ -25,8 +28,9 @@ void EventPipeShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
 
     myLogger->Log("Logged method start and end events to event pipe");
 
-    for (const auto& pair: myResolvedFunctions) {
-        if (FAILED(LogMethodInfo(pair.first, pair.second))) {
+    for (const auto& pair: resolvedFunctions) {
+        hr = FAILED(LogMethodInfo(pair.first, pair.second));
+        if (hr) {
             myLogger->Log("Failed to send a method info event, error: " + std::to_string(hr));
         }
     }
@@ -138,9 +142,11 @@ HRESULT EventPipeShadowStackSerializer::InitializeProvidersAndEvents() {
     return S_OK;
 }
 
-HRESULT EventPipeShadowStackSerializer::LogFunctionEvent(const FunctionEvent& event, const DWORD& threadId) {
-    if (!myResolvedFunctions.count(event.Id)) {
-        myResolvedFunctions[event.Id] = FunctionInfo::GetFunctionInfo(myProfilerInfo, event.Id);
+HRESULT EventPipeShadowStackSerializer::LogFunctionEvent(const FunctionEvent& event,
+                                                         const DWORD& threadId,
+                                                         std::map<FunctionID, FunctionInfo>& resolvedFunctions) {
+    if (!resolvedFunctions.count(event.Id)) {
+        resolvedFunctions[event.Id] = FunctionInfo::GetFunctionInfo(myProfilerInfo, event.Id);
     }
 
     auto eventPipeEvent = event.EventKind == FunctionEventKind::Started ? myMethodStartEvent : myMethodEndEvent;
