@@ -1,32 +1,40 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-unsafe
-{
-  var array = new string[10];
-  const string Content = "Content";
-  for (var i = 0; i < array.Length; i++)
-  {
-    array[i] = Content;
-  }
+namespace UnsafeFixed;
 
-  Console.WriteLine(GC.TryStartNoGCRegion(10000000));
-  foreach (var str in array)
+internal class Program
+{
+  public static void Main(string[] args)
   {
-    var charArray = str.ToCharArray();
-    fixed (char* first = &charArray[0], end = &charArray[^1])
+    unsafe
     {
-      Console.WriteLine((int)first);
-      Console.WriteLine((int)(end + 1));
-      var current = first;
-      while (current != end + 1)
+      var array = new string[10];
+      const string Content = "Content";
+      for (var i = 0; i < array.Length; i++)
       {
-        Console.Write(*current);
-        ++current;
+        array[i] = Content;
       }
 
-      Console.WriteLine();
+      Console.WriteLine(GC.TryStartNoGCRegion(10000000));
+      foreach (var str in array)
+      {
+        var charArray = str.ToCharArray();
+        fixed (char* first = &charArray[0], end = &charArray[^1])
+        {
+          Console.WriteLine((int)first);
+          Console.WriteLine((int)(end + 1));
+          var current = first;
+          while (current != end + 1)
+          {
+            Console.Write(*current);
+            ++current;
+          }
+
+          Console.WriteLine();
+        }
+      }
+  
+      GC.EndNoGCRegion();
     }
   }
-  
-  GC.EndNoGCRegion();
 }

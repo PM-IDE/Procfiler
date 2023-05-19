@@ -1,30 +1,36 @@
-﻿
+﻿namespace ExceptionTryCatchFinally;
 
-try
+internal class Program
 {
-  try
+  public static void Main(string[] args)
   {
-    ThrowException();
-  }
-  catch (IndexOutOfRangeException ex)
-  {
-    Console.WriteLine(ex.Message);
-  }
-  catch (ArgumentOutOfRangeException ex)
-  {
-    var p = new Program();
-  }
-  finally
-  {
-    var x = new string('c', 1);
-  }
-}
-catch
-{
+    try
+    {
+      try
+      {
+        ThrowException();
+      }
+      catch (IndexOutOfRangeException ex)
+      {
+        Console.WriteLine(ex.Message);
+      }
+      catch (DivideByZeroException ex)
+      {
+        var p = new Program();
+      }
+      finally
+      {
+        var x = new string('c', 1);
+      }
+    }
+    catch
+    {
   
-}
-void ThrowException()
-{
-  var y = 0;
-  var x = 1 / y;
+    }
+    void ThrowException()
+    {
+      var y = 0;
+      var x = 1 / y;
+    }
+  }
 }
