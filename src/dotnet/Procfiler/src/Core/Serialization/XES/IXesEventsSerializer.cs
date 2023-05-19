@@ -67,7 +67,6 @@ public partial class XesEventsSerializer : IXesEventsSerializer
     await WriteStringValueTagAsync(writer, ConceptName, currentEvent.EventName);
     await WriteStringValueTagAsync(writer, EventId, (ourNextEventId++).ToString());
     await WriteStringValueTagAsync(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
-    await WriteStringValueTagAsync(writer, "StackTraceId", currentEvent.StackTraceId.ToString());
     
     await AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
       writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);

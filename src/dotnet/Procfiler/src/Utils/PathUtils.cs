@@ -73,4 +73,14 @@ public static class PathUtils
       logger.LogError(ex, "Failed to delete directory {Path}", path);
     }
   }
+
+  public static string CreateTempFilePath()
+  {
+    return Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+  }
+  
+  public static string CreateTempFolderPath()
+  {
+    return Directory.CreateTempSubdirectory().FullName;
+  }
 }

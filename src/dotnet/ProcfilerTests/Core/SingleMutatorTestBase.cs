@@ -1,4 +1,5 @@
 using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
 
@@ -20,7 +21,7 @@ public abstract class SingleMutatorTestBase
     EventMetadata metadata, Action<EventRecordWithMetadata> action)
   {
     var eventRecord = CreateRandomEvent(metadata);
-    CreateMutator().Process(eventRecord, new SessionGlobalData());
+    CreateMutator().Process(eventRecord, new SessionGlobalData(new Dictionary<long, IReadOnlyList<FrameInfo>>()));
     
     action(eventRecord);
   }

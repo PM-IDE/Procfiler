@@ -5,56 +5,28 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.EventRecord;
 
-public record StackTraceInfo(int StackTraceId, int ManagedThreadId, string[] Frames)
-{
-  protected virtual bool PrintMembers(StringBuilder builder)
-  {
-    builder
-      .LogPrimitiveValue(nameof(StackTraceId), StackTraceId)
-      .Append(StringBuilderExtensions.SerializeValue(Frames));
-
-    return true;
-  }
-
-  public override int GetHashCode()
-  {
-    if (Frames.Length == 0) return ManagedThreadId;
-
-    var hash = Frames[0].AsSpan().CalculateHash();
-
-    for (var i = 1; i < Frames.Length; ++i)
-    {
-      hash = HashCode.Combine(hash, Frames[i].AsSpan().CalculateHash());
-    }
-
-    return HashCode.Combine(hash, ManagedThreadId);
-  }
-}
-
 public class EventRecord
 {
   public long Stamp { get; }
   public string EventClass { get; set; }
   public int ManagedThreadId { get; }
-  public int StackTraceId { get; }
   public Guid ActivityId { get; }
   public string EventName { get; set; }
   public bool IsDeleted { get; set; }
 
 
-  public EventRecord(long stamp, string eventClass, int managedThreadId, int stackTraceId, Guid activityId)
+  public EventRecord(long stamp, string eventClass, int managedThreadId, Guid activityId)
   {
     ActivityId = activityId;
     Stamp = stamp;
     EventClass = eventClass;
     ManagedThreadId = managedThreadId;
-    StackTraceId = stackTraceId;
     EventName = EventClass;
     IsDeleted = false;
   }
 
-  public EventRecord(TraceEvent @event, int managedThreadId, int stackTraceId)
-    : this(@event.TimeStamp.ToUniversalTime().Ticks, @event.EventName, managedThreadId, stackTraceId, @event.ActivityID)
+  public EventRecord(TraceEvent @event, int managedThreadId)
+    : this(@event.TimeStamp.ToUniversalTime().Ticks, @event.EventName, managedThreadId, @event.ActivityID)
   {
   }
 }
@@ -64,15 +36,15 @@ public class EventRecordWithMetadata : EventRecord
   public IEventMetadata Metadata { get; }
 
   
-  public EventRecordWithMetadata(TraceEvent @event, int managedThreadId, int stackTraceId) 
-    : base(@event, managedThreadId, stackTraceId)
+  public EventRecordWithMetadata(TraceEvent @event, int managedThreadId) 
+    : base(@event, managedThreadId)
   {
     Metadata = new EventMetadata(@event);
   }
 
   public EventRecordWithMetadata(
-    long stamp, string eventClass, int managedThreadId, int stackTraceId, IEventMetadata metadata)
-    : base(stamp, eventClass, managedThreadId, stackTraceId, Guid.Empty)
+    long stamp, string eventClass, int managedThreadId, IEventMetadata metadata)
+    : base(stamp, eventClass, managedThreadId, Guid.Empty)
   {
     Metadata = metadata;
   }

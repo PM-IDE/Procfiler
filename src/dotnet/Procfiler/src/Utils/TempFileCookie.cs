@@ -10,7 +10,7 @@ public readonly struct TempFileCookie : IDisposable
   public TempFileCookie(IProcfilerLogger logger)
   {
     myLogger = logger;
-    FullFilePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+    FullFilePath = PathUtils.CreateTempFilePath();
   }
 
   public TempFileCookie(string alreadyCreatedTempFileFilePath, IProcfilerLogger logger)

@@ -55,8 +55,7 @@ public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndef
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is not var (frame, isStart))
       {
-        if (currentThreadId != -1 && 
-            (eventRecord.IsMethodStartOrEndEvent() || eventRecord.StackTraceId != -1))
+        if (currentThreadId != -1 && eventRecord.IsMethodStartOrEndEvent())
         {
           managedThreadsTraces[currentThreadId].Add(eventRecord);
         }

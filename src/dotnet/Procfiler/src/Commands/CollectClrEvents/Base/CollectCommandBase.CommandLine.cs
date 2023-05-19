@@ -134,11 +134,12 @@ public abstract partial class CollectCommandBase
 
     var buildConfiguration = parseResult.GetValueForOption(ConfigurationOption);
     var instrumentationKind = parseResult.GetValueForOption(InstrumentCodeOption);
-    var tempPath = parseResult.GetValueForOption(TempPathOption);
     var selfContained = parseResult.GetValueForOption(SelfContainedOption);
+    
+    var tempPath = parseResult.GetValueForOption(TempPathOption);
     if (Equals(tempPath, ((IValueDescriptor) TempPathOption).GetDefaultValue()))
     {
-      tempPath = null;
+      tempPath = PathUtils.CreateTempFolderPath();
     }
 
     var removeTemp = parseResult.GetValueForOption(RemoveTempFolder);

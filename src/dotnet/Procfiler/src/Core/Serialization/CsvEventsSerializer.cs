@@ -37,7 +37,6 @@ public class CsvEventsSerializer : ICsvEventsSerializer
     sb.Append(nameof(firstEvent.Stamp)).Append(Delimiter)
       .Append(nameof(firstEvent.EventName)).Append(Delimiter)
       .Append(nameof(firstEvent.ManagedThreadId)).Append(Delimiter)
-      .Append(nameof(firstEvent.StackTraceId)).Append(Delimiter)
       .Append(nameof(firstEvent.ActivityId)).Append(Delimiter);
 
     foreach (var (name, _) in firstEvent.Metadata)
@@ -56,7 +55,6 @@ public class CsvEventsSerializer : ICsvEventsSerializer
     sb.Append(@event.Stamp).Append(Delimiter)
       .Append(@event.EventName).Append(Delimiter)
       .Append(@event.ManagedThreadId).Append(Delimiter)
-      .Append(@event.StackTraceId).Append(Delimiter)
       .Append(@event.ActivityId).Append(Delimiter);
     
     foreach (var (_, value) in @event.Metadata)

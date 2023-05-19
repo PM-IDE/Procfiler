@@ -1,5 +1,6 @@
 ﻿using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.Processes;
 using Procfiler.Core.Processes.Build;
 using Procfiler.Utils;
@@ -19,18 +20,24 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   private readonly IClrEventsCollector myClrEventsCollector;
   private readonly IDotnetProjectBuilder myProjectBuilder;
   private readonly IDotnetProcessLauncher myDotnetProcessLauncher;
+  private readonly ICppProcfilerLocator myCppProcfilerLocator;
+  private readonly IBinaryStackSavePathCreator myBinaryStackSavePathCreator;
 
 
   public CommandExecutorImpl(
     IDotnetProcessLauncher dotnetProcessLauncher, 
     IClrEventsCollector clrEventsCollector,
     IDotnetProjectBuilder projectBuilder,
-    IProcfilerLogger logger)
+    IProcfilerLogger logger, 
+    ICppProcfilerLocator cppProcfilerLocator, 
+    IBinaryStackSavePathCreator binaryStackSavePathCreator)
   {
     myDotnetProcessLauncher = dotnetProcessLauncher;
     myClrEventsCollector = clrEventsCollector;
     myProjectBuilder = projectBuilder;
     myLogger = logger;
+    myCppProcfilerLocator = cppProcfilerLocator;
+    myBinaryStackSavePathCreator = binaryStackSavePathCreator;
   }
 
 
@@ -74,16 +81,18 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     CollectClrEventsFromRunningProcessContext context,
     Func<CollectedEvents, ValueTask> func)
   {
-    if (await CollectEventsFromProcess(context, context.ProcessId) is { } events)
+    if (await CollectEventsFromProcess(context, context.ProcessId, null) is var events)
     {
       await func(events);
     }
   }
 
-  private ValueTask<CollectedEvents> CollectEventsFromProcess(CollectClrEventsContext context, int processId)
+  private ValueTask<CollectedEvents> CollectEventsFromProcess(
+    CollectClrEventsContext context, int processId, string? binaryStacksPath)
   {
     var (_, _, _, _, category, _, duration, timeout, _) = context.CommonContext;
-    return myClrEventsCollector.CollectEventsAsync(processId, duration, timeout, category);
+    var collectionContext = new ClrEventsCollectionContext(processId, duration, timeout, category, binaryStacksPath);
+    return myClrEventsCollector.CollectEventsAsync(collectionContext);
   }
 
   private async ValueTask ExecuteCommandWithLaunchingProcess(
@@ -106,7 +115,9 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       {
         Arguments = context.CommonContext.Arguments,
         RedirectOutput = context.CommonContext.PrintProcessOutput,
-        PathToDotnetExecutable = buildResult.BuiltDllPath
+        PathToDotnetExecutable = buildResult.BuiltDllPath,
+        CppProcfilerSavePath = myCppProcfilerLocator.FindCppProcfilerPath(),
+        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(context.ProjectBuildInfo)
       };
       
       if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
@@ -120,7 +131,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       CollectedEvents? events = null;
       try
       {
-        events = await CollectEventsFromProcess(context, process.Id);
+        events = await CollectEventsFromProcess(context, process.Id, launcherDto.BinaryStacksSavePath);
       }
       catch (Exception ex)
       {

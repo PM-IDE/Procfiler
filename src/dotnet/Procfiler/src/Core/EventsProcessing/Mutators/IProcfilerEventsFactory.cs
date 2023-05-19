@@ -4,10 +4,10 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators;
 
-public readonly record struct EventsCreationContext(long Stamp, int ManagedThreadId, int StackTraceId)
+public readonly record struct EventsCreationContext(long Stamp, int ManagedThreadId)
 {
   public static EventsCreationContext CreateWithUndefinedStackTrace(EventRecord.EventRecord record) =>
-    new(record.Stamp, record.ManagedThreadId, -1);
+    new(record.Stamp, record.ManagedThreadId);
 }
 
 public interface IProcfilerEventsFactory
@@ -28,10 +28,10 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
   private static EventRecordWithMetadata CreateMethodStartOrEndEvent(
     EventsCreationContext context, string eventName, string methodName)
   {
-    var (stamp, managedThreadId, stackTraceId) = context;
+    var (stamp, managedThreadId) = context;
     var metadata = CreateMetadataForMethodName(methodName);
     
-    return new EventRecordWithMetadata(stamp, eventName, managedThreadId, stackTraceId, metadata)
+    return new EventRecordWithMetadata(stamp, eventName, managedThreadId, metadata)
     {
       EventName = eventName + "_{" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(methodName) + "}"
     };
@@ -49,10 +49,9 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
 
   public EventRecordWithMetadata CreateMethodExecutionEvent(EventsCreationContext context, string methodName)
   {
-    var (stamp, managedThreadId, stackTraceId) = context;
+    var (stamp, managedThreadId) = context;
     var metadata = CreateMetadataForMethodName(methodName);
     var name = $"{TraceEventsConstants.ProcfilerMethodExecution}_{methodName}";
-    return new EventRecordWithMetadata(
-      stamp, name, managedThreadId, stackTraceId, metadata);
+    return new EventRecordWithMetadata(stamp, name, managedThreadId, metadata);
   }
 }

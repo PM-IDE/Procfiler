@@ -10,7 +10,7 @@ public readonly struct TempFolderCookie : IDisposable
   public TempFolderCookie(IProcfilerLogger logger)
   {
     myLogger = logger;
-    FolderPath = Directory.CreateTempSubdirectory().FullName;
+    FolderPath = PathUtils.CreateTempFolderPath();
   }
 
   public TempFolderCookie(IProcfilerLogger logger, string existingFolder)

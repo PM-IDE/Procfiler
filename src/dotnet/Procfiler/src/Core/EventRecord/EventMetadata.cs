@@ -24,7 +24,10 @@ public class EventMetadata : IEventMetadata
     
     for (var i = 0; i < length; i++)
     {
-      myValue.Add(string.Intern(traceEvent.PayloadString(i)));
+      var serializedValue = Convert.ToString(traceEvent.PayloadValue(i)) ??
+                            traceEvent.PayloadString(i);
+
+      myValue.Add(string.Intern(serializedValue));
       myNames.Add(string.Intern(traceEvent.PayloadNames[i]));
     }
 

@@ -115,7 +115,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
   {
     var stacksFilePath = Path.Combine(context.CommonContext.OutputPath, "stacks.txt");
     await using var fs = new FileStream(stacksFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-    await myStackTraceSerializer.SerializeStackTracesAsync(globalData.Stacks.Values, fs);
+    await myStackTraceSerializer.SerializeStackTracesAsync(globalData, fs);
   }
 
   private static EventsProcessingContext CreateContext(

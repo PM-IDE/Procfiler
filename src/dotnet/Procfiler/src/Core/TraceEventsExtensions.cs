@@ -16,32 +16,6 @@ internal static class TraceEventsExtensions
 
     return metadata;
   }
-  
-  public static StackTraceInfo CreateEventStackTraceInfoOrThrow(
-    this TraceEvent @event,
-    MutableTraceEventStackSource stackSource)
-  {
-    var callStackIndex = @event.CallStackIndex();
-    if (callStackIndex is CallStackIndex.Invalid) throw new ArgumentOutOfRangeException();
-
-    var currentStackTrace = new List<string>();
-    var currentIndex = stackSource.GetCallStack(callStackIndex, @event);
-    var managedThreadId = -1;
-
-    while (currentIndex != StackSourceCallStackIndex.Invalid)
-    {
-      var frame = string.Intern(stackSource.GetFrameName(stackSource.GetFrameIndex(currentIndex), false));
-      if (IsThreadStartMethod(frame, out var threadId))
-      {
-        managedThreadId = threadId;
-      }
-      
-      currentStackTrace.Add(frame);
-      currentIndex = stackSource.GetCallerIndex(currentIndex);
-    }
-
-    return new StackTraceInfo((int) callStackIndex, managedThreadId, currentStackTrace.ToArray());
-  }
 
   public static bool IsThreadStartMethod(string frame, out int threadId)
   {
