@@ -24,8 +24,8 @@ void BinaryShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
     std::ofstream fout(mySavePath, std::ios::binary);
 
     for (const auto& pair: *(shadowStack.GetAllStacks())) {
-        auto threadId = pair.first;
-        fout.write((char*)&threadId, sizeof(long));
+        auto threadId = (long long)pair.first;
+        fout.write((char*)&threadId, sizeof(long long));
 
         auto events = *pair.second->Events;
         auto framesCount = (long long)events.size();
