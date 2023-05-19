@@ -108,7 +108,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     }
 
     var buildResult = buildResultNullable.Value;
-
+      
     try
     {
       var launcherDto = new DotnetProcessLauncherDto
@@ -117,7 +117,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
         RedirectOutput = context.CommonContext.PrintProcessOutput,
         PathToDotnetExecutable = buildResult.BuiltDllPath,
         CppProcfilerSavePath = myCppProcfilerLocator.FindCppProcfilerPath(),
-        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(context.ProjectBuildInfo)
+        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(buildResult)
       };
       
       if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)

@@ -1,11 +1,12 @@
 using Procfiler.Commands.CollectClrEvents.Context;
+using Procfiler.Core.Processes.Build;
 using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.CppProcfiler;
 
 public interface IBinaryStackSavePathCreator
 {
-  string CreateSavePath(ProjectBuildInfo projectBuildInfo);
+  string CreateSavePath(BuildResult buildResult);
 }
 
 [AppComponent]
@@ -13,10 +14,11 @@ public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
 {
   private const string BinaryStacksFileName = "bstacks.bin";
   
-  public string CreateSavePath(ProjectBuildInfo projectBuildInfo)
+  public string CreateSavePath(BuildResult buildResult)
   {
-    Debug.Assert(Directory.Exists(projectBuildInfo.TempPath));
+    var directory = Path.GetDirectoryName(buildResult.BuiltDllPath);
+    Debug.Assert(Directory.Exists(directory));
 
-    return Path.Combine(projectBuildInfo.TempPath, BinaryStacksFileName);
+    return Path.Combine(directory, BinaryStacksFileName);
   }
 }

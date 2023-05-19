@@ -42,7 +42,7 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
     var managedThreadId = events.GetFor(events.First!.Value).ManagedThreadId;
     if (!context.Stacks.TryGetValue(managedThreadId, out var shadowStack))
     {
-      myLogger.LogError("Managed thread {Id} was not in shadow stacks", managedThreadId);
+      myLogger.LogWarning("Managed thread {Id} was not in shadow stacks", managedThreadId);
       return;
     }
 
@@ -51,7 +51,7 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
       var methodId = shadowStack[index].FunctionId;
       if (!context.MethodIdToFqn.TryGetValue(methodId, out var fqn))
       {
-        myLogger.LogError("Failed to get fqn for {FunctionId}", methodId);
+        myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
         return null;
       }
       

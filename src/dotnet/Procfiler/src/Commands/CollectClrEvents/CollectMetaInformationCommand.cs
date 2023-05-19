@@ -71,7 +71,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
             await sw.WriteLineAsync($"{payloadName};{valueString};{count}");
           }
         }
-            
+
         break; 
       }
 

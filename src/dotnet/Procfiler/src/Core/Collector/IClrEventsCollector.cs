@@ -183,7 +183,7 @@ public class ClrEventsCollector : IClrEventsCollector
     }
 
     UpdateStatisticsAfterEventProcession(traceEvent, ref statistics);
-    var managedThreadId = traceEvent.ThreadID;
+    var managedThreadId = traceEvent.GetManagedThreadIdThroughStack(context.Source);
     var record = new EventRecordWithMetadata(traceEvent, managedThreadId);
 
     var typeIdToName = TryExtractTypeIdToName(traceEvent, record.Metadata);
@@ -223,7 +223,7 @@ public class ClrEventsCollector : IClrEventsCollector
       var mergedName = MutatorsUtil.ConcatenateMethodDetails(name, methodNamespace, signature);
       return new MethodIdToFqn(Convert.ToInt64(methodId), mergedName);
     }
-
+    
     return null;
   }
   

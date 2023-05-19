@@ -21,10 +21,8 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
       var globalData = events.GlobalData;
       var eventsByThreads = SplitEventsHelper.SplitByKey(
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
-      var undefinedThreadEvents = eventsByThreads[-1];
       eventsByThreads.Remove(-1);
       
-      Container.Resolve<IUndefinedThreadsEventsMerger>().Merge(eventsByThreads, undefinedThreadEvents);
       foreach (var (_, eventsForThread) in eventsByThreads)
       {
         var processor = Container.Resolve<IUnitedEventsProcessor>(); 

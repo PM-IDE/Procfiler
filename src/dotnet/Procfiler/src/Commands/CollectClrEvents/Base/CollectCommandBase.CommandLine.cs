@@ -139,7 +139,7 @@ public abstract partial class CollectCommandBase
     var tempPath = parseResult.GetValueForOption(TempPathOption);
     if (Equals(tempPath, ((IValueDescriptor) TempPathOption).GetDefaultValue()))
     {
-      tempPath = PathUtils.CreateTempFolderPath();
+      tempPath = null;
     }
 
     var removeTemp = parseResult.GetValueForOption(RemoveTempFolder);
