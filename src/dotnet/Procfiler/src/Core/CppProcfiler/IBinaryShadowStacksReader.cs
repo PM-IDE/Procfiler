@@ -14,7 +14,8 @@ public readonly struct FrameInfo
   {
     if (globalData?.MethodIdToFqn.GetValueOrDefault(FunctionId) is { } fqn)
     {
-      return $"[{TimeStamp}] {fqn}";
+      var startOrEnd = IsStart ? "start" : " end ";
+      return $"[{TimeStamp}] [{startOrEnd}] {fqn}";
     }
 
     return $"[{TimeStamp}] {FunctionId}";

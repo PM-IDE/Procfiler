@@ -111,11 +111,9 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     await myDelegatingEventsSerializer.SerializeEventsAsync(mergedEvents, fs, outputFormat);
   }
 
-  private async ValueTask SerializeStacksAsync(CollectClrEventsContext context, SessionGlobalData globalData)
+  private ValueTask SerializeStacksAsync(CollectClrEventsContext context, SessionGlobalData globalData)
   {
-    var stacksFilePath = Path.Combine(context.CommonContext.OutputPath, "stacks.txt");
-    await using var fs = new FileStream(stacksFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-    await myStackTraceSerializer.SerializeStackTracesAsync(globalData, fs);
+    return myStackTraceSerializer.SerializeStackTracesAsync(globalData, context.CommonContext.OutputPath);
   }
 
   private static EventsProcessingContext CreateContext(
