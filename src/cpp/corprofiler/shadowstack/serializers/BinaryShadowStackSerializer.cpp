@@ -15,8 +15,12 @@ void BinaryShadowStackSerializer::Init() {
 }
 
 void BinaryShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
-    if (mySavePath.length() == 0) return;
+    if (mySavePath.length() == 0) {
+        myLogger->Log("Will not serialize shadow stack to binary format as save path was not provided");
+        return;
+    }
 
+    myLogger->Log("Started serializing shadow stack to binary file");
     std::ofstream fout(mySavePath, std::ios::binary);
     const long long separator = 0L;
 
@@ -34,4 +38,6 @@ void BinaryShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
     }
 
     fout.close();
+
+    myLogger->Log("Finished serializing shadow stack to binary file");
 }

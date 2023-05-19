@@ -1,4 +1,5 @@
 #include "ProcfilerCorProfilerCallback.h"
+#include "../util/performance_counter.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -28,7 +29,8 @@ void StaticHandleFunctionTailCall(FunctionID funcId,
 
 int64_t ProcfilerCorProfilerCallback::GetCurrentTimestamp() {
     LARGE_INTEGER value;
-    if (!QueryPerformanceCounter(&value)) {
+
+    if (!QueryPerformanceCounter2(&value)) {
         myLogger->Log("Failed to get current timestamp");
         return -1;
     }

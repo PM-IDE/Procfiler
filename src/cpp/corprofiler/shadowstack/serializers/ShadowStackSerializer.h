@@ -5,7 +5,7 @@
 
 class ShadowStackSerializer {
 public:
-    virtual ~ShadowStackSerializer() = 0;
+    virtual ~ShadowStackSerializer() = default;
     virtual void Init() = 0;
     virtual void Serialize(const ShadowStack& shadowStack) = 0;
 };
