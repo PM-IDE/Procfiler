@@ -27,7 +27,7 @@ bool QueryPerformanceCounter2(OUT LARGE_INTEGER* lpPerformanceCount) {
     return retval;
 }
 
-#elif
+#else
 bool QueryPerformanceCounter2(OUT LARGE_INTEGER* lpPerformanceCount) {
     return QueryPerformanceCounter(lpPerformanceCount);
 }
