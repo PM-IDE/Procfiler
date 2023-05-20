@@ -10,8 +10,5 @@ public interface ICppProcfilerLocator
 [AppComponent]
 public class CppProcfilerLocatorImpl : ICppProcfilerLocator
 {
-  public string FindCppProcfilerPath()
-  {
-    return "/Users/aero/Programming/pmide/Procfiler/src/cpp/cmake-build-release/libProcfiler.dylib";
-  }
+  public string FindCppProcfilerPath() => Path.Combine(Directory.GetCurrentDirectory(), "CppProcfiler.dll");
 }
