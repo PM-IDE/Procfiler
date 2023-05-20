@@ -49,7 +49,7 @@
     </Target>
     
     <Target Name="CopyCppProcfiler" AfterTargets="BuildCppProcfiler">
-        <Copy SourceFiles="$(SolutionDir)..\cpp\build\Release\" 
+        <Copy SourceFiles="$(SolutionDir)..\cpp\build\out\CppProcfiler.dll" 
               DestinationFolder="$(OutputPath)" />
     </Target>
 </Project>

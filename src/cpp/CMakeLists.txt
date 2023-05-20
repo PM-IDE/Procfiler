@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.14.5)
 add_compile_options(-fpermissive)
 project(Procfiler)
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out)
+
 set(SOURCES
     dllmain.cpp
     procfiler.def
@@ -57,6 +59,9 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 add_library(Procfiler SHARED ${SOURCES})
+set_target_properties(Procfiler PROPERTIES PREFIX "")
+set_target_properties(Procfiler PROPERTIES OUTPUT_NAME "CppProcfiler")
+set_target_properties(Procfiler PROPERTIES SUFFIX ".dll")
 
 if(WIN32)
     set(DEPENDENCIES Advapi32.lib oleaut32.lib Ole32.lib)
