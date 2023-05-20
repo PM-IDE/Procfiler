@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A1B991C7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsUtil", "TestsUtil\TestsUtil.csproj", "{4C848494-1AEE-4C9D-8A99-891635B56DD9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcfilerBuildTasks", "ProcfilerBuildTasks\ProcfilerBuildTasks.csproj", "{31BE85D0-3317-49EA-895C-C5A286A32F87}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{4C848494-1AEE-4C9D-8A99-891635B56DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C848494-1AEE-4C9D-8A99-891635B56DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C848494-1AEE-4C9D-8A99-891635B56DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31BE85D0-3317-49EA-895C-C5A286A32F87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31BE85D0-3317-49EA-895C-C5A286A32F87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31BE85D0-3317-49EA-895C-C5A286A32F87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31BE85D0-3317-49EA-895C-C5A286A32F87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B} = {A1B991C7-C808-4095-8191-1183F84B3D5E}
