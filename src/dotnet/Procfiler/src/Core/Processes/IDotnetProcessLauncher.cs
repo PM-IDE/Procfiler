@@ -9,7 +9,7 @@ public readonly struct DotnetProcessLauncherDto
   public required string Arguments { get; init; }
   public required bool RedirectOutput { get; init; }
   public required string BinaryStacksSavePath { get; init; }
-  public required string CppProcfilerSavePath { get; init; }
+  public required string CppProcfilerPath { get; init; }
 }
 
 public interface IDotnetProcessLauncher
@@ -43,7 +43,7 @@ public class DotnetProcessLauncher : IDotnetProcessLauncher
         ["DOTNET_DefaultDiagnosticPortSuspend"] = "1",
         ["CORECLR_ENABLE_PROFILING"] = "1",
         ["CORECLR_PROFILER"] = "{585022b6-31e9-4ddf-b35d-3c256d0a16f3}",
-        ["CORECLR_PROFILER_PATH"] = launcherDto.CppProcfilerSavePath,
+        ["CORECLR_PROFILER_PATH"] = launcherDto.CppProcfilerPath,
         ["PROCFILER_BINARY_SAVE_STACKS_PATH"] = launcherDto.BinaryStacksSavePath
       }
     };
