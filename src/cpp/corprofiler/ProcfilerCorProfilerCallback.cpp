@@ -75,7 +75,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
-    myShadowStack = new ShadowStack();
+    myShadowStack = new ShadowStack(myLogger);
     myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
     myShadowStackSerializer->Init();
 
@@ -103,6 +103,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
+    myShadowStack->AdjustShadowStacks();
     myShadowStackSerializer->Serialize(*myShadowStack);
 
     if (myProfilerInfo != nullptr) {

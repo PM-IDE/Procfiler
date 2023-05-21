@@ -45,13 +45,16 @@ struct EventsWithThreadId {
 class ShadowStack {
 private:
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(DWORD threadId);
+
+    ProcfilerLogger* myLogger;
 public:
-    explicit ShadowStack() {}
+    explicit ShadowStack(ProcfilerLogger* logger);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);
     void AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp);
 
+    void AdjustShadowStacks();
     std::map<ThreadID, EventsWithThreadId*>* GetAllStacks() const;
 };
 
