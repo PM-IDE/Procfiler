@@ -17,7 +17,7 @@ public abstract class ProcessTestBase : TestWithContainerBase
   {
     var pathToSolutionSource = TestPaths.CreatePathToSolutionsSource();
     var context = solution.CreateContext(pathToSolutionSource);
-    
+
     Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testFunc).AsTask().Wait();
   }
 

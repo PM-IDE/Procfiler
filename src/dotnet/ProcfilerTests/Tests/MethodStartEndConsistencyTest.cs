@@ -23,11 +23,11 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
       eventsByThreads.Remove(-1);
       
-      foreach (var (_, eventsForThread) in eventsByThreads)
+      foreach (var (threadId, eventsForThread) in eventsByThreads)
       {
         var processor = Container.Resolve<IUnitedEventsProcessor>(); 
         processor.ApplyMultipleMutators(eventsForThread, globalData, EmptyCollections<Type>.EmptySet);
-        TestUtil.CheckMethodConsistencyOrThrow(eventsForThread);
+        TestUtil.CheckMethodConsistencyOrThrow(threadId, eventsForThread, globalData, Container);
       }
 
       return ValueTask.CompletedTask;

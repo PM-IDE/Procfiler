@@ -1,4 +1,6 @@
+using Autofac;
 using Procfiler.Commands.CollectClrEvents.Split;
+using Procfiler.Core;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
@@ -32,8 +34,15 @@ public static class TestUtil
     return new EventsProcessingContext(managedThreadEvents, globalData, config);
   }
 
-  public static void CheckMethodConsistencyOrThrow(IEventsCollection events)
+  public static void CheckMethodConsistencyOrThrow(
+    int threadId, IEventsCollection events, SessionGlobalData globalData, IContainer container)
   {
+    void AssertFail(string message)
+    {
+      SerializeBrokenStacks(container, globalData, threadId);
+      Assert.Fail(message);
+    }
+    
     var frames = new Stack<string>();
     foreach (var eventRecord in events)
     {
@@ -45,10 +54,15 @@ public static class TestUtil
         }
         else
         {
+          if (frames.Count == 0)
+          {
+            AssertFail("Stack was empty");
+          }
+          
           var topMost = frames.Pop();
           if (topMost != frame)
           {
-            Assert.Fail($"{topMost} != {frame}");
+            AssertFail($"{topMost} != {frame}");
           }
         }
       }
@@ -56,8 +70,17 @@ public static class TestUtil
 
     if (frames.Count != 0)
     {
-      Assert.Fail("frames.Count != 0");
+      AssertFail("frames.Count != 0");
     }
+  }
+
+  private static void SerializeBrokenStacks(IContainer container, SessionGlobalData globalData, int brokenThreadId)
+  {
+    var savePath = PathUtils.CreateTempFolderPath();
+    var serializer = container.Resolve<IStackTraceSerializer>();
+    Console.WriteLine($"Serializing broken stacks at {savePath}, thread ID {brokenThreadId}");
+    
+    serializer.SerializeStackTracesAsync(globalData, savePath).AsTask().GetAwaiter().GetResult();
   }
 
   public static EventRecordWithMetadata CreateRandomEvent(string eventClass, EventMetadata metadata)
