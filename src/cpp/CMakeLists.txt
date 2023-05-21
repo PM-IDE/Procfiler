@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14.5)
 add_compile_options(-fpermissive)
 project(Procfiler)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/Release)
 
 set(SOURCES
     dllmain.cpp
