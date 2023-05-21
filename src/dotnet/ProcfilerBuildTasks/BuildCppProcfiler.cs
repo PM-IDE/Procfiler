@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-[MeansImplicitUse]
+[UsedImplicitly]
 public class BuildCppProcfiler : Task
 {
   private const string BuildFolderName = "build";
@@ -70,11 +70,7 @@ public class BuildCppProcfiler : Task
     StartInfo = new ProcessStartInfo
     {
       FileName = FindCmakeExecutable(),
-      Arguments = $"--build {CreateBuildDirectoryPath()} --target Procfiler --config Release",
-      RedirectStandardError = true,
-      RedirectStandardOutput = true,
-      UseShellExecute = false,
-      CreateNoWindow = true,
+      Arguments = "--build . --target Procfiler --config Release",
       WorkingDirectory = CreateBuildDirectoryPath()
     }
   };
@@ -103,10 +99,6 @@ public class BuildCppProcfiler : Task
     {
       FileName = FindCmakeExecutable(),
       WorkingDirectory = CreateBuildDirectoryPath(),
-      RedirectStandardError = true,
-      RedirectStandardOutput = true,
-      CreateNoWindow = true,
-      UseShellExecute = false,
       Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) switch
       {
         true => $"-S {CppProcfilerFolderPath} -DCMAKE_BUILD_TYPE=Release -G \"Visual Studio 17 2022\"",
@@ -117,7 +109,7 @@ public class BuildCppProcfiler : Task
 
   private bool LaunchProcessAndWaitForExit(Process process, string name)
   {
-    var timeout = (int)TimeSpan.FromSeconds(10).TotalMilliseconds;
+    var timeout = (int)TimeSpan.FromSeconds(20).TotalMilliseconds;
 
     if (!process.Start())
     {
@@ -148,10 +140,17 @@ public class BuildCppProcfiler : Task
   {
     try
     {
-      Log.LogMessage($"The process {name} output:");
-      Log.LogMessage(process.StandardOutput.ReadToEnd());
-      Log.LogMessage($"The process {name} errors:");
-      Log.LogMessage(process.StandardError.ReadToEnd());
+      if (process.StartInfo.RedirectStandardOutput)
+      {
+        Log.LogMessage($"The process {name} output:");
+        Log.LogMessage(process.StandardOutput.ReadToEnd()); 
+      }
+
+      if (process.StartInfo.RedirectStandardError)
+      {
+        Log.LogMessage($"The process {name} errors:");
+        Log.LogMessage(process.StandardError.ReadToEnd());
+      }
     }
     catch (Exception ex)
     {
