@@ -1,4 +1,5 @@
 using Procfiler.Core.Collector;
+using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.CppProcfiler;
@@ -30,9 +31,18 @@ public interface IBinaryShadowStacksReader
 [AppComponent]
 public class BinaryShadowStacksReaderImpl : IBinaryShadowStacksReader
 {
+  private readonly IProcfilerLogger myLogger;
+
+  
+  public BinaryShadowStacksReaderImpl(IProcfilerLogger logger)
+  {
+    myLogger = logger;
+  }
+
+  
   public async Task<IReadOnlyDictionary<long, IReadOnlyList<FrameInfo>>> ReadStackEventsAsync(string path)
   {
-    await using var fs = File.OpenRead(path);
+    await using var fs = await PathUtils.OpenReadWithRetryOrThrowAsync(myLogger, path);
 
     if (fs.Length == 0) return new Dictionary<long, IReadOnlyList<FrameInfo>>();
 
