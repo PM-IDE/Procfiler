@@ -13,13 +13,14 @@ public readonly struct FrameInfo
 
   public string Serialize(SessionGlobalData? globalData)
   {
-    if (globalData?.MethodIdToFqn.GetValueOrDefault(FunctionId) is { } fqn)
+    var fqnOrId = globalData?.MethodIdToFqn.GetValueOrDefault(FunctionId) switch
     {
-      var startOrEnd = IsStart ? "start" : " end ";
-      return $"[{TimeStamp}] [{startOrEnd}] {fqn}";
-    }
-
-    return $"[{TimeStamp}] {FunctionId}";
+      { } fqn => fqn,
+      _ => FunctionId.ToString()
+    };
+    
+    var startOrEnd = IsStart ? "start" : " end ";
+    return $"[{TimeStamp}] [{startOrEnd}] {fqnOrId}";
   }
 }
 
