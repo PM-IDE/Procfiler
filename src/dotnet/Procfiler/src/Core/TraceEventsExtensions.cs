@@ -1,5 +1,4 @@
 using Procfiler.Core.Constants.TraceEvents;
-using Procfiler.Core.EventRecord;
 
 namespace Procfiler.Core;
 

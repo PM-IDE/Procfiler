@@ -1,4 +1,3 @@
-using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Processes.Build;
 using Procfiler.Utils.Container;
 

@@ -159,7 +159,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
         const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
         myLogger.LogInformation(Message, process.Id, pathToCsproj); 
       }
-    
+      
       if (events.HasValue)
       {
         await func(events.Value);

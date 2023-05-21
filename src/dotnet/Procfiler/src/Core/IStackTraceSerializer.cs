@@ -1,7 +1,5 @@
 using Procfiler.Core.Collector;
-using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.CppProcfiler;
-using Procfiler.Core.EventsProcessing.Mutators.Core;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 

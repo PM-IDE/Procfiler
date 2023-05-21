@@ -1,7 +1,6 @@
 using Autofac;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.EventsProcessing;
-using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Utils;
 using ProcfilerTests.Core;
 using TestsUtil;
