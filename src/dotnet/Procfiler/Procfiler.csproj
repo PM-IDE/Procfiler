@@ -39,15 +39,18 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ProcfilerBuildTasks\ProcfilerBuildTasks.csproj" />
       <ProjectReference Include="..\ProcfilerEventSources\ProcfilerEventSources.csproj" />
     </ItemGroup>
     
-    <Target Name="BuildCppProcfiler" AfterTargets="Build">
+    <Target Name="BuildCppProcfiler" BeforeTargets="CoreCompile">
         <BuildCppProcfiler CppProcfilerFolderPath="$(SolutionDir)..\cpp\" />
     </Target>
     
-    <Target Name="CopyCppProcfiler" AfterTargets="BuildCppProcfiler">
+    <Target Name="CopyCppProcfiler" AfterTargets="BuildCppProcfiler" BeforeTargets="CoreCompile" 
+            Outputs="$(OutputPath)CppProcfiler.dll">
         <Copy SourceFiles="$(SolutionDir)..\cpp\build\Release\CppProcfiler.dll" DestinationFolder="$(OutputPath)" />
+        <ItemGroup>
+            <Content Include="$(OutputPath)CppProcfiler.dll" CopyToOutputDirectory="Always" />
+        </ItemGroup>
     </Target>
 </Project>
