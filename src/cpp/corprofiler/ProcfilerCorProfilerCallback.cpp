@@ -106,7 +106,7 @@ HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myShadowStack->SuppressFurtherMethodsEvents();
     myShadowStack->WaitForPendingMethodsEvents();
     myShadowStack->AdjustShadowStacks();
-    myShadowStackSerializer->Serialize(*myShadowStack);
+    myShadowStackSerializer->Serialize(myShadowStack);
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();

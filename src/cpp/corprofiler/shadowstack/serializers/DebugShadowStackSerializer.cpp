@@ -11,7 +11,7 @@ void DebugShadowStackSerializer::Init() {
     mySavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
 }
 
-void DebugShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
+void DebugShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
     if (mySavePath.length() == 0) {
         return;
     }
@@ -21,7 +21,7 @@ void DebugShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
     const std::string startPrefix = "[START]: ";
     const std::string endPrefix = "[ END ]: ";
 
-    for (const auto& pair: *(shadowStack.GetAllStacks())) {
+    for (const auto& pair: *(shadowStack->GetAllStacks())) {
         auto threadFrame = "Thread(" + std::to_string(pair.first) + ")\n";
         fout << startPrefix << threadFrame;
         auto indent = 1;

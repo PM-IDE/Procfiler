@@ -10,10 +10,10 @@ void EventPipeShadowStackSerializer::Init() {
     InitializeProvidersAndEvents();
 }
 
-void EventPipeShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
+void EventPipeShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
     HRESULT hr;
 
-    auto events = shadowStack.GetAllStacks();
+    auto events = shadowStack->GetAllStacks();
     std::map<FunctionID, FunctionInfo> resolvedFunctions;
 
     for (const auto& pair: *events) {

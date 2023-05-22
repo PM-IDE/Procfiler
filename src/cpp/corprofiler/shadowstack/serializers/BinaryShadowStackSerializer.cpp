@@ -14,7 +14,7 @@ void BinaryShadowStackSerializer::Init() {
     mySavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
 }
 
-void BinaryShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
+void BinaryShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
     if (mySavePath.length() == 0) {
         myLogger->LogError("Will not serialize shadow stack to binary format as save path was not provided");
         return;
@@ -23,7 +23,7 @@ void BinaryShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
     myLogger->LogInformation("Started serializing shadow stack to binary file");
     std::ofstream fout(mySavePath, std::ios::binary);
 
-    for (const auto& pair: *(shadowStack.GetAllStacks())) {
+    for (const auto& pair: *(shadowStack->GetAllStacks())) {
         auto threadId = (long long)pair.first;
         fout.write((char*)&threadId, sizeof(long long));
 

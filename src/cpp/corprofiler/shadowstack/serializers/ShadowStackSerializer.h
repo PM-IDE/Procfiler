@@ -7,7 +7,7 @@ class ShadowStackSerializer {
 public:
     virtual ~ShadowStackSerializer() = default;
     virtual void Init() = 0;
-    virtual void Serialize(const ShadowStack& shadowStack) = 0;
+    virtual void Serialize(ShadowStack* shadowStack) = 0;
 };
 
 class EventPipeShadowStackSerializer : public ShadowStackSerializer {
@@ -54,7 +54,7 @@ public:
     ~EventPipeShadowStackSerializer() override = default;
 
     void Init() override;
-    void Serialize(const ShadowStack& shadowStack) override;
+    void Serialize(ShadowStack* shadowStack) override;
 };
 
 class BinaryShadowStackSerializer : public ShadowStackSerializer {
@@ -68,7 +68,7 @@ public:
     ~BinaryShadowStackSerializer() override = default;
 
     void Init() override;
-    void Serialize(const ShadowStack& shadowStack) override;
+    void Serialize(ShadowStack* shadowStack) override;
 };
 
 class DebugShadowStackSerializer : public ShadowStackSerializer {
@@ -81,5 +81,5 @@ public:
     ~DebugShadowStackSerializer() override = default;
 
     void Init() override;
-    void Serialize(const ShadowStack& shadowStack) override;
+    void Serialize(ShadowStack* shadowStack) override;
 };
