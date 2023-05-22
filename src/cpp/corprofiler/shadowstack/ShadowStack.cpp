@@ -17,13 +17,21 @@ ShadowStack::~ShadowStack() {
 }
 
 void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp) {
+    if (!myCanProcessFunctionEvents.load(std::memory_order_seq_cst)) return;
+
+    myCurrentAddition.fetch_add(1, std::memory_order_seq_cst);
     const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
     GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
+    myCurrentAddition.fetch_sub(1, std::memory_order_seq_cst);
 }
 
 void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp) {
+    if (!myCanProcessFunctionEvents.load(std::memory_order_seq_cst)) return;
+
+    myCurrentAddition.fetch_add(1, std::memory_order_seq_cst);
     const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
     GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
+    myCurrentAddition.fetch_sub(1, std::memory_order_seq_cst);
 }
 
 std::vector<FunctionEvent>* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId) {
@@ -42,6 +50,11 @@ std::map<ThreadID, EventsWithThreadId*>* ShadowStack::GetAllStacks() const {
 }
 
 void ShadowStack::AdjustShadowStacks() {
+    if (myCanProcessFunctionEvents.load(std::memory_order_seq_cst)) {
+        myLogger->Log("Can not adjust stack while additions are still allowed");
+        return;
+    }
+
     std::stack<FunctionID> stack;
     for (const auto& pair : *GetAllStacks()) {
         auto events = pair.second->Events;
@@ -66,5 +79,14 @@ void ShadowStack::AdjustShadowStacks() {
             events->push_back(FunctionEvent(top, FunctionEventKind::Finished, timestamp));
             stack.pop();
         }
+    }
+}
+
+void ShadowStack::SuppressFurtherMethodsEvents() {
+    myCanProcessFunctionEvents.store(false, std::memory_order_seq_cst);
+}
+
+void ShadowStack::WaitForPendingMethodsEvents() {
+    while (myCurrentAddition.load(std::memory_order_seq_cst) != 0) {
     }
 }

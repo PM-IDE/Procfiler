@@ -103,6 +103,8 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->Log("Shutting down profiler");
 
+    myShadowStack->SuppressFurtherMethodsEvents();
+    myShadowStack->WaitForPendingMethodsEvents();
     myShadowStack->AdjustShadowStacks();
     myShadowStackSerializer->Serialize(*myShadowStack);
 

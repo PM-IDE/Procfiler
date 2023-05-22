@@ -47,6 +47,8 @@ private:
     static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(DWORD threadId);
 
     ProcfilerLogger* myLogger;
+    std::atomic<int> myCurrentAddition{0};
+    std::atomic<bool> myCanProcessFunctionEvents{true};
 public:
     explicit ShadowStack(ProcfilerLogger* logger);
 
@@ -54,6 +56,8 @@ public:
     void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);
     void AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp);
 
+    void SuppressFurtherMethodsEvents();
+    void WaitForPendingMethodsEvents();
     void AdjustShadowStacks();
     std::map<ThreadID, EventsWithThreadId*>* GetAllStacks() const;
 };
