@@ -51,10 +51,12 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
 
 EventsWithThreadId* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId) {
     if (!ourIsInitialized) {
-        ourIsInitialized = true;
         std::unique_lock<std::mutex> lock{ourEventsPerThreadMutex};
-        ourEvents = new EventsWithThreadId(threadId);
-        ourEventsPerThreads[threadId] = ourEvents;
+        if (!ourIsInitialized) {
+            ourEvents = new EventsWithThreadId(threadId);
+            ourEventsPerThreads[threadId] = ourEvents;
+            ourIsInitialized = true;
+        }
     }
 
     return ourEvents;
