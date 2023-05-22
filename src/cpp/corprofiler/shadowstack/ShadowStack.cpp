@@ -17,24 +17,39 @@ ShadowStack::~ShadowStack() {
 }
 
 void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp) {
-    if (!myCanProcessFunctionEvents.load(std::memory_order_seq_cst)) return;
+    if (!CanProcessFunctionEvents()) return;
 
-    myCurrentAddition.fetch_add(1, std::memory_order_seq_cst);
+    FunctionEventProcessingCookie cookie(&this->myCurrentAddition);
     const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
-    GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
-    myCurrentAddition.fetch_sub(1, std::memory_order_seq_cst);
+    GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
 }
 
 void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp) {
-    if (!myCanProcessFunctionEvents.load(std::memory_order_seq_cst)) return;
+    if (!CanProcessFunctionEvents()) return;
 
-    myCurrentAddition.fetch_add(1, std::memory_order_seq_cst);
+    FunctionEventProcessingCookie cookie(&this->myCurrentAddition);
     const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
-    GetOrCreatePerThreadEvents(threadId)->emplace_back(event);
-    myCurrentAddition.fetch_sub(1, std::memory_order_seq_cst);
+    GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
 }
 
-std::vector<FunctionEvent>* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId) {
+void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD threadId, int64_t timestamp) {
+    if (!CanProcessFunctionEvents()) return;
+
+    FunctionEventProcessingCookie cookie(&this->myCurrentAddition);
+
+    auto events = GetOrCreatePerThreadEvents(threadId);
+    auto stack = events->CurrentStack;
+    while (!stack->empty()) {
+        auto top = stack->top();
+        if (top == catcherFunctionId) {
+            break;
+        }
+
+        events->AddFunctionEvent(FunctionEvent(top, FunctionEventKind::Finished, timestamp));
+    }
+}
+
+EventsWithThreadId* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId) {
     if (!ourIsInitialized) {
         ourIsInitialized = true;
         std::unique_lock<std::mutex> lock{ourEventsPerThreadMutex};
@@ -42,7 +57,7 @@ std::vector<FunctionEvent>* ShadowStack::GetOrCreatePerThreadEvents(DWORD thread
         ourEventsPerThreads[threadId] = ourEvents;
     }
 
-    return ourEvents->Events;
+    return ourEvents;
 }
 
 std::map<ThreadID, EventsWithThreadId*>* ShadowStack::GetAllStacks() const {
@@ -89,4 +104,8 @@ void ShadowStack::SuppressFurtherMethodsEvents() {
 void ShadowStack::WaitForPendingMethodsEvents() {
     while (myCurrentAddition.load(std::memory_order_seq_cst) != 0) {
     }
+}
+
+bool ShadowStack::CanProcessFunctionEvents() {
+    return myCanProcessFunctionEvents.load(std::memory_order_seq_cst);
 }

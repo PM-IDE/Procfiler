@@ -378,6 +378,8 @@ HRESULT ProcfilerCorProfilerCallback::ExceptionUnwindFinallyLeave() {
 }
 
 HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
+    auto name = FunctionInfo::GetFunctionInfo(myProfilerInfo, functionId).GetFullName();
+    myShadowStack->HandleExceptionCatchEnter(functionId, GetCurrentManagedThreadId(), GetCurrentTimestamp());
     return S_OK;
 }
 
