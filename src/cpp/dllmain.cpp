@@ -21,5 +21,4 @@ extern "C" void STDMETHODCALLTYPE PassCallbackToProfiler(ProfilerCallback callba
 
 extern "C" void STDMETHODCALLTYPE DoPInvoke(int(*callback)(int), int i)
 {
-    printf("PInvoke received i=%d\n", callback(i));
 }

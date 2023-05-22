@@ -21,21 +21,21 @@ void EventPipeShadowStackSerializer::Serialize(const ShadowStack& shadowStack) {
         for (const auto& event: *(pair.second->Events)) {
             hr = FAILED(LogFunctionEvent(event, threadId, resolvedFunctions));
             if (hr) {
-                myLogger->Log("Failed to send a method start or end event, error: " + std::to_string(hr));
+                myLogger->LogError("Failed to send a method start or end event, error: " + std::to_string(hr));
             }
         }
     }
 
-    myLogger->Log("Logged method start and end events to event pipe");
+    myLogger->LogInformation("Logged method start and end events to event pipe");
 
     for (const auto& pair: resolvedFunctions) {
         hr = FAILED(LogMethodInfo(pair.first, pair.second));
         if (hr) {
-            myLogger->Log("Failed to send a method info event, error: " + std::to_string(hr));
+            myLogger->LogError("Failed to send a method info event, error: " + std::to_string(hr));
         }
     }
 
-    myLogger->Log("Logged all method info events");
+    myLogger->LogInformation("Logged all method info events");
 }
 
 HRESULT EventPipeShadowStackSerializer::DefineProcfilerMethodStartEvent() {
@@ -110,34 +110,34 @@ HRESULT EventPipeShadowStackSerializer::DefineMethodStartOrEndEventInternal(cons
 }
 
 HRESULT EventPipeShadowStackSerializer::InitializeProvidersAndEvents() {
-    myLogger->Log("Starting writing shadow stack to event pipe");
+    myLogger->LogInformation("Starting writing shadow stack to event pipe");
 
     HRESULT hr;
     if ((hr = DefineProcfilerEventPipeProvider()) != S_OK) {
         auto logMessage = "Failed to initialize Event Pipe Provider, HR = " + std::to_string(hr);
-        myLogger->Log(logMessage);
+        myLogger->LogError(logMessage);
         return hr;
     }
 
     if ((hr = DefineProcfilerMethodStartEvent()) != S_OK) {
         auto logMessage = "Failed to initialize method start event, HR = " + std::to_string(hr);
-        myLogger->Log(logMessage);
+        myLogger->LogError(logMessage);
         return hr;
     }
 
     if ((hr = DefineProcfilerMethodEndEvent()) != S_OK) {
         auto logMessage = "Failed to initialize method end event, HR = " + std::to_string(hr);
-        myLogger->Log(logMessage);
+        myLogger->LogError(logMessage);
         return hr;
     }
 
     if ((hr = DefineProcfilerMethodInfoEvent()) != S_OK) {
         auto logMessage = "Failed to initialize method info event, HR = " + std::to_string(hr);
-        myLogger->Log(logMessage);
+        myLogger->LogError(logMessage);
         return hr;
     }
 
-    myLogger->Log("Initialized provider and all needed events");
+    myLogger->LogInformation("Initialized provider and all needed events");
 
     return S_OK;
 }

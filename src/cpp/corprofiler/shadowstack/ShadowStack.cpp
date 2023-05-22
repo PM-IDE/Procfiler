@@ -51,7 +51,7 @@ std::map<ThreadID, EventsWithThreadId*>* ShadowStack::GetAllStacks() const {
 
 void ShadowStack::AdjustShadowStacks() {
     if (myCanProcessFunctionEvents.load(std::memory_order_seq_cst)) {
-        myLogger->Log("Can not adjust stack while additions are still allowed");
+        myLogger->LogError("Can not adjust stack while additions are still allowed");
         return;
     }
 
@@ -71,7 +71,7 @@ void ShadowStack::AdjustShadowStacks() {
                 continue;
             }
 
-            myLogger->Log("Encountered inconsistent stack");
+            myLogger->LogError("Encountered inconsistent stack");
         }
 
         while (!stack.empty()) {

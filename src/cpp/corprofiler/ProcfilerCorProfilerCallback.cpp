@@ -31,7 +31,7 @@ int64_t ProcfilerCorProfilerCallback::GetCurrentTimestamp() {
     LARGE_INTEGER value;
 
     if (!QueryPerformanceCounter2(&value)) {
-        myLogger->Log("Failed to get current timestamp");
+        myLogger->LogInformation("Failed to get current timestamp");
         return -1;
     }
 
@@ -66,12 +66,12 @@ ICorProfilerInfo12* ProcfilerCorProfilerCallback::GetProfilerInfo() {
 }
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
-    myLogger->Log("Started initializing CorProfiler callback");
+    myLogger->LogInformation("Started initializing CorProfiler callback");
     void** ptr = reinterpret_cast<void**>(&this->myProfilerInfo);
 
     HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo12, ptr);
     if (FAILED(result)) {
-        myLogger->Log("Failed to query interface: " + std::to_string(result));
+        myLogger->LogInformation("Failed to query interface: " + std::to_string(result));
         return E_FAIL;
     }
 
@@ -83,7 +83,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 
     result = myProfilerInfo->SetEventMask(eventMask);
     if (FAILED(result)) {
-        myLogger->Log("Failed to set event mask: " + std::to_string(result));
+        myLogger->LogInformation("Failed to set event mask: " + std::to_string(result));
         return E_FAIL;
     }
 
@@ -92,16 +92,16 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
                                                          StaticHandleFunctionTailCall);
 
     if (FAILED(result)) {
-        myLogger->Log("Failed to set enter-leave hooks: " + std::to_string(result));
+        myLogger->LogInformation("Failed to set enter-leave hooks: " + std::to_string(result));
         return E_FAIL;
     }
 
-    myLogger->Log("Initialized CorProfiler callback");
+    myLogger->LogInformation("Initialized CorProfiler callback");
     return S_OK;
 }
 
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
-    myLogger->Log("Shutting down profiler");
+    myLogger->LogInformation("Shutting down profiler");
 
     myShadowStack->SuppressFurtherMethodsEvents();
     myShadowStack->WaitForPendingMethodsEvents();
