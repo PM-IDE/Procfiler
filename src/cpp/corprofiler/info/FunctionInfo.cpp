@@ -109,25 +109,24 @@ std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, 
                                                                customAttributes, NumItems(customAttributes), &count)) &&
            count > 0) {
         for (ULONG i = 0; i < count; i++, totalCount++) {
-            mdToken tkObj;                  // Attributed object.
-            mdToken tkType;                 // Type of the custom attribute.
-            const BYTE* pValue;                // The custom value.
-            ULONG cbValue;                // Length of the custom value.
-            MDUTF8CSTR pMethName = 0;            // Name of custom attribute ctor, if any.
-            PCCOR_SIGNATURE pSig = 0;             // Signature of ctor.
-            ULONG cbSig;                  // Size of the signature.
+            mdToken tkObj;
+            mdToken tkType;
+            const BYTE* pValue;
+            ULONG cbValue;
+            MDUTF8CSTR pMethName = 0;
+            PCCOR_SIGNATURE pSig = 0;
+            ULONG cbSig;
 
             std::vector<WCHAR> className(MAX_CLASS_NAME, (WCHAR) 0);
             DWORD classNameLength = 0;
 
-            hr = metadataImport->GetCustomAttributeProps( // S_OK or error.
-                    customAttributes[i],                    // The attribute.
-                    &tkObj,                     // The attributed object
-                    &tkType,                    // The attributes type.
-                    (const void**) &pValue,      // Put pointer to data here.
-                    &cbValue);                  // Put size here.
+            hr = metadataImport->GetCustomAttributeProps(
+                    customAttributes[i],
+                    &tkObj,
+                    &tkType,
+                    (const void**) &pValue,
+                    &cbValue);
 
-            // Get the member name, and the parent token.
             switch (TypeFromToken(tkType)) {
                 case mdtMemberRef:
                     hr = metadataImport->GetNameFromToken(tkType, &pMethName);
@@ -137,9 +136,8 @@ std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, 
                     hr = metadataImport->GetNameFromToken(tkType, &pMethName);
                     hr = metadataImport->GetMethodProps(tkType, &tkType, 0, 0, 0, 0, &pSig, &cbSig, 0, 0);
                     break;
-            } // switch
+            }
 
-            // Get the type name.
             switch (TypeFromToken(tkType)) {
                 case mdtTypeDef:
                     hr = metadataImport->GetTypeDefProps(tkType, &className[0], MAX_CLASS_NAME, &classNameLength, 0, 0);
@@ -149,7 +147,7 @@ std::unordered_set<wstring> ExtractAttributes(IMetaDataImport2* metadataImport, 
                     hr = metadataImport->GetTypeRefProps(tkType, 0, &className[0], MAX_CLASS_NAME, &classNameLength);
                     attributes.insert(ToString(className, classNameLength));
                     break;
-            } // switch
+            }
         }
     }
     metadataImport->CloseEnum(customAttributeEnum);

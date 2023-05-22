@@ -110,7 +110,6 @@ bool ParseMethod(std::vector<BYTE>::iterator& begin) {
 }
 
 bool ParseArrayShape(std::vector<BYTE>::iterator& begin) {
-    // Format: Rank NumSizes Size* NumLoBounds LoBound*
     ULONG rank = 0, numsizes = 0, size = 0;
     if (!ParseNumber(begin, rank) || !ParseNumber(begin, numsizes)) {
         return false;
@@ -136,7 +135,6 @@ bool ParseArrayShape(std::vector<BYTE>::iterator& begin) {
 }
 
 bool ParseType(std::vector<BYTE>::iterator& begin) {
-
     auto elementType = *begin;
     ULONG number = 0;
     std::advance(begin, 1);
@@ -179,14 +177,12 @@ bool ParseType(std::vector<BYTE>::iterator& begin) {
             return ParseMethod(begin);
 
         case ELEMENT_TYPE_ARRAY:
-            // Format: ARRAY Type ArrayShape
             if (!ParseType(begin)) {
                 return false;
             }
             return ParseArrayShape(begin);
 
         case ELEMENT_TYPE_SZARRAY:
-            // Format: SZARRAY CustomMod* Type
             if (!ParseOptionalCustomMods(begin)) {
                 return false;
             }
@@ -215,8 +211,6 @@ bool ParseType(std::vector<BYTE>::iterator& begin) {
 
         case ELEMENT_TYPE_VAR:
         case ELEMENT_TYPE_MVAR:
-            // Format: VAR Number
-            // Format: MVAR Number
             return ParseNumber(begin, number);
 
         default:

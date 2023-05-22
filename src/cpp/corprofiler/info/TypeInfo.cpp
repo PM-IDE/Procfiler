@@ -56,18 +56,18 @@ TypeInfo::TypeInfo(const std::vector<BYTE>& raw) : myRaw(raw) {
 void TypeInfo::TryParseGeneric() {
     auto iter = myRaw.begin();
     ULONG elementType = 0;
-    ParseNumber(iter, elementType); // => ELEMENT_TYPE_GENERICINST
-    ParseNumber(iter, elementType); // => ELEMENT_TYPE_CLASS, ELEMENT_TYPE_VALUETYPE
+    ParseNumber(iter, elementType);
+    ParseNumber(iter, elementType);
 
     if (elementType != ELEMENT_TYPE_CLASS && elementType != ELEMENT_TYPE_VALUETYPE) {
         return;
     }
 
-    ParseNumber(iter, elementType); // => token
+    ParseNumber(iter, elementType);
 
     ULONG number = 0;
 
-    ParseNumber(iter, number); // => number of generic arguments
+    ParseNumber(iter, number);
 
     for (size_t i = 0; i < number; i++) {
         auto begin = iter;
