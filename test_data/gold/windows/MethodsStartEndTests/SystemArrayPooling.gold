@@ -1,2 +1,2 @@
-	[start] systemarraypooling!Program.<Main>$(class System.String[])
-	[ end ] systemarraypooling!Program.<Main>$(class System.String[])
+	[start] SystemArrayPooling.Program.Main[void..(class.System.String[])]
+	[ end ] SystemArrayPooling.Program.Main[void..(class.System.String[])]
