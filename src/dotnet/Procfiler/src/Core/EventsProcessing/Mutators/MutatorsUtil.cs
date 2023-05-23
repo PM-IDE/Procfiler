@@ -88,16 +88,12 @@ public static class MutatorsUtil
   public static string TransformMethodLikeNameForEventNameConcatenation(string fullMethodName)
   {
     var sb = new StringBuilder(fullMethodName);
-    if (fullMethodName.IndexOf('!') is var index and >= 0)
-    {
-      sb.Remove(0, index + 1);
-    }
 
     for (int i = 0; i < sb.Length; i++)
     {
       if (sb[i] == ' ')
       {
-        sb[i] = TraceEventsConstants.Dot;
+        sb[i] = TraceEventsConstants.Underscore;
       }
 
       sb[i] = char.ToUpper(sb[i]);
@@ -173,6 +169,7 @@ public static class MutatorsUtil
   {
     return string.Intern(methodNamespace +
                          (methodNamespace.EndsWith('.') ? "" : ".") +
-                         methodName);
+                         methodName +
+                         $"[{signature.Replace(' ', '.')}]");
   }
 }
