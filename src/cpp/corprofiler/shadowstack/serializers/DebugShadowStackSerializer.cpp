@@ -2,13 +2,16 @@
 #include "ShadowStackSerializer.h"
 #include "../../../util/env_constants.h"
 
-DebugShadowStackSerializer::DebugShadowStackSerializer(ICorProfilerInfo12* profilerInfo) {
+DebugShadowStackSerializer::DebugShadowStackSerializer(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger) {
     myProfilerInfo = profilerInfo;
+    myLogger = logger;
 }
 
 void DebugShadowStackSerializer::Init() {
-    auto rawEnvVar = std::getenv(shadowStackDebugSavePath.c_str());
-    mySavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
+    if (!TryGetEnvVar(shadowStackDebugSavePath, this->mySavePath)) {
+        myLogger->LogError("Debug shadow stack save path was not defined");
+        return;
+    }
 }
 
 void DebugShadowStackSerializer::Serialize(ShadowStack* shadowStack) {

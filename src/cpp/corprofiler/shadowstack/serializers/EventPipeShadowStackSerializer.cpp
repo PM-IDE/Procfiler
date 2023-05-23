@@ -1,7 +1,7 @@
 #include "ShadowStackSerializer.h"
 
-EventPipeShadowStackSerializer::EventPipeShadowStackSerializer(ProcfilerLogger* logger,
-                                                               ICorProfilerInfo12* profilerInfo) {
+EventPipeShadowStackSerializer::EventPipeShadowStackSerializer(ICorProfilerInfo12* profilerInfo,
+                                                               ProcfilerLogger* logger) {
     myLogger = logger;
     myProfilerInfo = profilerInfo;
 }

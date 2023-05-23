@@ -10,8 +10,10 @@ BinaryShadowStackSerializer::BinaryShadowStackSerializer(ICorProfilerInfo12* pro
 }
 
 void BinaryShadowStackSerializer::Init() {
-    auto rawEnvVar = std::getenv(binaryStackSavePath.c_str());
-    mySavePath = rawEnvVar == nullptr ? "" : std::string(rawEnvVar);
+    if (!TryGetEnvVar(binaryStackSavePath, this->mySavePath)) {
+        myLogger->LogError("Binary shadow stack save path was not defined");
+        return;
+    }
 }
 
 void BinaryShadowStackSerializer::Serialize(ShadowStack* shadowStack) {

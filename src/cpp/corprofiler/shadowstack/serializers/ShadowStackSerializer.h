@@ -50,7 +50,7 @@ private:
                                                        UINT32 eventId);
 
 public:
-    explicit EventPipeShadowStackSerializer(ProcfilerLogger* logger, ICorProfilerInfo12* profilerInfo);
+    explicit EventPipeShadowStackSerializer(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
     ~EventPipeShadowStackSerializer() override = default;
 
     void Init() override;
@@ -75,9 +75,10 @@ class DebugShadowStackSerializer : public ShadowStackSerializer {
 private:
     std::string mySavePath;
     ICorProfilerInfo12* myProfilerInfo;
+    ProcfilerLogger* myLogger;
 
 public:
-    explicit DebugShadowStackSerializer(ICorProfilerInfo12* profilerInfo);
+    explicit DebugShadowStackSerializer(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
     ~DebugShadowStackSerializer() override = default;
 
     void Init() override;

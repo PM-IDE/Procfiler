@@ -1,5 +1,6 @@
 #include "ProcfilerCorProfilerCallback.h"
 #include "../util/performance_counter.h"
+#include "../util/env_constants.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -76,7 +77,15 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     }
 
     myShadowStack = new ShadowStack(myLogger);
-    myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo);
+
+    if (IsEnvVarDefined(binaryStackSavePath)) {
+        myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
+    } else if (IsEnvVarDefined(shadowStackDebugSavePath)) {
+        myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo, myLogger);
+    } else {
+        myShadowStackSerializer = new EventPipeShadowStackSerializer(myProfilerInfo, myLogger);
+    }
+
     myShadowStackSerializer->Init();
 
     DWORD eventMask = COR_PRF_ALL;

@@ -12,11 +12,8 @@ set(SOURCES
     corprofiler/ProcfilerCorProfilerCallback.cpp
     guids.cpp
     logging/ProcfilerLogger.cpp
-    corprofiler/info/FunctionInfo.h
     corprofiler/info/FunctionInfo.cpp
-    corprofiler/info/FunctionInfo.h
     corprofiler/info/TypeInfo.cpp
-    corprofiler/info/TypeInfo.h
     corprofiler/info/MethodSignature.cpp
     corprofiler/info/MethodSignature.h
     corprofiler/info/GenericMethodSignature.cpp
@@ -33,7 +30,8 @@ set(SOURCES
     util/env_constants.h
     corprofiler/shadowstack/serializers/EventPipeShadowStackSerializer.cpp
     corprofiler/shadowstack/serializers/BinaryShadowStackSerializer.cpp
-    corprofiler/shadowstack/serializers/DebugShadowStackSerializer.cpp)
+    corprofiler/shadowstack/serializers/DebugShadowStackSerializer.cpp
+    util/env_constants.cpp)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 include_directories(./3rdparty/coreclr/inc)
