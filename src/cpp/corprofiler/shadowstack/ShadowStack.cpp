@@ -20,6 +20,9 @@ void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timest
     if (!CanProcessFunctionEvents()) return;
 
     FunctionEventProcessingCookie cookie(&this->myCurrentAddition);
+
+    if (!CanProcessFunctionEvents()) return;
+
     const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
     GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
 }
@@ -28,6 +31,9 @@ void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t tim
     if (!CanProcessFunctionEvents()) return;
 
     FunctionEventProcessingCookie cookie(&this->myCurrentAddition);
+
+    if (!CanProcessFunctionEvents()) return;
+
     const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
     GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
 }
@@ -36,6 +42,8 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
     if (!CanProcessFunctionEvents()) return;
 
     FunctionEventProcessingCookie cookie(&this->myCurrentAddition);
+
+    if (!CanProcessFunctionEvents()) return;
 
     auto events = GetOrCreatePerThreadEvents(threadId);
     auto stack = events->CurrentStack;
