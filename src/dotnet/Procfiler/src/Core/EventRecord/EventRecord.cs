@@ -25,7 +25,7 @@ public class EventRecord
   }
 
   public EventRecord(TraceEvent @event, int managedThreadId)
-    : this(@event.TimeStamp.ToUniversalTime().Ticks, @event.EventName, managedThreadId, @event.ActivityID)
+    : this(@event.TimeStampQPC, @event.EventName, managedThreadId, @event.ActivityID)
   {
   }
 }
