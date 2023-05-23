@@ -56,7 +56,7 @@ public class KnownSolution
     Name = name;
     Tfm = tfm;
     ExpectedEventsCount = expectedEventsCount;
-    NamespaceFilterPattern = name.ToLower();
+    NamespaceFilterPattern = name;
   }
 
 

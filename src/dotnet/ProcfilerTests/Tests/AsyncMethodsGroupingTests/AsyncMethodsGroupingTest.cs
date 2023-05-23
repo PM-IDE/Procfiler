@@ -30,7 +30,7 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
 
   private static string DumpsAllocationsWith(IReadOnlyList<EventRecordWithMetadata> events)
   {
-    var regex = new Regex("Class[0-9]");
+    var regex = new Regex("[a-zA-Z]+.Class[0-9]");
     var sb = new StringBuilder();
     foreach (var eventRecord in events)
     {
