@@ -93,7 +93,7 @@ public static class MutatorsUtil
     {
       if (sb[i] == ' ')
       {
-        sb[i] = TraceEventsConstants.Underscore;
+        sb[i] = TraceEventsConstants.Dot;
       }
 
       sb[i] = char.ToUpper(sb[i]);

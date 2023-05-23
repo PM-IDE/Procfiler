@@ -202,7 +202,7 @@ public class ClrEventsCollector : IClrEventsCollector
 
     if (id is { } && name is { })
     {
-      return new TypeIdToName(Convert.ToInt64(id, 16), name);
+      return new TypeIdToName(id.ParseId(), name);
     }
 
     return null;
@@ -221,7 +221,7 @@ public class ClrEventsCollector : IClrEventsCollector
     if (name is { } && methodNamespace is { } && signature is { } && methodId is { })
     {
       var mergedName = MutatorsUtil.ConcatenateMethodDetails(name, methodNamespace, signature);
-      return new MethodIdToFqn(Convert.ToInt64(methodId), mergedName);
+      return new MethodIdToFqn(methodId.ParseId(), mergedName);
     }
     
     return null;
