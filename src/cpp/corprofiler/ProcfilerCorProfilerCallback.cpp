@@ -76,7 +76,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     }
 
     myShadowStack = new ShadowStack(myLogger);
-    myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
+    myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo);
     myShadowStackSerializer->Init();
 
     DWORD eventMask = COR_PRF_ALL;
@@ -378,7 +378,6 @@ HRESULT ProcfilerCorProfilerCallback::ExceptionUnwindFinallyLeave() {
 }
 
 HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
-    auto name = FunctionInfo::GetFunctionInfo(myProfilerInfo, functionId).GetFullName();
     myShadowStack->HandleExceptionCatchEnter(functionId, GetCurrentManagedThreadId(), GetCurrentTimestamp());
     return S_OK;
 }
