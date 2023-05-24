@@ -50,9 +50,9 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
     var processingContext = EventsProcessingContext.DoEverything(events.Events, events.GlobalData);
     Container.Resolve<IUnitedEventsProcessor>().ProcessFullEventLog(processingContext);
     var methods = Container.Resolve<IByMethodsSplitter>().Split(events, string.Empty, false, false, true);
-    const string AsyncMethodsPrefix = "ASYNC_";
+    var asyncMethodsPrefix = Container.Resolve<IAsyncMethodsGrouper>().AsyncMethodsPrefix;
 
-    var asyncMethods = methods.Where(pair => pair.Key.StartsWith(AsyncMethodsPrefix));
+    var asyncMethods = methods.Where(pair => pair.Key.StartsWith(asyncMethodsPrefix));
     var sb = new StringBuilder();
     var filter = new Regex(knownSolution.NamespaceFilterPattern);
     

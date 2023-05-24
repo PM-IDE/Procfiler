@@ -7,6 +7,9 @@ namespace Procfiler.Core.SplitByMethod;
 
 public interface IAsyncMethodsGrouper
 {
+  string AsyncMethodsPrefix { get; }
+  
+  
   IDictionary<string, IList<IReadOnlyList<EventRecordWithMetadata>>> GroupAsyncMethods(
     IEnumerable<string> methodsNames,
     IDictionary<int, IEventsCollection> managedThreadsEvents);
@@ -26,6 +29,9 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
   private readonly IProcfilerLogger myLogger;
 
 
+  public string AsyncMethodsPrefix => "ASYNC_";
+  
+  
   public AsyncMethodsGrouper(IProcfilerLogger logger)
   {
     myLogger = logger;
@@ -42,7 +48,7 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
     return DiscoverLogicalAsyncMethodsExecutions(asyncMethodsToTraces);
   }
 
-  private static IDictionary<string, List<AsyncMethodTrace>> CreateAsyncMethodsToTracesMap(
+  private IDictionary<string, List<AsyncMethodTrace>> CreateAsyncMethodsToTracesMap(
     IDictionary<string, string> asyncMethodsWithTypeNames,
     IDictionary<int, IEventsCollection> managedThreadsEvents)
   {
@@ -78,7 +84,7 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
           {
             var listOfEvents = new List<EventRecordWithMetadata> { eventRecord };
             var newAsyncMethodTraces = new AsyncMethodTrace(lastSeenTaskEvent, listOfEvents);
-            var stateMachineName = $"ASYNC_{asyncMethodsWithTypeNames[frame]}";
+            var stateMachineName = $"{AsyncMethodsPrefix}{asyncMethodsWithTypeNames[frame]}";
             var listOfAsyncTraces = asyncMethodsToTraces.GetOrCreate(stateMachineName, () => new List<AsyncMethodTrace>());
             
             listOfAsyncTraces.Add(newAsyncMethodTraces);
