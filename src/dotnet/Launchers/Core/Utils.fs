@@ -39,36 +39,37 @@ module ProcfilerScriptsUtils =
         Repeat = 50 
     }
 
-    let private createProcess fileName args =
+    let private createProcess fileName args workingDirectory =
         let startInfo = ProcessStartInfo(fileName, args)
-        startInfo.UseShellExecute <- false
-        startInfo.RedirectStandardOutput <- true
-        startInfo.RedirectStandardError <- true
+        startInfo.WorkingDirectory <- workingDirectory
         new Process(StartInfo=startInfo)
         
-    let buildSolutionFolder tfm solutionFolder =
-        let buildProcess = createProcess "dotnet" $"build {solutionFolder} --framework {tfm} -c Release"
+    let buildProjectFromSolution solutionDirectory projectName =
+        let args = $"msbuild /t:{projectName} /p:Configuration=\"Release\""
+        let buildProcess = createProcess "dotnet" args solutionDirectory
+        
         match buildProcess.Start() with
         | false ->
-            printfn $"Build process for solution {solutionFolder} failed to start"
+            printfn $"Build process for solution {solutionDirectory} failed to start"
         | true ->
             buildProcess.WaitForExit()
             match buildProcess.ExitCode with
-            | 0 -> printfn $"Successfully built {solutionFolder}"
+            | 0 -> printfn $"Successfully built {solutionDirectory}"
             | _ ->
-                printfn $"Error happened when building solution {solutionFolder}:"
-                buildProcess.StandardOutput.ReadToEnd() |> Console.WriteLine
+                printfn $"Error happened when building solution {solutionDirectory}:"
                 
     let buildProcfiler =
         let parentDirectory = Directory.GetCurrentDirectory() |> Directory.GetParent
-        parentDirectory.FullName |> Console.WriteLine
         let dir = parentDirectory.Parent.Parent.Parent.Parent.FullName
-        let procfilerSolutionPath = Path.Combine(dir, "dotnet", "Procfiler")
+        let dotnetSourcePath = Path.Combine(dir, "dotnet")
         
         let framework = net7
-        printfn $"Started building Procfiler at {procfilerSolutionPath}"
-        buildSolutionFolder framework procfilerSolutionPath
-        Path.Combine(procfilerSolutionPath, "bin", "Release", framework, "Procfiler.dll")
+        printfn "Started building ProcfilerBuildTasks"
+        buildProjectFromSolution dotnetSourcePath "ProcfilerBuildTasks"
+        
+        printfn "Started building whole Procfiler solution"
+        buildProjectFromSolution dotnetSourcePath "Procfiler"
+        Path.Combine(dotnetSourcePath, "Procfiler", "bin", "Release", framework, "Procfiler.dll")
         
     let getAllCsprojFiles solutionsDirectory =
         Directory.GetDirectories(solutionsDirectory) |>
@@ -84,7 +85,7 @@ module ProcfilerScriptsUtils =
             Directory.CreateDirectory path
             
     let applicationNameFromCsproj (dllPath: string) =
-        let csprojName = Path.GetFileName(dllPath).ToLower()
+        let csprojName = Path.GetFileName(dllPath)
         csprojName.AsSpan().Slice(0, csprojName.IndexOf('.')).ToString()
         
     let getAllSolutionsFrom directory =
@@ -104,7 +105,9 @@ module ProcfilerScriptsUtils =
         
     let launchProcfiler csprojPath outputFolder createConfig =
         let args = createArgumentsString csprojPath outputFolder createConfig
-        let procfilerProcess = createProcess "dotnet" $"{buildProcfiler} {args}"
+        let workingDirectory = Path.GetDirectoryName csprojPath
+        let procfilerProcess = createProcess "dotnet" $"{buildProcfiler} {args}" workingDirectory
+        
         match procfilerProcess.Start() with
         | true ->
             let appName = applicationNameFromCsproj csprojPath
@@ -118,5 +121,3 @@ module ProcfilerScriptsUtils =
             let appName = applicationNameFromCsproj csprojPath
             printfn $"Finished executing procfiler for {appName}"
         | _ -> ()
-        
-        printfn $"Output: {procfilerProcess.StandardOutput.ReadToEnd()}"
