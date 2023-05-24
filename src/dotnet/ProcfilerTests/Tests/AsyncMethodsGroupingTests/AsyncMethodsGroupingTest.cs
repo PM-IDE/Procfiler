@@ -25,7 +25,7 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
   {
     ExecuteTestWithGold(
       solution, 
-      events => ExecuteAsyncGroupingTest(events, DumpsAllocationsWith));
+      events => ExecuteAsyncGroupingTest(events, solution, DumpsAllocationsWith));
   }
 
   private static string DumpsAllocationsWith(IReadOnlyList<EventRecordWithMetadata> events)
@@ -43,7 +43,9 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
   }
   
   private string ExecuteAsyncGroupingTest(
-    CollectedEvents events, Func<IReadOnlyList<EventRecordWithMetadata>, string> tracesDumber)
+    CollectedEvents events, 
+    KnownSolution knownSolution,
+    Func<IReadOnlyList<EventRecordWithMetadata>, string> tracesDumber)
   {
     var processingContext = EventsProcessingContext.DoEverything(events.Events, events.GlobalData);
     Container.Resolve<IUnitedEventsProcessor>().ProcessFullEventLog(processingContext);
@@ -52,9 +54,12 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
 
     var asyncMethods = methods.Where(pair => pair.Key.StartsWith(AsyncMethodsPrefix));
     var sb = new StringBuilder();
-
+    var filter = new Regex(knownSolution.NamespaceFilterPattern);
+    
     foreach (var (methodName, methodsTraces) in asyncMethods)
     {
+      if (!filter.IsMatch(methodName)) continue;
+      
       sb.Append(methodName);
       foreach (var trace in methodsTraces.OrderBy(t => t[0].Stamp))
       {
