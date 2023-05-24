@@ -1,5 +1,6 @@
 ﻿module IntegrationTests.SplitByThreadsTests
 
+open System
 open System.IO
 open NUnit.Framework
 open Scripts.Core
@@ -22,9 +23,15 @@ let SplitByThreadsTest projectName =
         SplitByThreads.launchProcfilerCustomConfig csprojPath tempDir createConfigInternal
         
         let files = Directory.GetFiles(tempDir)
-        files |> Array.iter (fun filePath -> Assert.That(FileInfo(filePath).Length, Is.GreaterThan 0))
+        let mutable threadIds = []
+        files |> Array.iter (fun filePath ->
+            Assert.That(FileInfo(filePath).Length, Is.GreaterThan 0)
+            
+            let mutable threadId = 0;
+            if Int32.TryParse(Path.GetFileNameWithoutExtension(filePath), &threadId) then
+                threadIds <- threadIds @ [ threadId ])
         
-        let fileNamesSet = files |> Array.map Path.GetFileNameWithoutExtension |> Set.ofSeq
-        Assert.That(fileNamesSet.Contains "stacks", Is.EqualTo true)
+        let fileNames = files |> Array.map Path.GetFileNameWithoutExtension |> Set.ofArray
+        threadIds |> List.iter (fun threadId -> Assert.That(fileNames.Contains $"stacks_{threadId}"))
         
     executeTestWithTempFolder doTest
