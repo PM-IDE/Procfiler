@@ -83,6 +83,7 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
             
             listOfAsyncTraces.Add(newAsyncMethodTraces);
             lastTracesStack.Push(newAsyncMethodTraces);
+            lastSeenTaskEvent = null;
           }
           else
           {
