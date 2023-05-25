@@ -1,50 +1,46 @@
-ASYNC_!System.Resources.ResourceFallbackManager+<GetEnumerator>d__5
+ASYNC_NotSimpleAsyncAwait.Program+<Main>d__0
 Trace:
 
 
-ASYNC_!Program+<<Main>$>d__0
+ASYNC_NotSimpleAsyncAwait.Program+<>c__DisplayClass0_0+<<Main>b__1>d
 Trace:
-
-
-ASYNC_!Program+<>c__DisplayClass0_0+<<<Main>$>b__1>d
-Trace:
-Class1
-Class1
-Class1
-Class1
-Class1
-Class1
-Class1
-Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
+NotSimpleAsyncAwait.Class1
 
 Trace:
-Class2
-Class2
-Class2
-Class2
-Class2
-Class2
-Class2
-Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
+NotSimpleAsyncAwait.Class2
 
 Trace:
-Class3
-Class3
-Class3
-Class3
-Class3
-Class3
-Class3
-Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
+NotSimpleAsyncAwait.Class3
 
 Trace:
-Class4
-Class4
-Class4
-Class4
-Class4
-Class4
-Class4
-Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
+NotSimpleAsyncAwait.Class4
 
 
