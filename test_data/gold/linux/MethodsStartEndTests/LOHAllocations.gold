@@ -1,2 +1,2 @@
-	[start] lohallocations!Program.<Main>$(class System.String[])
-	[ end ] lohallocations!Program.<Main>$(class System.String[])
+	[start] LOHAllocations.Program.Main[void..(class.System.String[])]
+	[ end ] LOHAllocations.Program.Main[void..(class.System.String[])]
