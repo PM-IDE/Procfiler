@@ -1,6 +1,6 @@
-Method: unsafefixed!Program.<Main>$(class System.String[])
+Method: UnsafeFixed.Program.Main[void..(class.System.String[])]
 
 Trace 0
-	[start] unsafefixed!Program.<Main>$(class System.String[])
-	[ end ] unsafefixed!Program.<Main>$(class System.String[])
+	[start] UnsafeFixed.Program.Main[void..(class.System.String[])]
+	[ end ] UnsafeFixed.Program.Main[void..(class.System.String[])]
 

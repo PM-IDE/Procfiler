@@ -1,21 +1,14 @@
-Method: exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
+Method: ExceptionTryCatchFinallyWhen.Program.<Main>g__Throw|0_0[void..()]
 
 Trace 0
-	[start] exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
-		[start] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-		[ end ] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-	[ end ] exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
+	[start] ExceptionTryCatchFinallyWhen.Program.<Main>g__Throw|0_0[void..()]
+	[ end ] ExceptionTryCatchFinallyWhen.Program.<Main>g__Throw|0_0[void..()]
 
-Method: exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
+Method: ExceptionTryCatchFinallyWhen.Program.Main[void..(class.System.String[])]
 
 Trace 0
-	[start] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-	[ end ] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-Trace 1
-	[start] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-		[start] exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
-			[start] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-			[ end ] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
-		[ end ] exceptiontrycatchfinallywhen!Program.<<Main>$>g__Throw|0_0()
-	[ end ] exceptiontrycatchfinallywhen!Program.<Main>$(class System.String[])
+	[start] ExceptionTryCatchFinallyWhen.Program.Main[void..(class.System.String[])]
+		[start] ExceptionTryCatchFinallyWhen.Program.<Main>g__Throw|0_0[void..()]
+		[ end ] ExceptionTryCatchFinallyWhen.Program.<Main>g__Throw|0_0[void..()]
+	[ end ] ExceptionTryCatchFinallyWhen.Program.Main[void..(class.System.String[])]
 

@@ -1,2 +1,2 @@
-	[start] unsafefixed!Program.<Main>$(class System.String[])
-	[ end ] unsafefixed!Program.<Main>$(class System.String[])
+	[start] UnsafeFixed.Program.Main[void..(class.System.String[])]
+	[ end ] UnsafeFixed.Program.Main[void..(class.System.String[])]
