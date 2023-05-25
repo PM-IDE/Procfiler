@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <stack>
+#include <atomic>
 #include "../../util/util.h"
 #include "../info/FunctionInfo.h"
 

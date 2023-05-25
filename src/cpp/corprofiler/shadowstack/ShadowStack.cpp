@@ -1,5 +1,4 @@
 #include "ShadowStack.h"
-#include "../../util/env_constants.h"
 #include <mutex>
 #include <stack>
 
