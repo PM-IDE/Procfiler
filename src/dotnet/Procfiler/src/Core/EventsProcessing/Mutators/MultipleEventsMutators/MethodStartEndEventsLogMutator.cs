@@ -48,15 +48,27 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
     }
 
     using var shadowStack = foundShadowStack;
+    
     var enumerator = shadowStack.GetEnumerator();
     enumerator.MoveNext();
-    var finished = false;
     
+    var finished = AddMethodsEventsToCollection(events, context, managedThreadId, enumerator);
+    
+    if (!finished)
+    {
+      AddRemainingMethodsEvents(events, context, managedThreadId, enumerator);
+    }
+  }
+
+  private bool AddMethodsEventsToCollection(
+    IEventsCollection events, SessionGlobalData context, int managedThreadId, IEnumerator<FrameInfo> enumerator)
+  {
+    var finished = false;
     events.ApplyNotPureActionForAllEvents((ptr, eventRecord) =>
     {
       while (!finished && enumerator.Current.TimeStamp < eventRecord.Stamp)
       {
-        if (TryCreateMethodEvent(enumerator.Current) is { } createMethodEvent)
+        if (TryCreateMethodEvent(enumerator.Current, context, managedThreadId) is { } createMethodEvent)
         {
           events.InsertBefore(ptr, createMethodEvent);
         }
@@ -71,36 +83,39 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
       return false;
     });
 
+    return finished;
+  }
+
+  private void AddRemainingMethodsEvents(
+    IEventsCollection events, SessionGlobalData context, int managedThreadId, IEnumerator<FrameInfo> enumerator)
+  {
     do
     {
-      if (finished) break;
-      
       var last = events.Last;
       Debug.Assert(last is { });
 
-      if (TryCreateMethodEvent(enumerator.Current) is { } createMethodEvent)
+      if (TryCreateMethodEvent(enumerator.Current, context, managedThreadId) is { } createMethodEvent)
       {
         events.InsertAfter(last.Value, createMethodEvent);
       }
     } while (enumerator.MoveNext());
-
-    return;
-
-    EventRecordWithMetadata? TryCreateMethodEvent(FrameInfo frameInfo)
+  }
+  
+  private EventRecordWithMetadata? TryCreateMethodEvent(
+    FrameInfo frameInfo, SessionGlobalData context, int managedThreadId)
+  {
+    var methodId = frameInfo.FunctionId;
+    if (!context.MethodIdToFqn.TryGetValue(methodId, out var fqn))
     {
-      var methodId = frameInfo.FunctionId;
-      if (!context.MethodIdToFqn.TryGetValue(methodId, out var fqn))
-      {
-        myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
-        return null;
-      }
-      
-      var creationContext = new EventsCreationContext(frameInfo.TimeStamp, managedThreadId);
-      return frameInfo.IsStart switch
-      {
-        true => myEventsFactory.CreateMethodStartEvent(creationContext, fqn),
-        false => myEventsFactory.CreateMethodEndEvent(creationContext, fqn)
-      };
+      myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
+      return null;
     }
+
+    var creationContext = new EventsCreationContext(frameInfo.TimeStamp, managedThreadId);
+    return frameInfo.IsStart switch
+    {
+      true => myEventsFactory.CreateMethodStartEvent(creationContext, fqn),
+      false => myEventsFactory.CreateMethodEndEvent(creationContext, fqn)
+    };
   }
 }
