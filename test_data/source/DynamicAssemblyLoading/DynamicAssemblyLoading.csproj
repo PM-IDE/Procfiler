@@ -8,15 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="SomeAssembly\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="SomeAssembly\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="SomeAssembly\**" />
+    <AdditionalFiles Include="SomeAssembly\SomeAssembly.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AdditionalFiles>
   </ItemGroup>
 
 </Project>
