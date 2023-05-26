@@ -16,17 +16,10 @@ public class StackTraceSerializer : IStackTraceSerializer
 {
   public async ValueTask SerializeStackTracesAsync(SessionGlobalData globalData, string directory)
   {
-    foreach (var shadowStack in globalData.Stacks.EnumerateStacks(false))
+    foreach (var shadowStack in globalData.Stacks.EnumerateStacks())
     {
-      try
-      {
-        var path = Path.Combine(directory, $"stacks_{shadowStack.ManagedThreadId}.txt");
-        await SerializeStackAsync(shadowStack, globalData, path);
-      }
-      finally
-      {
-        shadowStack.Dispose();
-      }
+      var path = Path.Combine(directory, $"stacks_{shadowStack.ManagedThreadId}.txt");
+      await SerializeStackAsync(shadowStack, globalData, path);
     }
   }
 

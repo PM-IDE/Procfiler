@@ -4,7 +4,7 @@ namespace Procfiler.Core.CppProcfiler;
 
 public interface IShadowStacks
 {
-  IEnumerable<IShadowStack> EnumerateStacks(bool disposeStack);
+  IEnumerable<IShadowStack> EnumerateStacks();
   IShadowStack? FindShadowStack(long managedThreadId);
 }
 
@@ -18,7 +18,7 @@ public class EmptyShadowStacks : IShadowStacks
   }
   
   
-  public IEnumerable<IShadowStack> EnumerateStacks(bool disposeStack) => EmptyCollections<IShadowStack>.EmptyList;
+  public IEnumerable<IShadowStack> EnumerateStacks() => EmptyCollections<IShadowStack>.EmptyList;
   public IShadowStack? FindShadowStack(long managedThreadId) => null;
 }
 
@@ -40,24 +40,14 @@ public class ShadowStacksImpl : IShadowStacks
   }
 
   
-  public IEnumerable<IShadowStack> EnumerateStacks(bool disposeStack)
+  public IEnumerable<IShadowStack> EnumerateStacks()
   {
-    var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
-    var br = new BinaryReader(fs);
+    using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
+    using var br = new BinaryReader(fs);
 
     foreach (var shadowStack in EnumerateShadowStacksInternal(br))
     {
-      try
-      {
-        yield return shadowStack;
-      }
-      finally
-      {
-        if (disposeStack)
-        {
-          shadowStack.Dispose(); 
-        }
-      }
+      yield return shadowStack;
     }
   }
 
@@ -93,29 +83,27 @@ public class ShadowStacksImpl : IShadowStacks
 
   private void InitializeThreadIdsToOffsetsIfNeeded()
   {
-    if (!myIsInitialized)
+    if (myIsInitialized) return;
+
+    lock (mySync)
     {
-      lock (mySync)
+      if (myIsInitialized) return;
+
+      try
       {
-        if (!myIsInitialized)
+        using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
+        using var br = new BinaryReader(fs);
+
+        foreach (var shadowStack in EnumerateShadowStacksInternal(br))
         {
-          try
-          {
-            using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
-            using var br = new BinaryReader(fs);
-
-            foreach (var shadowStack in EnumerateShadowStacksInternal(br))
-            {
-              myManagedThreadsToOffsets[shadowStack.ManagedThreadId] = fs.Position;
-            }
-
-            myIsInitialized = true;
-          }
-          catch (Exception ex)
-          {
-            myLogger.LogError(ex, "Failed to initialize shadow-stacks position");
-          }
+          myManagedThreadsToOffsets[shadowStack.ManagedThreadId] = fs.Position;
         }
+
+        myIsInitialized = true;
+      }
+      catch (Exception ex)
+      {
+        myLogger.LogError(ex, "Failed to initialize shadow-stacks position");
       }
     }
   }
