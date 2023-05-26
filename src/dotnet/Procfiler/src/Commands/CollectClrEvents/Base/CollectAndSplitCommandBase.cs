@@ -75,7 +75,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
         await ProcessEventsAsync(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
       }
 
-      await SerializeStacksAsync(context, globalData);
+      SerializeStacks(context, globalData);
     });
   }
 
@@ -111,9 +111,9 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     await myDelegatingEventsSerializer.SerializeEventsAsync(mergedEvents, fs, outputFormat);
   }
 
-  private ValueTask SerializeStacksAsync(CollectClrEventsContext context, SessionGlobalData globalData)
+  private void SerializeStacks(CollectClrEventsContext context, SessionGlobalData globalData)
   {
-    return myStackTraceSerializer.SerializeStackTracesAsync(globalData, context.CommonContext.OutputPath);
+    myStackTraceSerializer.SerializeStackTraces(globalData, context.CommonContext.OutputPath);
   }
 
   private static EventsProcessingContext CreateContext(

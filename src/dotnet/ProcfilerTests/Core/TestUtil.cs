@@ -79,8 +79,8 @@ public static class TestUtil
     var savePath = PathUtils.CreateTempFolderPath();
     var serializer = container.Resolve<IStackTraceSerializer>();
     Console.WriteLine($"Serializing broken stacks at {savePath}, thread ID {brokenThreadId}");
-    
-    serializer.SerializeStackTracesAsync(globalData, savePath).AsTask().GetAwaiter().GetResult();
+
+    serializer.SerializeStackTraces(globalData, savePath);
   }
 
   public static EventRecordWithMetadata CreateRandomEvent(string eventClass, EventMetadata metadata)

@@ -54,12 +54,13 @@ public class ShadowStacksImpl : IShadowStacks
   private static IEnumerable<IShadowStack> EnumerateShadowStacksInternal(BinaryReader br)
   {
     var fs = br.BaseStream;
-    while (fs.Position < fs.Length)
+    var position = 0L;
+    while (position < fs.Length)
     {
-      var shadowStack = new ShadowStackImpl(br, fs.Position);
+      var shadowStack = new ShadowStackImpl(br, position);
       yield return shadowStack;
 
-      fs.Seek(shadowStack.BytesLength, SeekOrigin.Current);
+      position += shadowStack.BytesLength;
     }
   }
 

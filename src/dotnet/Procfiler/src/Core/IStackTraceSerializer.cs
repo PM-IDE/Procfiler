@@ -7,29 +7,29 @@ namespace Procfiler.Core;
 
 public interface IStackTraceSerializer
 {
-  ValueTask SerializeStackTracesAsync(SessionGlobalData globalData, string directory);
-  ValueTask SerializeStackAsync(IShadowStack stack, SessionGlobalData globalData, string savePath);
+  void SerializeStackTraces(SessionGlobalData globalData, string directory);
+  void SerializeStack(IShadowStack stack, SessionGlobalData globalData, string savePath);
 }
 
 [AppComponent]
 public class StackTraceSerializer : IStackTraceSerializer
 {
-  public async ValueTask SerializeStackTracesAsync(SessionGlobalData globalData, string directory)
+  public void SerializeStackTraces(SessionGlobalData globalData, string directory)
   {
     foreach (var shadowStack in globalData.Stacks.EnumerateStacks())
     {
       var path = Path.Combine(directory, $"stacks_{shadowStack.ManagedThreadId}.txt");
-      await SerializeStackAsync(shadowStack, globalData, path);
+      SerializeStack(shadowStack, globalData, path);
     }
   }
 
-  public async ValueTask SerializeStackAsync(
+  public void SerializeStack(
     IShadowStack shadowStack, SessionGlobalData globalData, string savePath)
   {
     var encoding = Encoding.UTF8;
     var sb = new StringBuilder();
 
-    await using var fs = File.OpenWrite(savePath);
+    using var fs = File.OpenWrite(savePath);
 
     sb = sb.Clear();
     var indent = 0;
@@ -55,6 +55,6 @@ public class StackTraceSerializer : IStackTraceSerializer
     }
 
     sb.AppendNewLine();
-    await fs.WriteAsync(encoding.GetBytes(sb.ToString()));
+    fs.Write(encoding.GetBytes(sb.ToString()));
   }
 }
