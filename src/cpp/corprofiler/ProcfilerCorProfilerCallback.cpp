@@ -76,20 +76,9 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
         return E_FAIL;
     }
 
-    myShadowStack = new ShadowStack(myLogger);
-
-    if (IsEnvVarDefined(binaryStackSavePath)) {
-        myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
-    } else if (IsEnvVarDefined(shadowStackDebugSavePath)) {
-        myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo, myLogger);
-    } else {
-        myShadowStackSerializer = new EventPipeShadowStackSerializer(myProfilerInfo, myLogger);
-    }
-
-    myShadowStackSerializer->Init();
+    InitializeShadowStack();
 
     DWORD eventMask = COR_PRF_ALL;
-
     result = myProfilerInfo->SetEventMask(eventMask);
     if (FAILED(result)) {
         myLogger->LogInformation("Failed to set event mask: " + std::to_string(result));
@@ -106,6 +95,27 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     }
 
     myLogger->LogInformation("Initialized CorProfiler callback");
+    return S_OK;
+}
+
+void ProcfilerCorProfilerCallback::InitializeShadowStack() {
+    myShadowStack = new ShadowStack(myLogger);
+
+    if (IsEnvVarDefined(binaryStackSavePath)) {
+        myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
+    } else if (IsEnvVarDefined(shadowStackDebugSavePath)) {
+        myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo, myLogger);
+    } else if (IsEnvVarDefined(eventPipeSaveShadowStack)) {
+        myShadowStackSerializer = new EventPipeShadowStackSerializer(myProfilerInfo, myLogger);
+    } else {
+        myShadowStackSerializer = new ShadowStackSerializerStub();
+    }
+
+    myShadowStackSerializer->Init();
+}
+
+HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
+    myShadowStack->HandleExceptionCatchEnter(functionId, GetCurrentManagedThreadId(), GetCurrentTimestamp());
     return S_OK;
 }
 
@@ -131,6 +141,7 @@ ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logg
         myLogger(logger) {
     ourCallback = this;
     myShadowStack = nullptr;
+    myShadowStackSerializer = nullptr;
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
@@ -383,11 +394,6 @@ HRESULT ProcfilerCorProfilerCallback::ExceptionUnwindFinallyEnter(FunctionID fun
 }
 
 HRESULT ProcfilerCorProfilerCallback::ExceptionUnwindFinallyLeave() {
-    return S_OK;
-}
-
-HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
-    myShadowStack->HandleExceptionCatchEnter(functionId, GetCurrentManagedThreadId(), GetCurrentTimestamp());
     return S_OK;
 }
 

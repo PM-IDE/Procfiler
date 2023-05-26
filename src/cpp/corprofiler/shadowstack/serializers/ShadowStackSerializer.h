@@ -10,6 +10,14 @@ public:
     virtual void Serialize(ShadowStack* shadowStack) = 0;
 };
 
+class ShadowStackSerializerStub : public ShadowStackSerializer {
+public:
+    ~ShadowStackSerializerStub() override = default;
+
+    void Init() override {};
+    void Serialize(ShadowStack* shadowStack) override {};
+};
+
 class EventPipeShadowStackSerializer : public ShadowStackSerializer {
 private:
     const UINT32 ourMethodStartEventId = 8000;

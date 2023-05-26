@@ -14,6 +14,7 @@ private:
 
     DWORD GetCurrentManagedThreadId();
     int64_t GetCurrentTimestamp();
+    void InitializeShadowStack();
 
 public:
     explicit ProcfilerCorProfilerCallback(ProcfilerLogger* logger);
