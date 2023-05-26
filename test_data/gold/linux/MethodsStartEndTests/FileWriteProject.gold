@@ -1,6 +1,8 @@
-	[start] filewriteproject!Program.<Main>(class System.String[])
-		[start] filewriteproject!Program.<Main>$(class System.String[])
-			[start] filewriteproject!Program+<<Main>$>d__0.MoveNext()
-			[ end ] filewriteproject!Program+<<Main>$>d__0.MoveNext()
-		[ end ] filewriteproject!Program.<Main>$(class System.String[])
-	[ end ] filewriteproject!Program.<Main>(class System.String[])
+	[start] FileWriteProject.Program.<Main>[void..(class.System.String[])]
+		[start] FileWriteProject.Program.Main[class.System.Threading.Tasks.Task..(class.System.String[])]
+			[start] FileWriteProject.Program+<Main>d__0..ctor[instance.void..()]
+			[ end ] FileWriteProject.Program+<Main>d__0..ctor[instance.void..()]
+			[start] FileWriteProject.Program+<Main>d__0.MoveNext[instance.void..()]
+			[ end ] FileWriteProject.Program+<Main>d__0.MoveNext[instance.void..()]
+		[ end ] FileWriteProject.Program.Main[class.System.Threading.Tasks.Task..(class.System.String[])]
+	[ end ] FileWriteProject.Program.<Main>[void..(class.System.String[])]

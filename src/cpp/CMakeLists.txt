@@ -43,11 +43,15 @@ if(NOT WIN32)
 
     add_compile_options(-DPAL_STDCPP_COMPAT)
 
+    add_compile_options(-std=c++11 -Wno-invalid-noreturn -Wno-macro-redefined -Wno-pragma-pack
+                        -DHOST_64BIT -DPAL_STDCPP_COMPAT -DPLATFORM_UNIX -DUNICODE
+                        -fPIC -fms-extensions)
+
     IF (APPLE)
-        add_compile_options(-std=c++11 -fPIC -fms-extensions -stdlib=libc++ -DHAVE_CLOCK_GETTIME_NSEC_NP)
-        add_compile_options(-DHOST_64BIT -DPAL_STDCPP_COMPAT -DPLATFORM_UNIX -DUNICODE -DHOST_ARM64)
-        add_compile_options(-Wno-invalid-noreturn -Wno-macro-redefined -Wno-pragma-pack)
-    ENDIF()
+        add_compile_options(-stdlib=libc++ -DHOST_ARM64 -DHAVE_CLOCK_GETTIME_NSEC_NP)
+    ELSE ()
+        add_compile_options(-DHOST_AMD64 -DHAVE_CLOCK_MONOTONIC)
+    ENDIF ()
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_compile_options(-Wno-null-arithmetic)
