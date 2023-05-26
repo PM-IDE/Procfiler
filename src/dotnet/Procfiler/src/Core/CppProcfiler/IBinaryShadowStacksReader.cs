@@ -4,11 +4,11 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.CppProcfiler;
 
-public readonly struct FrameInfo
+public class FrameInfo
 {
-  public required long TimeStamp { get; init; }
-  public required long FunctionId { get; init; }
-  public required bool IsStart { get; init; }
+  public long TimeStamp { get; set; }
+  public long FunctionId { get; set; }
+  public bool IsStart { get; set; }
 
 
   public string Serialize(SessionGlobalData? globalData)
