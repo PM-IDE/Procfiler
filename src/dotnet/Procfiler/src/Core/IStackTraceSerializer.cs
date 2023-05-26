@@ -8,7 +8,7 @@ namespace Procfiler.Core;
 public interface IStackTraceSerializer
 {
   ValueTask SerializeStackTracesAsync(SessionGlobalData globalData, string directory);
-  ValueTask SerializeStackAsync(IReadOnlyList<FrameInfo> stack, SessionGlobalData globalData, string savePath);
+  ValueTask SerializeStackAsync(IShadowStack stack, SessionGlobalData globalData, string savePath);
 }
 
 [AppComponent]
@@ -16,15 +16,22 @@ public class StackTraceSerializer : IStackTraceSerializer
 {
   public async ValueTask SerializeStackTracesAsync(SessionGlobalData globalData, string directory)
   {
-    foreach (var (managedThreadId, shadowStack) in globalData.Stacks)
+    foreach (var shadowStack in globalData.Stacks.EnumerateStacks(false))
     {
-      var path = Path.Combine(directory, $"stacks_{managedThreadId}.txt");
-      await SerializeStackAsync(shadowStack, globalData, path);
+      try
+      {
+        var path = Path.Combine(directory, $"stacks_{shadowStack.ManagedThreadId}.txt");
+        await SerializeStackAsync(shadowStack, globalData, path);
+      }
+      finally
+      {
+        shadowStack.Dispose();
+      }
     }
   }
 
   public async ValueTask SerializeStackAsync(
-    IReadOnlyList<FrameInfo> shadowStack, SessionGlobalData globalData, string savePath)
+    IShadowStack shadowStack, SessionGlobalData globalData, string savePath)
   {
     var encoding = Encoding.UTF8;
     var sb = new StringBuilder();

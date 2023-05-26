@@ -1,5 +1,6 @@
 using Procfiler.Core.Collector;
 using Procfiler.Core.Constants.TraceEvents;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
@@ -40,56 +41,66 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
     if (events.Count == 0) return;
 
     var managedThreadId = events.GetFor(events.First!.Value).ManagedThreadId;
-    if (!context.Stacks.TryGetValue(managedThreadId, out var shadowStack))
+    if (context.Stacks.FindShadowStack(managedThreadId) is not { } foundShadowStack)
     {
       myLogger.LogWarning("Managed thread {Id} was not in shadow stacks", managedThreadId);
       return;
     }
 
-    EventRecordWithMetadata? TryCreateMethodEvent(int index)
+    using var shadowStack = foundShadowStack;
+    var enumerator = shadowStack.GetEnumerator();
+    enumerator.MoveNext();
+    var finished = false;
+    
+    events.ApplyNotPureActionForAllEvents((ptr, eventRecord) =>
     {
-      var methodId = shadowStack[index].FunctionId;
+      while (!finished && enumerator.Current.TimeStamp < eventRecord.Stamp)
+      {
+        if (TryCreateMethodEvent(enumerator.Current) is { } createMethodEvent)
+        {
+          events.InsertBefore(ptr, createMethodEvent);
+        }
+
+        if (!enumerator.MoveNext())
+        {
+          finished = true;
+          return false;
+        }
+      }
+
+      return false;
+    });
+
+    do
+    {
+      if (finished) break;
+      
+      var last = events.Last;
+      Debug.Assert(last is { });
+
+      if (TryCreateMethodEvent(enumerator.Current) is { } createMethodEvent)
+      {
+        events.InsertAfter(last.Value, createMethodEvent);
+      }
+    } while (enumerator.MoveNext());
+
+    return;
+
+    EventRecordWithMetadata? TryCreateMethodEvent(FrameInfo frameInfo)
+    {
+      var methodId = frameInfo.FunctionId;
       if (!context.MethodIdToFqn.TryGetValue(methodId, out var fqn))
       {
         myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
         return null;
       }
       
-      var creationContext = new EventsCreationContext(shadowStack[index].TimeStamp, managedThreadId);
-      return shadowStack[index].IsStart switch
+      var creationContext = new EventsCreationContext(frameInfo.TimeStamp, managedThreadId);
+      return frameInfo.IsStart switch
       {
         true => myEventsFactory.CreateMethodStartEvent(creationContext, fqn),
         false => myEventsFactory.CreateMethodEndEvent(creationContext, fqn)
       };
-    }
-
-    var index = 0;
-    events.ApplyNotPureActionForAllEvents((ptr, eventRecord) =>
-    {
-      while (index < shadowStack.Count && shadowStack[index].TimeStamp < eventRecord.Stamp)
-      {
-        if (TryCreateMethodEvent(index) is { } createMethodEvent)
-        {
-          events.InsertBefore(ptr, createMethodEvent);
-        }
-
-        ++index;
-      }
-
-      return false;
-    });
-
-    while (index < shadowStack.Count)
-    {
-      var last = events.Last;
-      Debug.Assert(last is { });
-      
-      if (TryCreateMethodEvent(index) is { } createMethodEvent)
-      {
-        events.InsertAfter(last.Value, createMethodEvent);
-      }
-
-      ++index;
     }
   }
 }

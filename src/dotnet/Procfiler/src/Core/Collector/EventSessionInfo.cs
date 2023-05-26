@@ -14,10 +14,10 @@ public class SessionGlobalData
   
   public IReadOnlyDictionary<long, string> TypeIdToNames => myTypeIdsToNames;
   public IReadOnlyDictionary<long, string> MethodIdToFqn => myMethodIdToFqn;
-  public IReadOnlyDictionary<long, IReadOnlyList<FrameInfo>> Stacks { get; }
+  public IShadowStacks Stacks { get; }
 
 
-  public SessionGlobalData(IReadOnlyDictionary<long, IReadOnlyList<FrameInfo>> stacks)
+  public SessionGlobalData(IShadowStacks stacks)
   {
     Stacks = stacks;
     myMethodIdToFqn = new Dictionary<long, string>();

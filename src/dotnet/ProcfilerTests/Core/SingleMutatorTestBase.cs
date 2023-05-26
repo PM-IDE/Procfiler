@@ -17,11 +17,10 @@ public abstract class SingleMutatorTestBase
     return TestUtil.CreateRandomEvent(EventClass, metadata);
   }
 
-  protected void ExecuteWithRandomEvent(
-    EventMetadata metadata, Action<EventRecordWithMetadata> action)
+  protected void ExecuteWithRandomEvent(EventMetadata metadata, Action<EventRecordWithMetadata> action)
   {
     var eventRecord = CreateRandomEvent(metadata);
-    CreateMutator().Process(eventRecord, new SessionGlobalData(new Dictionary<long, IReadOnlyList<FrameInfo>>()));
+    CreateMutator().Process(eventRecord, new SessionGlobalData(EmptyShadowStacks.Instance));
     
     action(eventRecord);
   }

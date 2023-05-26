@@ -26,7 +26,7 @@ public readonly struct FrameInfo
 
 public interface IBinaryShadowStacksReader
 {
-  Task<IReadOnlyDictionary<long, IReadOnlyList<FrameInfo>>> ReadStackEventsAsync(string path);
+  IShadowStacks ReadStackEvents(string path);
 }
 
 [AppComponent]
@@ -41,35 +41,6 @@ public class BinaryShadowStacksReaderImpl : IBinaryShadowStacksReader
   }
 
   
-  public async Task<IReadOnlyDictionary<long, IReadOnlyList<FrameInfo>>> ReadStackEventsAsync(string path)
-  {
-    await using var fs = await PathUtils.OpenReadWithRetryOrThrowAsync(myLogger, path);
-
-    if (fs.Length == 0) return new Dictionary<long, IReadOnlyList<FrameInfo>>();
-
-    using var br = new BinaryReader(fs);
-    var stacks = new Dictionary<long, IReadOnlyList<FrameInfo>>();
-    
-    while (fs.Position < fs.Length)
-    {
-      var frames = new List<FrameInfo>();
-      var managedThreadId = br.ReadInt64();
-      var framesCount = br.ReadUInt64();
-
-      for (ulong i = 0; i < framesCount; ++i)
-      {
-        frames.Add(new FrameInfo
-        {
-          IsStart = br.ReadByte() == 1,
-          TimeStamp = br.ReadInt64(),
-          FunctionId = br.ReadInt64()
-        });
-      }
-
-      stacks[managedThreadId] = frames;
-    }
-
-    return stacks;
-  }
+  public IShadowStacks ReadStackEvents(string path) => new ShadowStacksImpl(myLogger, path);
 }
 

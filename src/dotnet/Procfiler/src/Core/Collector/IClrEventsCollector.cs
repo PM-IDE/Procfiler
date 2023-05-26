@@ -130,7 +130,7 @@ public class ClrEventsCollector : IClrEventsCollector
     var statistics = new Statistics();
     var events = new EventRecordWithMetadata[traceLog.EventCount];
     var context = new CreatingEventContext(stackSource, traceLog);
-    var stacks = await myBinaryShadowStacksReader.ReadStackEventsAsync(binaryStacksPath);
+    var stacks = myBinaryShadowStacksReader.ReadStackEvents(binaryStacksPath);
     var globalData = new SessionGlobalData(stacks);
 
     using (var _ = new PerformanceCookie("ProcessingEvents", myLogger))
