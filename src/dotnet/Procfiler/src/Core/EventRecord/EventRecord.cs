@@ -8,13 +8,13 @@ public class EventRecord
 {
   public long Stamp { get; }
   public string EventClass { get; set; }
-  public int ManagedThreadId { get; }
+  public long ManagedThreadId { get; }
   public Guid ActivityId { get; }
   public string EventName { get; set; }
   public bool IsDeleted { get; set; }
 
 
-  public EventRecord(long stamp, string eventClass, int managedThreadId, Guid activityId)
+  public EventRecord(long stamp, string eventClass, long managedThreadId, Guid activityId)
   {
     ActivityId = activityId;
     Stamp = stamp;
@@ -24,7 +24,7 @@ public class EventRecord
     IsDeleted = false;
   }
 
-  public EventRecord(TraceEvent @event, int managedThreadId)
+  public EventRecord(TraceEvent @event, long managedThreadId)
     : this(@event.TimeStampQPC, @event.EventName, managedThreadId, @event.ActivityID)
   {
   }
@@ -35,14 +35,14 @@ public class EventRecordWithMetadata : EventRecord
   public IEventMetadata Metadata { get; }
 
   
-  public EventRecordWithMetadata(TraceEvent @event, int managedThreadId) 
+  public EventRecordWithMetadata(TraceEvent @event, long managedThreadId) 
     : base(@event, managedThreadId)
   {
     Metadata = new EventMetadata(@event);
   }
 
   public EventRecordWithMetadata(
-    long stamp, string eventClass, int managedThreadId, IEventMetadata metadata)
+    long stamp, string eventClass, long managedThreadId, IEventMetadata metadata)
     : base(stamp, eventClass, managedThreadId, Guid.Empty)
   {
     Metadata = metadata;

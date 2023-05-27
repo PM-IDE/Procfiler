@@ -17,16 +17,16 @@ public interface IMethodStartEndEventsLogMutator : IMultipleEventsMutator
 [EventMutator(MultipleEventMutatorsPasses.MethodStartEndInserter)]
 public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
 {
-  private readonly IProcfilerEventsFactory myEventsFactory;
+  private readonly IProcfilerEventsFactory myFactory;
   private readonly IProcfilerLogger myLogger;
 
 
   public IEnumerable<EventLogMutation> Mutations { get; }
 
   
-  public MethodStartEndEventsLogMutator(IProcfilerEventsFactory eventsFactory, IProcfilerLogger logger)
+  public MethodStartEndEventsLogMutator(IProcfilerEventsFactory factory, IProcfilerLogger logger)
   {
-    myEventsFactory = eventsFactory;
+    myFactory = factory;
     myLogger = logger;
     Mutations = new[]
     {
@@ -61,14 +61,21 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
   }
 
   private bool AddMethodsEventsToCollection(
-    IEventsCollection events, SessionGlobalData context, int managedThreadId, IEnumerator<FrameInfo> enumerator)
+    IEventsCollection events, SessionGlobalData context, long managedThreadId, IEnumerator<FrameInfo> enumerator)
   {
     var finished = false;
     events.ApplyNotPureActionForAllEvents((ptr, eventRecord) =>
     {
       while (!finished && enumerator.Current.TimeStamp < eventRecord.Stamp)
       {
-        if (TryCreateMethodEvent(enumerator.Current, context, managedThreadId) is { } createMethodEvent)
+        var ctx = new FromFrameInfoCreationContext
+        {
+          FrameInfo = enumerator.Current,
+          GlobalData = context,
+          ManagedThreadId = managedThreadId
+        };
+        
+        if (myFactory.TryCreateMethodEvent(ctx) is { } createMethodEvent)
         {
           events.InsertBefore(ptr, createMethodEvent);
         }
@@ -87,35 +94,24 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
   }
 
   private void AddRemainingMethodsEvents(
-    IEventsCollection events, SessionGlobalData context, int managedThreadId, IEnumerator<FrameInfo> enumerator)
+    IEventsCollection events, SessionGlobalData context, long managedThreadId, IEnumerator<FrameInfo> enumerator)
   {
     do
     {
       var last = events.Last;
       Debug.Assert(last is { });
-
-      if (TryCreateMethodEvent(enumerator.Current, context, managedThreadId) is { } createMethodEvent)
+      var ctx = new FromFrameInfoCreationContext
+      {
+        FrameInfo = enumerator.Current,
+        GlobalData = context,
+        ManagedThreadId = managedThreadId
+      };
+      
+      if (myFactory.TryCreateMethodEvent(ctx) is { } createMethodEvent)
       {
         events.InsertAfter(last.Value, createMethodEvent);
       }
-    } while (enumerator.MoveNext());
-  }
-  
-  private EventRecordWithMetadata? TryCreateMethodEvent(
-    FrameInfo frameInfo, SessionGlobalData context, int managedThreadId)
-  {
-    var methodId = frameInfo.FunctionId;
-    if (!context.MethodIdToFqn.TryGetValue(methodId, out var fqn))
-    {
-      myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
-      return null;
-    }
-
-    var creationContext = new EventsCreationContext(frameInfo.TimeStamp, managedThreadId);
-    return frameInfo.IsStart switch
-    {
-      true => myEventsFactory.CreateMethodStartEvent(creationContext, fqn),
-      false => myEventsFactory.CreateMethodEndEvent(creationContext, fqn)
-    };
+    } 
+    while (enumerator.MoveNext());
   }
 }

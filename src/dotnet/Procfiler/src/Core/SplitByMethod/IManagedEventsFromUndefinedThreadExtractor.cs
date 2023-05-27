@@ -14,7 +14,7 @@ public readonly record struct ManagedEventsExtractionResult(
 public interface IManagedEventsFromUndefinedThreadExtractor
 {
   IEventsCollection Extract(
-    IDictionary<int, IEventsCollection> managedThreadEventsById, IEventsCollection undefinedEvents);
+    IDictionary<long, IEventsCollection> managedThreadEventsById, IEventsCollection undefinedEvents);
 }
 
 [AppComponent]
@@ -30,7 +30,7 @@ public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndef
 
   
   public IEventsCollection Extract(
-    IDictionary<int, IEventsCollection> managedThreadEventsById, IEventsCollection undefinedEvents)
+    IDictionary<long, IEventsCollection> managedThreadEventsById, IEventsCollection undefinedEvents)
   {
     var (newManagedEvents, newUndefinedEvents) = ExtractFrom(undefinedEvents);
     

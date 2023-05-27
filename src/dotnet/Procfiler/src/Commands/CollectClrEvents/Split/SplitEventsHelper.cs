@@ -6,7 +6,7 @@ namespace Procfiler.Commands.CollectClrEvents.Split;
 
 public static class SplitEventsHelper
 {
-  public static Func<EventRecordWithMetadata, int> ManagedThreadIdExtractor { get; } =
+  public static Func<EventRecordWithMetadata, long> ManagedThreadIdExtractor { get; } =
     @event => @event.ManagedThreadId;
 
   public static Func<EventRecordWithMetadata, string> EventClassKeyExtractor { get; } =

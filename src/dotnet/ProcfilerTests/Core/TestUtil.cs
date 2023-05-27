@@ -20,7 +20,7 @@ public static class TestUtil
   }
 
   public static IEventsCollection FindEventsForMainThread(
-    Dictionary<int, IEventsCollection> eventsByThreads)
+    Dictionary<long, IEventsCollection> eventsByThreads)
   {
     var (_, mainThreadEvents) = eventsByThreads.Where(e => e.Key != -1).MaxBy(e => e.Value.Count);
     return mainThreadEvents;
@@ -35,7 +35,7 @@ public static class TestUtil
   }
 
   public static void CheckMethodConsistencyOrThrow(
-    int threadId, IEventsCollection events, SessionGlobalData globalData, IContainer container)
+    long threadId, IEventsCollection events, SessionGlobalData globalData, IContainer container)
   {
     void AssertFail(string message)
     {
@@ -74,7 +74,7 @@ public static class TestUtil
     }
   }
 
-  private static void SerializeBrokenStacks(IContainer container, SessionGlobalData globalData, int brokenThreadId)
+  private static void SerializeBrokenStacks(IContainer container, SessionGlobalData globalData, long brokenThreadId)
   {
     var savePath = PathUtils.CreateTempFolderPath();
     var serializer = container.Resolve<IStackTraceSerializer>();

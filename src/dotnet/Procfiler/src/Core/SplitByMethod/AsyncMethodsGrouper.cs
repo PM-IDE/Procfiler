@@ -12,7 +12,7 @@ public interface IAsyncMethodsGrouper
   
   IDictionary<string, IList<IReadOnlyList<EventRecordWithMetadata>>> GroupAsyncMethods(
     IEnumerable<string> methodsNames,
-    IDictionary<int, IEventsCollection> managedThreadsEvents);
+    IDictionary<long, IEventsCollection> managedThreadsEvents);
 }
 
 [AppComponent]
@@ -40,7 +40,7 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
   
   public IDictionary<string, IList<IReadOnlyList<EventRecordWithMetadata>>> GroupAsyncMethods(
     IEnumerable<string> methodsNames,
-    IDictionary<int, IEventsCollection> managedThreadsEvents)
+    IDictionary<long, IEventsCollection> managedThreadsEvents)
   {
     var asyncMethodsWithTypeNames = FindAllAsyncMoveNextMethods(methodsNames);
     var asyncMethodsToTraces = CreateAsyncMethodsToTracesMap(asyncMethodsWithTypeNames, managedThreadsEvents);
@@ -50,7 +50,7 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
 
   private IDictionary<string, List<AsyncMethodTrace>> CreateAsyncMethodsToTracesMap(
     IDictionary<string, string> asyncMethodsWithTypeNames,
-    IDictionary<int, IEventsCollection> managedThreadsEvents)
+    IDictionary<long, IEventsCollection> managedThreadsEvents)
   {
     var asyncMethods = asyncMethodsWithTypeNames.Keys.ToHashSet();
     var asyncMethodsToTraces = new Dictionary<string, List<AsyncMethodTrace>>();

@@ -84,7 +84,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
 
   private void AddAsyncMethods(
     IDictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> tracesByMethods,
-    IDictionary<int, IEventsCollection> eventsByManagedThreads)
+    IDictionary<long, IEventsCollection> eventsByManagedThreads)
   {
     var asyncMethodsTraces = myAsyncMethodsGrouper.GroupAsyncMethods(tracesByMethods.Keys, eventsByManagedThreads);
     foreach (var (asyncMethodName, collection) in asyncMethodsTraces)
@@ -98,7 +98,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
 
   private void SplitEventsByThreads(
     CollectedEvents events,
-    out Dictionary<int, IEventsCollection> eventsByThreads,
+    out Dictionary<long, IEventsCollection> eventsByThreads,
     out IEventsCollection undefinedThreadEvents)
   {
     eventsByThreads = SplitEventsHelper.SplitByKey(myLogger, events.Events, SplitEventsHelper.ManagedThreadIdExtractor);

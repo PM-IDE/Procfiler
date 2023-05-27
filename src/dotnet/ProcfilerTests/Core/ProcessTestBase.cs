@@ -22,7 +22,7 @@ public abstract class ProcessTestBase : TestWithContainerBase
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(
-    KnownSolution solution, Action<Dictionary<int, IEventsCollection>> testFunc)
+    KnownSolution solution, Action<Dictionary<long, IEventsCollection>> testFunc)
   {
     StartProcessAndDoTest(solution, events =>
     {
