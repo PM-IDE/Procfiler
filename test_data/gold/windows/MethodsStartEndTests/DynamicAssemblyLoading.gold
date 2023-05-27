@@ -1,2 +1,2 @@
-	[start] dynamicassemblyloading!Program.<Main>$(class System.String[])
-	[ end ] dynamicassemblyloading!Program.<Main>$(class System.String[])
+	[start] DynamicAssemblyLoading.Program.Main[void..(class.System.String[])]
+	[ end ] DynamicAssemblyLoading.Program.Main[void..(class.System.String[])]
