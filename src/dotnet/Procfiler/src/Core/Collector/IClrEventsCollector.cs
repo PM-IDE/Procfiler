@@ -54,7 +54,7 @@ public class ClrEventsCollector : IClrEventsCollector
       using var tempPathCookie = new TempFileCookie(myLogger);
       var (pid, duration, timeout, category, binaryStacksPath) = context;
       await ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
-      return await ReadEventsFromFileAsync(tempPathCookie, binaryStacksPath);
+      return ReadEventsFromFile(tempPathCookie, binaryStacksPath);
     }
     catch (Exception ex)
     {
@@ -105,7 +105,7 @@ public class ClrEventsCollector : IClrEventsCollector
     }
   }
 
-  private Task<CollectedEvents> ReadEventsFromFileAsync(TempFileCookie tempPathCookie, string binaryStacks)
+  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie, string binaryStacks)
   {
     var options = new TraceLogOptions
     {
@@ -115,12 +115,12 @@ public class ClrEventsCollector : IClrEventsCollector
     var etlxFilePath = TraceLog.CreateFromEventPipeDataFile(tempPathCookie.FullFilePath, options: options);
     using var etlxCookie = new TempFileCookie(etlxFilePath, myLogger);
 
-    return ReadEventsFromFileInternalAsync(etlxFilePath, binaryStacks);
+    return ReadEventsFromFileInternal(etlxFilePath, binaryStacks);
   }
 
-  private async Task<CollectedEvents> ReadEventsFromFileInternalAsync(string etlxFilePath, string binaryStacksPath)
+  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, string binaryStacksPath)
   {
-    using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFileAsync), myLogger);
+    using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFile), myLogger);
     using var traceLog = new TraceLog(etlxFilePath);
     var stackSource = InitializeStackSource(traceLog);
 
