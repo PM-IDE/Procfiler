@@ -5,7 +5,7 @@ namespace Procfiler.Core.EventsCollection;
 public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWithPointer>
 {
   private readonly InsertedEvents myInsertedEvents;
-  private readonly EventPointersManager myPointersManager;
+  protected readonly EventPointersManager PointersManager;
 
   private bool myIsFrozen;
   
@@ -16,7 +16,7 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
   protected EventsOwnerBase(long initialEventsCount)
   {
     myInsertedEvents = new InsertedEvents();
-    myPointersManager = new EventPointersManager(initialEventsCount, myInsertedEvents, this);
+    PointersManager = new EventPointersManager(initialEventsCount, myInsertedEvents, this);
     Count = initialEventsCount;
   }
 
@@ -27,16 +27,19 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
     initialEventsEnumerator.MoveNext();
     var currentIndex = 0;
     
-    var current = myPointersManager.FirstNotDeleted;
+    var current = PointersManager.First;
     while (current is { })
     {
-      if (myPointersManager.GetFor(current.Value) is { } insertedEvent)
+      if (PointersManager.GetFor(current.Value) is { } insertedEvent)
       {
-        yield return new EventRecordWithPointer
+        if (!insertedEvent.IsRemoved)
         {
-          Event = insertedEvent,
-          EventPointer = current.Value
-        };
+          yield return new EventRecordWithPointer
+          {
+            Event = insertedEvent,
+            EventPointer = current.Value
+          };
+        }
       }
       else
       {
@@ -46,55 +49,53 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
           initialEventsEnumerator.MoveNext();
           ++currentIndex;
         }
-        
-        yield return new EventRecordWithPointer
+
+        if (!initialEventsEnumerator.Current.IsRemoved)
         {
-          Event = initialEventsEnumerator.Current,
-          EventPointer = current.Value
-        };
+          yield return new EventRecordWithPointer
+          {
+            Event = initialEventsEnumerator.Current,
+            EventPointer = current.Value
+          }; 
+        }
       }
 
-      current = myPointersManager.NextNotDeleted(current.Value);
+      current = PointersManager.Next(current.Value);
     }
   }
   
   public virtual EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
-    myPointersManager.AssertStateOrThrow(pointer);
+    PointersManager.AssertStateOrThrow(pointer);
     AssertNotFrozen();
     myInsertedEvents.InsertAfter(pointer, eventToInsert);
     IncreaseCount();
     
-    var insertedEventPointer = myPointersManager.NextNotDeleted(pointer);
+    var insertedEventPointer = PointersManager.Next(pointer);
     Debug.Assert(insertedEventPointer is { });
     return insertedEventPointer.Value;
   }
   
   public virtual EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
-    myPointersManager.AssertStateOrThrow(pointer);
+    PointersManager.AssertStateOrThrow(pointer);
     AssertNotFrozen();
     myInsertedEvents.InsertBefore(pointer, eventToInsert);
     IncreaseCount();
     
-    var insertedEventPointer = myPointersManager.PrevInternal(pointer);
+    var insertedEventPointer = PointersManager.PrevInternal(pointer);
     Debug.Assert(insertedEventPointer is { });
     return insertedEventPointer.Value;
   }
-  
-  public virtual void Remove(EventPointer pointer)
-  {
-    AssertNotFrozen();
-    myPointersManager.Remove(pointer);
-    DecreaseCount();
-  }
-  
-  private void IncreaseCount() => ++Count;
-  private void DecreaseCount() => --Count;
+
+  public abstract bool Remove(EventPointer pointer);
+
+  protected void IncreaseCount() => ++Count;
+  protected void DecreaseCount() => --Count;
   public void Freeze() => myIsFrozen = true;
   public void UnFreeze() => myIsFrozen = false;
 
-  private void AssertNotFrozen()
+  protected void AssertNotFrozen()
   {
     if (myIsFrozen) throw new CollectionIsFrozenException();
   }

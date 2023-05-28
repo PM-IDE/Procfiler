@@ -22,7 +22,7 @@ public interface IInsertableEventsCollection
 
 public interface IRemovableEventsCollection
 {
-  void Remove(EventPointer pointer);
+  bool Remove(EventPointer pointer);
 }
 
 public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection

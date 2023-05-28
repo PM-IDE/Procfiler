@@ -7,7 +7,6 @@ public class EventPointersManager
   private readonly InsertedEvents myInsertedEvents;
   private readonly IEventsOwner myOwner;
   private readonly long myInitialCount;
-  private readonly HashSet<int> myRemovedPointers;
 
   
   public EventPointersManager(long initialCount, InsertedEvents insertedEvents, IEventsOwner owner)
@@ -15,11 +14,10 @@ public class EventPointersManager
     myInsertedEvents = insertedEvents;
     myOwner = owner;
     myInitialCount = initialCount;
-    myRemovedPointers = new HashSet<int>();
   }
 
   
-  public EventPointer? FirstNotDeleted
+  public EventPointer? First
   {
     get
     {
@@ -28,17 +26,35 @@ public class EventPointersManager
         { } => EventPointer.ForFirstEvent(0, myOwner),
         _ => EventPointer.ForInitialArray(0, myOwner)
       };
-      
-      while (startPointer is { } && myRemovedPointers.Contains(startPointer.GetHashCode()))
-      {
-        startPointer = NextNotDeleted(startPointer.Value);
-      }
 
       return startPointer;
     }
   }
 
-  public void Remove(EventPointer pointer) => myRemovedPointers.Add(pointer.GetHashCode());
+  public bool Remove(EventPointer pointer)
+  {
+    Debug.Assert(!pointer.IsInInitialArray);
+    Debug.Assert(pointer.IsInFirstEvents || pointer.IsInInsertedMap);
+
+    EventRecordWithMetadata eventToRemove;
+    if (pointer.IsInFirstEvents)
+    {
+      Debug.Assert(myInsertedEvents.FirstEvents is { });
+      eventToRemove = myInsertedEvents.FirstEvents[pointer.IndexInInsertionMap];
+    }
+    else
+    {
+      eventToRemove = GetInsertedEventsListOrThrow(pointer)[pointer.IndexInInsertionMap];
+    }
+
+    if (eventToRemove.IsRemoved)
+    {
+      return false;
+    }
+
+    eventToRemove.IsRemoved = true;
+    return true;
+  }
 
   public EventRecordWithMetadata? GetFor(EventPointer pointer)
   {
@@ -54,16 +70,10 @@ public class EventPointersManager
     };
   }
   
-  public EventPointer? NextNotDeleted(in EventPointer current)
+  public EventPointer? Next(in EventPointer current)
   {
     AssertStateOrThrow(current);
-    var result = NextInternal(current);
-    while (result is { } && myRemovedPointers.Contains(result.GetHashCode()))
-    {
-      result = NextInternal(result.Value);
-    }
-
-    return result;
+    return NextInternal(current);
   }
 
   private EventPointer? NextInternal(in EventPointer current)

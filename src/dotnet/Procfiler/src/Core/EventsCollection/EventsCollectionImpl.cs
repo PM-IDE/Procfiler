@@ -33,6 +33,30 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
       if (shouldStop) return;
     }
   }
-  
+
+  public override bool Remove(EventPointer pointer)
+  {
+    AssertNotFrozen();
+    if (pointer.IsInInitialArray)
+    {
+      if (myInitialEvents[pointer.IndexInArray].IsRemoved)
+      {
+        return false;
+      }
+
+      myInitialEvents[pointer.IndexInArray].IsRemoved = true;
+      DecreaseCount();
+      return true;
+    }
+
+    if (PointersManager.Remove(pointer))
+    {
+      DecreaseCount();
+      return true;
+    }
+
+    return false;
+  }
+
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() => myInitialEvents;
 }

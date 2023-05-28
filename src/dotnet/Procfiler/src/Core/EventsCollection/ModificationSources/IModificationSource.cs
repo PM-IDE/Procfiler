@@ -28,7 +28,12 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
     myShadowStack = shadowStack;
     myEventsFactory = eventsFactory;
   }
-  
+
+
+  public override bool Remove(EventPointer pointer)
+  {
+    throw new NotImplementedException();
+  }
 
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
   {
