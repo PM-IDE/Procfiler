@@ -96,6 +96,8 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
     
     do
     {
+      if (finished) return;
+      
       Debug.Assert(lastPtr is { });
       var ctx = new FromFrameInfoCreationContext
       {
