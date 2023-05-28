@@ -59,6 +59,9 @@ public class UndefinedThreadsEventsMerger : IUndefinedThreadsEventsMerger
     var undefinedFinished = false;
     using var managedEnumerator = managedThreadEvents.GetEnumerator();
     using var undefinedEnumerator = undefinedThreadEvents.GetEnumerator();
+    
+    if (!managedEnumerator.MoveNext()) managedFinished = true;
+    if (!undefinedEnumerator.MoveNext()) undefinedFinished = true;
 
     while (!managedFinished || !undefinedFinished)
     {
