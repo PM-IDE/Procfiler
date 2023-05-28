@@ -5,9 +5,14 @@ namespace Procfiler.Core;
 
 public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEnumerator<EventRecordWithMetadata>
 {
+  private struct EnumeratorState
+  {
+    public required IEnumerator<EventRecordWithPointer> Enumerator { get; init; }
+    public bool Finished { get; set; }
+  }
+
+  private readonly EnumeratorState[] myStates;
   private readonly IEventsCollection[] myCollections;
-  private readonly EventPointer?[] myFirstValues;
-  private readonly EventPointer?[] myNextEventsNodes;
   private readonly PriorityQueue<int, long> myQueue;
 
 
@@ -22,16 +27,9 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
   {
     //reference to invariant: EventsMustBeOrderedByStamp
     myCollections = eventsByTraces.ToArray();
-    myNextEventsNodes = new EventPointer?[myCollections.Length];
+    myStates = new EnumeratorState[myCollections.Length];
     myQueue = new PriorityQueue<int, long>();
-
-    myFirstValues = new EventPointer?[myCollections.Length];
-    var index = 0;
-    foreach (var list in myCollections)
-    {
-      myFirstValues[index++] = list.First;
-    }
-
+    
     Reset();
   }
 
@@ -41,27 +39,25 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
     while (true)
     {
       if (myQueue.Count == 0) return false;
+      
       var next = myQueue.Dequeue();
-      var currentPointer = myNextEventsNodes[next];
+      ref var currentEnumeratorState = ref myStates[next];
+      
+      if (currentEnumeratorState.Finished) continue;
 
-      if (currentPointer is { } && 
-          myCollections[next].TryGetForWithDeletionCheck(currentPointer.Value) is { } eventRecord)
+      var enumerator = currentEnumeratorState.Enumerator;
+      Current = enumerator.Current.Event;
+      
+      if (enumerator.MoveNext())
       {
-        Current = eventRecord;
-        
-        if (myCollections[next].NextNotDeleted(currentPointer.Value) is { } nextNode &&
-            myCollections[next].TryGetForWithDeletionCheck(nextNode) is { } nextEvent)
-        {
-          myNextEventsNodes[next] = nextNode;
-          myQueue.Enqueue(next, nextEvent.Stamp); 
-        }
-        else
-        {
-          myNextEventsNodes[next] = null;
-        }
-        
-        return true;
+        myQueue.Enqueue(next, enumerator.Current.Event.Stamp);
       }
+      else
+      {
+        currentEnumeratorState.Finished = true;
+      }
+      
+      return true;
     }
   }
 
@@ -70,17 +66,19 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
     myQueue.Clear();
     for (var i = 0; i < myCollections.Length; i++)
     {
-      var firstValue = myFirstValues[i];
-
-      if (firstValue is { } &&
-          myCollections[i].TryGetForWithDeletionCheck(firstValue.Value) is { } eventRecord)
+      myStates[i].Enumerator.Dispose();
+      myStates[i] = new EnumeratorState
       {
-        myNextEventsNodes[i] = firstValue;
-        myQueue.Enqueue(i, eventRecord.Stamp);
-      }
-      else
+        Enumerator = myCollections[i].GetEnumerator()
+      };
+    }
+    
+    for (var i = 0; i < myCollections.Length; i++)
+    {
+      ref var state = ref myStates[i];
+      if (!state.Enumerator.MoveNext())
       {
-        myNextEventsNodes[i] = null;
+        state.Finished = true;
       }
     }
   }

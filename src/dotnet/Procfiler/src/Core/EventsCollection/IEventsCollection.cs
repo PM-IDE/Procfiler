@@ -1,4 +1,5 @@
 ﻿using Procfiler.Core.EventRecord;
+using Procfiler.Core.EventsCollection.ModificationSources;
 using Procfiler.Core.Exceptions;
 
 namespace Procfiler.Core.EventsCollection;
@@ -13,27 +14,50 @@ public class CollectionIsFrozenException : ProcfilerException
 {
 }
 
-public interface IMutableEventsCollection
+public interface IInsertableEventsCollection
 {
-  void InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert);
-  void InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert);
-  void Remove(EventRecordWithMetadata eventRecord);
+  EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert);
+  EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert);
 }
 
-public interface IRamEventsCollection
+public interface IRemovableEventsCollection
 {
-  EventRecordWithMetadata? TryGetForWithDeletionCheck(EventPointer pointer);
-  EventRecordWithMetadata GetFor(EventPointer pointer);
-  EventPointer? NextNotDeleted(in EventPointer current);
-  EventPointer? PrevNotDeleted(in EventPointer current);
+  void Remove(EventPointer pointer);
+}
+
+public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection
+{
+
+}
+
+public readonly struct EventRecordWithPointer
+{
+  public required EventRecordWithMetadata Event { get; init; }
+  public required EventPointer EventPointer { get; init; }
+
+  public void Deconstruct(out EventPointer pointer, out EventRecordWithMetadata eventRecord)
+  {
+    pointer = EventPointer;
+    eventRecord = Event;
+  }
+}
+
+public interface IEventsOwner
+{
+  long Count { get; }
 }
 
 public interface IEventsCollection : 
-  IFreezableCollection, IMutableEventsCollection, IRamEventsCollection, IEnumerable<EventRecordWithMetadata>
+  IFreezableCollection, 
+  IMutableEventsCollection, 
+  ILazilyModifiableEventsCollection, 
+  IEnumerable<EventRecordWithPointer>,
+  IEventsOwner
 {
-  int Count { get; }
-  EventPointer? First { get; }
-  EventPointer? Last { get; }
-  
   void ApplyNotPureActionForAllEvents(Func<EventPointer, EventRecordWithMetadata, bool> action);
+}
+
+public interface ILazilyModifiableEventsCollection
+{
+  void InjectModificationSource(IModificationSource modificationSource);
 }

@@ -44,7 +44,7 @@ public static class TestUtil
     }
     
     var frames = new Stack<string>();
-    foreach (var eventRecord in events)
+    foreach (var (_, eventRecord) in events)
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStart))
       {

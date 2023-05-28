@@ -68,7 +68,7 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
         }
       }
       
-      foreach (var eventRecord in events)
+      foreach (var (_, eventRecord) in events)
       {
         if (eventRecord.IsTaskWaitSendOrStopEvent())
         {

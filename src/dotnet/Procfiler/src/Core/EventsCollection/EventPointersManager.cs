@@ -5,17 +5,68 @@ namespace Procfiler.Core.EventsCollection;
 public class EventPointersManager
 {
   private readonly InsertedEvents myInsertedEvents;
-  private readonly int myInitialCount;
+  private readonly IEventsOwner myOwner;
+  private readonly long myInitialCount;
+  private readonly HashSet<int> myRemovedPointers;
 
   
-  public EventPointersManager(int initialCount, InsertedEvents insertedEvents)
+  public EventPointersManager(long initialCount, InsertedEvents insertedEvents, IEventsOwner owner)
   {
     myInsertedEvents = insertedEvents;
+    myOwner = owner;
     myInitialCount = initialCount;
+    myRemovedPointers = new HashSet<int>();
   }
 
+  
+  public EventPointer? FirstNotDeleted
+  {
+    get
+    {
+      EventPointer? startPointer = myInsertedEvents.FirstEvents switch
+      {
+        { } => EventPointer.ForFirstEvent(0, myOwner),
+        _ => EventPointer.ForInitialArray(0, myOwner)
+      };
+      
+      while (startPointer is { } && myRemovedPointers.Contains(startPointer.GetHashCode()))
+      {
+        startPointer = NextNotDeleted(startPointer.Value);
+      }
 
-  public EventPointer? NextInternal(in EventPointer current)
+      return startPointer;
+    }
+  }
+
+  public void Remove(EventPointer pointer) => myRemovedPointers.Add(pointer.GetHashCode());
+
+  public EventRecordWithMetadata? GetFor(EventPointer pointer)
+  {
+    AssertStateOrThrow(pointer);
+    return pointer.IsInInsertedMap switch
+    {
+      true => pointer.IsInFirstEvents switch
+      {
+        true => myInsertedEvents.FirstEvents![pointer.IndexInInsertionMap],
+        false => myInsertedEvents.GetOrThrow(pointer)
+      },
+      _ => null
+    };
+  }
+  
+  public EventPointer? NextNotDeleted(in EventPointer current)
+  {
+    AssertStateOrThrow(current);
+    var result = NextInternal(current);
+    while (result is { } && myRemovedPointers.Contains(result.GetHashCode()))
+    {
+      result = NextInternal(result.Value);
+    }
+
+    return result;
+  }
+
+  private EventPointer? NextInternal(in EventPointer current)
   {
     if (current.IsInInsertedMap)
     {
@@ -25,10 +76,10 @@ public class EventPointersManager
         if (current.IndexInInsertionMap == myInsertedEvents.FirstEvents.Count - 1)
         {
           if (myInitialCount == 0) return null;
-          return EventPointer.ForInitialArray(0);
+          return EventPointer.ForInitialArray(0, myOwner);
         }
 
-        return EventPointer.ForFirstEvent(current.IndexInInsertionMap + 1);
+        return EventPointer.ForFirstEvent(current.IndexInInsertionMap + 1, myOwner);
       }
 
       var insertedEventsList = GetInsertedEventsListOrThrow(current);
@@ -37,20 +88,20 @@ public class EventPointersManager
         var nextInitialArrayIndex = current.IndexInArray + 1;
         if (nextInitialArrayIndex >= myInitialCount) return null;
 
-        return EventPointer.ForInitialArray(nextInitialArrayIndex);
+        return EventPointer.ForInitialArray(nextInitialArrayIndex, myOwner);
       }
 
-      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap + 1);
+      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap + 1, myOwner);
     }
     
     if (myInsertedEvents.ContainsKey(current.IndexInArray))
     {
-      return EventPointer.ForInsertionMap(current.IndexInArray, 0);
+      return EventPointer.ForInsertionMap(current.IndexInArray, 0, myOwner);
     }
 
     var nextArrayIndex = current.IndexInArray + 1;
     if (nextArrayIndex >= myInitialCount) return null;
-    return EventPointer.ForInitialArray(nextArrayIndex);
+    return EventPointer.ForInitialArray(nextArrayIndex, myOwner);
   }
 
   public EventPointer? PrevInternal(in EventPointer current)
@@ -61,29 +112,29 @@ public class EventPointersManager
       {
         Debug.Assert(myInsertedEvents.FirstEvents is { });
         if (current.IndexInInsertionMap == 0) return null;
-        return EventPointer.ForFirstEvent(current.IndexInInsertionMap - 1);
+        return EventPointer.ForFirstEvent(current.IndexInInsertionMap - 1, myOwner);
       }
 
       if (current.IndexInInsertionMap == 0)
       {
-        return EventPointer.ForInitialArray(current.IndexInArray);
+        return EventPointer.ForInitialArray(current.IndexInArray, myOwner);
       }
 
-      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap - 1);
+      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap - 1, myOwner);
     }
 
     if (current.IndexInArray == 0)
     {
       if (myInsertedEvents.FirstEvents is null || myInsertedEvents.FirstEvents.Count == 0) return null;
-      return EventPointer.ForFirstEvent(myInsertedEvents.FirstEvents.Count - 1);
+      return EventPointer.ForFirstEvent(myInsertedEvents.FirstEvents.Count - 1, myOwner);
     }
     
     if (myInsertedEvents[current.IndexInArray - 1] is { } insertionList)
     {
-      return EventPointer.ForInsertionMap(current.IndexInArray - 1, insertionList.Count - 1);
+      return EventPointer.ForInsertionMap(current.IndexInArray - 1, insertionList.Count - 1, myOwner);
     }
     
-    return EventPointer.ForInitialArray(current.IndexInArray - 1);
+    return EventPointer.ForInitialArray(current.IndexInArray - 1, myOwner);
   }
 
   private List<EventRecordWithMetadata> GetInsertedEventsListOrThrow(EventPointer pointer)

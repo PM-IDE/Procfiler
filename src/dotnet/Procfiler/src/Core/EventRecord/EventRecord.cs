@@ -11,7 +11,6 @@ public class EventRecord
   public long ManagedThreadId { get; }
   public Guid ActivityId { get; }
   public string EventName { get; set; }
-  public bool IsDeleted { get; set; }
 
 
   public EventRecord(long stamp, string eventClass, long managedThreadId, Guid activityId)
@@ -21,7 +20,6 @@ public class EventRecord
     EventClass = eventClass;
     ManagedThreadId = managedThreadId;
     EventName = EventClass;
-    IsDeleted = false;
   }
 
   public EventRecord(TraceEvent @event, long managedThreadId)

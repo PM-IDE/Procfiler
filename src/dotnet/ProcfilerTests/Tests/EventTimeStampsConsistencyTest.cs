@@ -18,7 +18,7 @@ public class EventTimeStampsConsistencyTest : ProcessTestBase
       foreach (var (_, events) in eventsByThreads)
       {
         EventRecordWithMetadata? prev = null;
-        foreach (var currentEvent in events)
+        foreach (var (_, currentEvent) in events)
         {
           if (prev is null)
           {

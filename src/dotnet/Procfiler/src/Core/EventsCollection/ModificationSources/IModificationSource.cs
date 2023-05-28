@@ -5,49 +5,40 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsCollection.ModificationSources;
 
-public interface IModificationSource : IEnumerable<EventRecordWithMetadata>
+public interface IModificationSource : IInsertableEventsCollection, IEnumerable<EventRecordWithPointer>, IEventsOwner
 {
 }
 
-public class MethodStartEndModificationSource : IModificationSource
+public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSource
 {
   private readonly IProcfilerLogger myLogger;
-  private readonly IShadowStacks myShadowStacks;
   private readonly IProcfilerEventsFactory myEventsFactory;
   private readonly SessionGlobalData myGlobalData;
-  private readonly long myManagedThreadId;
+  private readonly IShadowStack myShadowStack;
 
 
   public MethodStartEndModificationSource(
     IProcfilerLogger logger, 
     IProcfilerEventsFactory eventsFactory,
-    IShadowStacks shadowStacks,
     SessionGlobalData globalData,
-    long managedThreadId)
+    IShadowStack shadowStack) : base(shadowStack.FramesCount)
   {
     myLogger = logger;
-    myShadowStacks = shadowStacks;
-    myManagedThreadId = managedThreadId;
     myGlobalData = globalData;
+    myShadowStack = shadowStack;
     myEventsFactory = eventsFactory;
   }
-
   
-  public IEnumerator<EventRecordWithMetadata> GetEnumerator()
+
+  protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
   {
-    if (myShadowStacks.FindShadowStack(myManagedThreadId) is not { } shadowStack)
-    {
-      myLogger.LogError("Failed to retrieve shadow stack for managed thread {Id}", myManagedThreadId);
-      yield break;
-    }
-    
-    foreach (var frameInfo in shadowStack)
+    foreach (var frameInfo in myShadowStack)
     {
       var creationContext = new FromFrameInfoCreationContext
       {
         FrameInfo = frameInfo,
         GlobalData = myGlobalData,
-        ManagedThreadId = myManagedThreadId
+        ManagedThreadId = myShadowStack.ManagedThreadId
       };
 
       if (myEventsFactory.TryCreateMethodEvent(creationContext) is not { } createMethodEvent)
@@ -59,6 +50,4 @@ public class MethodStartEndModificationSource : IModificationSource
       yield return createMethodEvent;
     }
   }
-
-  IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

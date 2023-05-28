@@ -1,4 +1,5 @@
 ﻿using Procfiler.Core.EventRecord;
+using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Utils;
 
@@ -15,7 +16,7 @@ public class SplitterImplementation
 
 
   private readonly IProcfilerEventsFactory myEventsFactory;
-  private readonly IEnumerable<EventRecordWithMetadata> myEvents;
+  private readonly IEnumerable<EventRecordWithPointer> myEvents;
   private readonly bool myInlineEventsFromInnerMethods;
   private readonly Regex myFilterRegex;
   private readonly Dictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> myResult;
@@ -24,7 +25,7 @@ public class SplitterImplementation
 
   public SplitterImplementation(
     IProcfilerEventsFactory eventsFactory,
-    IEnumerable<EventRecordWithMetadata> events,
+    IEnumerable<EventRecordWithPointer> events,
     string filterPattern,
     bool inlineEventsFromInnerMethods)
   {
@@ -39,7 +40,7 @@ public class SplitterImplementation
 
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split()
   {
-    foreach (var eventRecord in myEvents)
+    foreach (var (_, eventRecord) in myEvents)
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStartOfMethod))
       {

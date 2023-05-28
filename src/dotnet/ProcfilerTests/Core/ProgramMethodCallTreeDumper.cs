@@ -1,12 +1,18 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Procfiler.Core.EventRecord;
+using Procfiler.Core.EventsCollection;
 using Procfiler.Utils;
 
 namespace ProcfilerTests.Core;
 
 public static class ProgramMethodCallTreeDumper
 {
+  public static string CreateDump(IEnumerable<EventRecordWithPointer> events, string pattern)
+  {
+    return CreateDump(events.Select(pair => pair.Event), pattern);
+  }
+
   public static string CreateDump(IEnumerable<EventRecordWithMetadata> events, string pattern)
   {
     var sb = new StringBuilder();

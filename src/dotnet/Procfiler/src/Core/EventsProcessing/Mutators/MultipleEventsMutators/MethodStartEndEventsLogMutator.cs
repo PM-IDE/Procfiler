@@ -40,7 +40,13 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
   {
     if (events.Count == 0) return;
 
-    var managedThreadId = events.GetFor(events.First!.Value).ManagedThreadId;
+    using var collectionEnumerator = events.GetEnumerator();
+    if (!collectionEnumerator.MoveNext())
+    {
+      return;
+    }
+
+    var managedThreadId = collectionEnumerator.Current.Event.ManagedThreadId;
     if (context.Stacks.FindShadowStack(managedThreadId) is not { } foundShadowStack)
     {
       myLogger.LogWarning("Managed thread {Id} was not in shadow stacks", managedThreadId);
@@ -52,20 +58,18 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
     var enumerator = shadowStack.GetEnumerator();
     enumerator.MoveNext();
     
-    var finished = AddMethodsEventsToCollection(events, context, managedThreadId, enumerator);
-    
-    if (!finished)
-    {
-      AddRemainingMethodsEvents(events, context, managedThreadId, enumerator);
-    }
+    AddMethodsEventsToCollection(events, context, managedThreadId, enumerator);
   }
 
-  private bool AddMethodsEventsToCollection(
-    IEventsCollection events, SessionGlobalData context, long managedThreadId, IEnumerator<FrameInfo> enumerator)
+  private void AddMethodsEventsToCollection(
+    IEventsCollection events, SessionGlobalData context, long managedThreadId,
+    IEnumerator<FrameInfo> enumerator)
   {
     var finished = false;
+    EventPointer? lastPtr = null;
     events.ApplyNotPureActionForAllEvents((ptr, eventRecord) =>
     {
+      lastPtr = ptr;
       while (!finished && enumerator.Current.TimeStamp < eventRecord.Stamp)
       {
         var ctx = new FromFrameInfoCreationContext
@@ -89,17 +93,10 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
 
       return false;
     });
-
-    return finished;
-  }
-
-  private void AddRemainingMethodsEvents(
-    IEventsCollection events, SessionGlobalData context, long managedThreadId, IEnumerator<FrameInfo> enumerator)
-  {
+    
     do
     {
-      var last = events.Last;
-      Debug.Assert(last is { });
+      Debug.Assert(lastPtr is { });
       var ctx = new FromFrameInfoCreationContext
       {
         FrameInfo = enumerator.Current,
@@ -109,9 +106,9 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
       
       if (myFactory.TryCreateMethodEvent(ctx) is { } createMethodEvent)
       {
-        events.InsertAfter(last.Value, createMethodEvent);
+        lastPtr = events.InsertAfter(lastPtr.Value, createMethodEvent);
       }
-    } 
+    }
     while (enumerator.MoveNext());
   }
 }

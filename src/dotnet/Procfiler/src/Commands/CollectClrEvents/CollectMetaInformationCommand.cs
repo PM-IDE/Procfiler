@@ -30,7 +30,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
       foreach (var (name, eventsByName) in map)
       {
         var payloadValues = new Dictionary<string, Dictionary<string, int>>();
-        foreach (var eventRecord in eventsByName)
+        foreach (var (_, eventRecord) in eventsByName)
         {
           foreach (var (payloadName, payloadValue) in eventRecord.Metadata)
           {

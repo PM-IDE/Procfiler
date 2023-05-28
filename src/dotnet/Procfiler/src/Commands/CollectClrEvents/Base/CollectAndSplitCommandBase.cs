@@ -94,7 +94,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
 
     if (correspondingEvents.Count == 0) return;
 
-    IEnumerable<EventRecordWithMetadata> mergedEvents = correspondingEvents;
+    IEnumerable<EventRecordWithMetadata> mergedEvents = correspondingEvents.Select(pair => pair.Event);
     if (undefinedThreadEvents is { })
     {
       using (new PerformanceCookie($"{GetType().Name}::MergingEvents", Logger))

@@ -42,7 +42,7 @@ public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndef
       managedThreadEventsById[key] = value;
     }
 
-    return new EventsCollectionImpl(newUndefinedEvents.ToArray(), myLogger);
+    return new EventsCollectionImpl(newUndefinedEvents.Select(pair => pair.Event).ToArray(), myLogger);
   }
   
   private ManagedEventsExtractionResult ExtractFrom(IEventsCollection undefinedEvents)
@@ -51,7 +51,7 @@ public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndef
     var managedThreadsTraces = new Dictionary<int, List<EventRecordWithMetadata>>();
     var currentThreadId = -1;
     
-    foreach (var eventRecord in undefinedEvents)
+    foreach (var (_, eventRecord) in undefinedEvents)
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is not var (frame, isStart))
       {

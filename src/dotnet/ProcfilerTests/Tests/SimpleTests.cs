@@ -32,7 +32,7 @@ public class SimpleTests : ProcessTestBase
       var eventsByNames = SplitEventsHelper.SplitByKey(TestLogger.CreateInstance(), events.Events, SplitEventsHelper.EventClassKeyExtractor);
       foreach (var (name, traceEvents) in eventsByNames)
       {
-        foreach (var traceEvent in traceEvents)
+        foreach (var (_, traceEvent) in traceEvents)
         {
           Assert.That(traceEvent.EventName.Replace('/', '_'), Is.EqualTo(name));
         }
