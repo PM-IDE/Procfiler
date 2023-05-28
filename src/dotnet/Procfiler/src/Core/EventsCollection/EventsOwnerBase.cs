@@ -21,7 +21,9 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
   }
 
   
-  protected IEnumerable<EventRecordWithPointer> GetEnumeratorInternal()
+  public virtual IEnumerator<EventRecordWithPointer> GetEnumerator() => GetEnumeratorInternal().GetEnumerator();
+
+  private IEnumerable<EventRecordWithPointer> GetEnumeratorInternal()
   {
     using var initialEventsEnumerator = EnumerateInitialEvents().GetEnumerator();
     initialEventsEnumerator.MoveNext();
@@ -92,6 +94,7 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
 
   protected void IncreaseCount() => ++Count;
   protected void DecreaseCount() => --Count;
+  
   public void Freeze() => myIsFrozen = true;
   public void UnFreeze() => myIsFrozen = false;
 
@@ -100,7 +103,6 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
     if (myIsFrozen) throw new CollectionIsFrozenException();
   }
 
-  public IEnumerator<EventRecordWithPointer> GetEnumerator() => GetEnumeratorInternal().GetEnumerator();
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
   
   protected abstract IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents();

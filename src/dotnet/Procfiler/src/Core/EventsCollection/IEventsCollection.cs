@@ -27,24 +27,16 @@ public interface IRemovableEventsCollection
 
 public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection
 {
-
-}
-
-public readonly struct EventRecordWithPointer
-{
-  public required EventRecordWithMetadata Event { get; init; }
-  public required EventPointer EventPointer { get; init; }
-
-  public void Deconstruct(out EventPointer pointer, out EventRecordWithMetadata eventRecord)
-  {
-    pointer = EventPointer;
-    eventRecord = Event;
-  }
 }
 
 public interface IEventsOwner
 {
   long Count { get; }
+}
+
+public interface ILazilyModifiableEventsCollection
+{
+  void InjectModificationSource(IModificationSource modificationSource);
 }
 
 public interface IEventsCollection : 
@@ -55,9 +47,4 @@ public interface IEventsCollection :
   IEventsOwner
 {
   void ApplyNotPureActionForAllEvents(Func<EventPointer, EventRecordWithMetadata, bool> action);
-}
-
-public interface ILazilyModifiableEventsCollection
-{
-  void InjectModificationSource(IModificationSource modificationSource);
 }

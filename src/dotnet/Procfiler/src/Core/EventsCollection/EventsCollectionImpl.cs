@@ -27,7 +27,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
   public void ApplyNotPureActionForAllEvents(Func<EventPointer, EventRecordWithMetadata, bool> action)
   {
-    foreach (var eventWithPtr in GetEnumeratorInternal())
+    foreach (var eventWithPtr in this)
     {
       var shouldStop = action(eventWithPtr.EventPointer, eventWithPtr.Event);
       if (shouldStop) return;

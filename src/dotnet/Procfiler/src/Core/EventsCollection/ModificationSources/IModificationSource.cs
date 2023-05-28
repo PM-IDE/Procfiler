@@ -5,7 +5,11 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsCollection.ModificationSources;
 
-public interface IModificationSource : IInsertableEventsCollection, IEnumerable<EventRecordWithPointer>, IEventsOwner
+public interface IModificationSource : 
+  IEventsOwner,
+  IInsertableEventsCollection,
+  IFreezableCollection,
+  IEnumerable<EventRecordWithPointer>
 {
 }
 
@@ -15,6 +19,7 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
   private readonly IProcfilerEventsFactory myEventsFactory;
   private readonly SessionGlobalData myGlobalData;
   private readonly IShadowStack myShadowStack;
+  private readonly HashSet<int> myRemovedIndexes;
 
 
   public MethodStartEndModificationSource(
@@ -27,18 +32,41 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
     myGlobalData = globalData;
     myShadowStack = shadowStack;
     myEventsFactory = eventsFactory;
+    myRemovedIndexes = new HashSet<int>();
   }
 
 
   public override bool Remove(EventPointer pointer)
   {
-    throw new NotImplementedException();
+    AssertNotFrozen();
+    if (pointer.IsInInitialArray)
+    {
+      if (myRemovedIndexes.Contains(pointer.IndexInArray))
+      {
+        return false;
+      }
+
+      myRemovedIndexes.Add(pointer.IndexInArray);
+      DecreaseCount();
+      return true;
+    }
+
+    if (PointersManager.Remove(pointer))
+    {
+      DecreaseCount();
+      return true;
+    }
+
+    return false;
   }
 
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
   {
+    var index = -1;
     foreach (var frameInfo in myShadowStack)
     {
+      ++index;
+      
       var creationContext = new FromFrameInfoCreationContext
       {
         FrameInfo = frameInfo,
@@ -52,6 +80,11 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
         continue;
       }
 
+      if (myRemovedIndexes.Contains(index))
+      {
+        createMethodEvent.IsRemoved = true;
+      }
+      
       yield return createMethodEvent;
     }
   }
