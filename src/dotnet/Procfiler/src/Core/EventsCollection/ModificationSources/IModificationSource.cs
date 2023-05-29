@@ -45,7 +45,7 @@ public abstract class ModificationSourceBase : EventsOwnerBase, IModificationSou
   }
 }
 
-public class MethodStartEndModificationSource : ModificationSourceBase, IModificationSource
+public class MethodStartEndModificationSource : ModificationSourceBase
 {
   private readonly IProcfilerLogger myLogger;
   private readonly IProcfilerEventsFactory myEventsFactory;
@@ -81,18 +81,13 @@ public class MethodStartEndModificationSource : ModificationSourceBase, IModific
         ManagedThreadId = myShadowStack.ManagedThreadId
       };
 
-      if (myEventsFactory.TryCreateMethodEvent(creationContext) is not { } createMethodEvent)
-      {
-        myLogger.LogWarning("Failed to create method event for {FunctionId}", creationContext.FrameInfo.FunctionId);
-        continue;
-      }
-
+      var createdMethodEvent = myEventsFactory.CreateMethodEvent(creationContext);
       if (RemovedIndexes.Contains(index))
       {
-        createMethodEvent.IsRemoved = true;
+        createdMethodEvent.IsRemoved = true;
       }
       
-      yield return createMethodEvent;
+      yield return createdMethodEvent;
     }
   }
 }

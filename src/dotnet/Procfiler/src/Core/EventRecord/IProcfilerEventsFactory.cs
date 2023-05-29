@@ -25,7 +25,7 @@ public interface IProcfilerEventsFactory
   EventRecordWithMetadata CreateMethodStartEvent(EventsCreationContext context, string methodName);
   EventRecordWithMetadata CreateMethodEndEvent(EventsCreationContext context, string methodName);
   EventRecordWithMetadata CreateMethodExecutionEvent(EventsCreationContext context, string methodName);
-  EventRecordWithMetadata? TryCreateMethodEvent(FromFrameInfoCreationContext context);
+  EventRecordWithMetadata CreateMethodEvent(FromFrameInfoCreationContext context);
 }
 
 [AppComponent]
@@ -75,13 +75,13 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
     return new EventRecordWithMetadata(stamp, name, managedThreadId, metadata);
   }
   
-  public EventRecordWithMetadata? TryCreateMethodEvent(FromFrameInfoCreationContext context)
+  public EventRecordWithMetadata CreateMethodEvent(FromFrameInfoCreationContext context)
   {
     var methodId = context.FrameInfo.FunctionId;
     if (!context.GlobalData.MethodIdToFqn.TryGetValue(methodId, out var fqn))
     {
       myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
-      fqn = methodId.ToString();
+      fqn = $"System.Undefined.{methodId}[instance.void..()]";
     }
 
     var creationContext = new EventsCreationContext(context.FrameInfo.TimeStamp, context.ManagedThreadId);

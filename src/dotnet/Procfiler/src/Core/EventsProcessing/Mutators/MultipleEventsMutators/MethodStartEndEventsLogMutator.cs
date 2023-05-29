@@ -76,7 +76,7 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
           ManagedThreadId = managedThreadId
         };
         
-        if (myFactory.TryCreateMethodEvent(ctx) is { } createMethodEvent)
+        if (myFactory.CreateMethodEvent(ctx) is { } createMethodEvent)
         {
           events.InsertBefore(eventWithPtr.EventPointer, createMethodEvent);
         }
@@ -103,7 +103,7 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
         ManagedThreadId = managedThreadId
       };
       
-      if (myFactory.TryCreateMethodEvent(ctx) is { } createMethodEvent)
+      if (myFactory.CreateMethodEvent(ctx) is { } createMethodEvent)
       {
         lastPtr = events.InsertAfter(lastPtr.Value, createMethodEvent);
       }
