@@ -9,7 +9,7 @@ namespace Procfiler.Core.EventRecord;
 
 public readonly record struct EventsCreationContext(long Stamp, long ManagedThreadId)
 {
-  public static EventsCreationContext CreateWithUndefinedStackTrace(Core.EventRecord.EventRecord record) =>
+  public static EventsCreationContext CreateWithUndefinedStackTrace(EventRecord record) =>
     new(record.Stamp, record.ManagedThreadId);
 }
 

@@ -10,8 +10,9 @@ public class SplitterImplementation
   private readonly record struct CurrentFrameInfo(
     string Frame,
     bool ShouldProcess,
-    List<EventRecordWithMetadata> Events,
-    EventRecordWithMetadata OriginalEvent
+    List<EventRecordWithMetadata> Events, 
+    long OriginalEventStamp,
+    long OriginalEventThreadId
   );
 
 
@@ -70,7 +71,7 @@ public class SplitterImplementation
       AddEventToAllFrames(eventRecord);
     }
     
-    myFramesStack.Push(new CurrentFrameInfo(frame, ShouldProcess(frame), events, eventRecord));
+    myFramesStack.Push(new CurrentFrameInfo(frame, ShouldProcess(frame), events, eventRecord.Stamp, eventRecord.ManagedThreadId));
   }
 
   private bool ShouldProcess(string frame) => myFilterRegex.IsMatch(frame);
@@ -78,7 +79,7 @@ public class SplitterImplementation
   private void ProcessEndOfMethod(EventRecordWithMetadata methodEndEvent)
   {
     var topOfStack = myFramesStack.Pop();
-    var (topmostFrame, shouldProcess, methodEvents, _) = topOfStack;
+    var (topmostFrame, shouldProcess, methodEvents, _, _) = topOfStack;
     if (!shouldProcess) return;
     
     if (methodEvents.Count > 0)
@@ -96,21 +97,26 @@ public class SplitterImplementation
     }
 
     if (myFramesStack.Count <= 0) return;
-      
+
     var currentTopmost = myFramesStack.Peek();
     var contextEvent = currentTopmost.Events.Count switch
     {
       > 0 => currentTopmost.Events[^1],
-      _ => currentTopmost.OriginalEvent
+      _ => null
     };
-
-    var startEventCtx = EventsCreationContext.CreateWithUndefinedStackTrace(contextEvent);
+    
+    var startEventCtx = contextEvent switch
+    {
+      { } => EventsCreationContext.CreateWithUndefinedStackTrace(contextEvent),
+      _ => new EventsCreationContext(currentTopmost.OriginalEventStamp, currentTopmost.OriginalEventThreadId)
+    };
+    
     currentTopmost.Events.Add(myEventsFactory.CreateMethodExecutionEvent(startEventCtx, topmostFrame));
   }
 
   private void AddEventToAllFrames(EventRecordWithMetadata eventRecord)
   {
-    foreach (var (_, frameShouldProcess, frameEvents, _) in myFramesStack)
+    foreach (var (_, frameShouldProcess, frameEvents, _, _) in myFramesStack)
     {
       if (frameShouldProcess)
       {
