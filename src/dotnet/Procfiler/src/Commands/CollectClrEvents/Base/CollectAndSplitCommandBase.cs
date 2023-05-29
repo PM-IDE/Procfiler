@@ -74,6 +74,11 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
       {
         await ProcessEventsAsync(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
       }
+      
+      foreach (var (_, events) in eventsByKey)
+      {
+        events.Dispose();
+      }
 
       SerializeStacks(context, globalData);
     });

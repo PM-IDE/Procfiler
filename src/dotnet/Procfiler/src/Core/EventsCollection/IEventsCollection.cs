@@ -34,12 +34,8 @@ public interface IEventsOwner : IMutableEventsCollection, IFreezableCollection, 
   long Count { get; }
 }
 
-public interface ILazilyModifiableEventsCollection
-{
-  void InjectModificationSource(IModificationSource modificationSource);
-}
-
-public interface IEventsCollection : ILazilyModifiableEventsCollection, IEventsOwner
+public interface IEventsCollection : IEventsOwner, IDisposable
 {
   void ApplyNotPureActionForAllEvents(Func<EventRecordWithPointer, bool> action);
+  void InjectModificationSource(IModificationSource modificationSource);
 }

@@ -92,8 +92,8 @@ public abstract class EventsOwnerBase : IEventsOwner
 
   public abstract bool Remove(EventPointer pointer);
 
-  protected void IncreaseCount() => ++Count;
-  protected void DecreaseCount() => --Count;
+  protected void IncreaseCount(long delta = 1) => Count += delta;
+  protected void DecreaseCount(long delta = 1) => Count -= delta;
   
   public void Freeze() => myIsFrozen = true;
   public void UnFreeze() => myIsFrozen = false;

@@ -37,6 +37,16 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   public override bool Remove(EventPointer pointer)
   {
     AssertNotFrozen();
+    if (!ReferenceEquals(pointer.Owner, this))
+    {
+      if (TryFindModificationSourceForOwner(pointer) is { } modificationSource)
+      {
+        return modificationSource.Remove(pointer);
+      }
+
+      return false;
+    }
+    
     if (pointer.IsInInitialArray)
     {
       if (myInitialEvents[pointer.IndexInArray].IsRemoved)
@@ -58,6 +68,50 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
     return false;
   }
 
+  private IModificationSource? TryFindModificationSourceForOwner(EventPointer pointer)
+  {
+    foreach (var modificationSource in myModificationSources)
+    {
+      if (ReferenceEquals(modificationSource, pointer.Owner))
+      {
+        return modificationSource;
+      }
+    }
+    
+    myLogger.LogError("Failed to find modification source for {Owner}, skipping remove", pointer.Owner.GetType().Name);
+    return null;
+  }
+  
+  public override EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
+  {
+    if (!ReferenceEquals(pointer.Owner, this))
+    {
+      if (TryFindModificationSourceForOwner(pointer) is { } modificationSource)
+      {
+        return modificationSource.InsertAfter(pointer, eventToInsert);
+      }
+
+      throw new ArgumentOutOfRangeException();
+    }
+    
+    return base.InsertAfter(pointer, eventToInsert);
+  }
+
+  public override EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert)
+  {
+    if (!ReferenceEquals(pointer.Owner, this))
+    {
+      if (TryFindModificationSourceForOwner(pointer) is { } modificationSource)
+      {
+        return modificationSource.InsertBefore(pointer, eventToInsert);
+      }
+
+      throw new ArgumentOutOfRangeException();
+    }
+    
+    return base.InsertBefore(pointer, eventToInsert);
+  }
+
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() => myInitialEvents;
 
   public override IEnumerator<EventRecordWithPointer> GetEnumerator()
@@ -67,7 +121,20 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
       EnumerateInternal()
     };
     
-    enumerators.AddRange(myModificationSources);
+    foreach (var modificationSource in myModificationSources)
+    {
+      IncreaseCount(modificationSource.Count);
+      enumerators.Add(modificationSource);
+    }
+
     return new OrderedEventsEnumerator(enumerators);
+  }
+
+  public void Dispose()
+  {
+    foreach (var modificationSource in myModificationSources)
+    {
+      modificationSource.Dispose();
+    }
   }
 }

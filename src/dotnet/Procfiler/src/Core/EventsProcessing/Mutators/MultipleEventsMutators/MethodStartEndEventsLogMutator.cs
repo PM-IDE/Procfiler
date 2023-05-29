@@ -3,6 +3,7 @@ using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
+using Procfiler.Core.EventsCollection.ModificationSources;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
 using Procfiler.Core.EventsProcessing.Mutators.Core.Passes;
 using Procfiler.Utils;
@@ -53,12 +54,8 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
       return;
     }
 
-    using var shadowStack = foundShadowStack;
-    
-    var enumerator = shadowStack.GetEnumerator();
-    enumerator.MoveNext();
-    
-    AddMethodsEventsToCollection(events, context, managedThreadId, enumerator);
+    var modificationSource = new MethodStartEndModificationSource(myLogger, myFactory, context, foundShadowStack);
+    events.InjectModificationSource(modificationSource);
   }
 
   private void AddMethodsEventsToCollection(
