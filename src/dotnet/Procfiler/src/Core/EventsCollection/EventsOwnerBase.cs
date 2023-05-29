@@ -21,9 +21,9 @@ public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWit
   }
 
   
-  public virtual IEnumerator<EventRecordWithPointer> GetEnumerator() => GetEnumeratorInternal().GetEnumerator();
+  public virtual IEnumerator<EventRecordWithPointer> GetEnumerator() => EnumerateInternal().GetEnumerator();
 
-  private IEnumerable<EventRecordWithPointer> GetEnumeratorInternal()
+  protected IEnumerable<EventRecordWithPointer> EnumerateInternal()
   {
     using var initialEventsEnumerator = EnumerateInitialEvents().GetEnumerator();
     initialEventsEnumerator.MoveNext();

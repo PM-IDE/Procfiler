@@ -3,7 +3,7 @@ using Procfiler.Core.EventsCollection;
 
 namespace Procfiler.Core;
 
-public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEnumerator<EventRecordWithMetadata>
+public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnumerator<EventRecordWithPointer>
 {
   private struct EnumeratorState
   {
@@ -12,18 +12,20 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
   }
 
   private readonly EnumeratorState[] myStates;
-  private readonly IEventsCollection[] myCollections;
+  private readonly IEnumerable<EventRecordWithPointer>[] myCollections;
   private readonly PriorityQueue<int, long> myQueue;
 
+  private int myLastReturnedEnumerator = -1;
 
-  public EventRecordWithMetadata Current { get; private set; } = null!;
+
+  public EventRecordWithPointer Current { get; private set; }
   object IEnumerator.Current => Current;
 
   
   /// <invariant name = "EventsMustBeOrderedByStamp">
   /// The Lists of events in eventsByManagedThreads should be sorted by "Stamp" property
   /// </invariant>
-  public OrderedEventsEnumerator(IEnumerable<IEventsCollection> eventsByTraces)
+  public OrderedEventsEnumerator(IEnumerable<IEnumerable<EventRecordWithPointer>> eventsByTraces)
   {
     //reference to invariant: EventsMustBeOrderedByStamp
     myCollections = eventsByTraces.ToArray();
@@ -36,6 +38,19 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
   
   public bool MoveNext()
   {
+    if (myLastReturnedEnumerator != -1)
+    {
+      var lastUsedState = myStates[myLastReturnedEnumerator];
+      if (lastUsedState.Enumerator.MoveNext())
+      {
+        myQueue.Enqueue(myLastReturnedEnumerator, lastUsedState.Enumerator.Current.Event.Stamp);
+      }
+      else
+      {
+        lastUsedState.Finished = true;
+      }
+    }
+    
     while (true)
     {
       if (myQueue.Count == 0) return false;
@@ -46,16 +61,8 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
       if (currentEnumeratorState.Finished) continue;
 
       var enumerator = currentEnumeratorState.Enumerator;
-      Current = enumerator.Current.Event;
-      
-      if (enumerator.MoveNext())
-      {
-        myQueue.Enqueue(next, enumerator.Current.Event.Stamp);
-      }
-      else
-      {
-        currentEnumeratorState.Finished = true;
-      }
+      Current = enumerator.Current;
+      myLastReturnedEnumerator = next;
       
       return true;
     }
@@ -66,7 +73,6 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
     myQueue.Clear();
     for (var i = 0; i < myCollections.Length; i++)
     {
-      myStates[i].Enumerator.Dispose();
       myStates[i] = new EnumeratorState
       {
         Enumerator = myCollections[i].GetEnumerator()
@@ -80,10 +86,14 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
       {
         state.Finished = true;
       }
+      else
+      {
+        myQueue.Enqueue(i, state.Enumerator.Current.Event.Stamp);
+      }
     }
   }
   
-  public IEnumerator<EventRecordWithMetadata> GetEnumerator() => this;
+  public IEnumerator<EventRecordWithPointer> GetEnumerator() => this;
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

@@ -53,12 +53,12 @@ public partial class XesEventsSerializer : IXesEventsSerializer
     await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, TraceTagName, null);
     await WriteStringValueTagAsync(writer, ConceptName, traceNum.ToString());
 
-    foreach (var currentEvent in new OrderedEventsEnumerator(sessionInfo.Events))
+    foreach (var (_, currentEvent) in new OrderedEventsEnumerator(sessionInfo.Events))
     {
       await WriteEventNodeAsync(writer, currentEvent);
     }
   }
-  
+
   private static async Task WriteEventNodeAsync(XmlWriter writer, EventRecordWithMetadata currentEvent)
   {
     await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, EventTag, null);

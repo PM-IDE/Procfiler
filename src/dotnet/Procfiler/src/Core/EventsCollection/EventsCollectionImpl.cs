@@ -59,4 +59,15 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   }
 
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() => myInitialEvents;
+
+  public override IEnumerator<EventRecordWithPointer> GetEnumerator()
+  {
+    var enumerators = new List<IEnumerable<EventRecordWithPointer>>
+    {
+      EnumerateInternal()
+    };
+    
+    enumerators.AddRange(myModificationSources);
+    return new OrderedEventsEnumerator(enumerators);
+  }
 }
