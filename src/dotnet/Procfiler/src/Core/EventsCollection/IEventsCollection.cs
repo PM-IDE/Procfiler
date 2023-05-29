@@ -34,7 +34,7 @@ public interface IEventsOwner : IMutableEventsCollection, IFreezableCollection, 
   long Count { get; }
 }
 
-public interface IEventsCollection : IEventsOwner, IDisposable
+public interface IEventsCollection : IEventsOwner
 {
   void ApplyNotPureActionForAllEvents(Func<EventRecordWithPointer, bool> action);
   void InjectModificationSource(IModificationSource modificationSource);

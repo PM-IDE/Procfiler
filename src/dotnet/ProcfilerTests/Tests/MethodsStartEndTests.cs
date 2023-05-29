@@ -30,7 +30,6 @@ public class MethodsStartEndTests : GoldProcessBasedTest
     processor.ApplyMultipleMutators(mainThreadEvents, events.GlobalData, EmptyCollections<Type>.EmptySet);
     
     var dump = ProgramMethodCallTreeDumper.CreateDump(mainThreadEvents, filterPattern);
-    mainThreadEvents.Dispose();
     return dump;
   }
 }

@@ -43,8 +43,6 @@ public class EventTimeStampsConsistencyTest : ProcessTestBase
             }
           }
         }
-        
-        events.Dispose();
       }
     });
   }

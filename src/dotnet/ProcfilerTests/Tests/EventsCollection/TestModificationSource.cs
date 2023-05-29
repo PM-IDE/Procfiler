@@ -22,8 +22,4 @@ public class TestModificationSource : ModificationSourceBase, IModificationSourc
       yield return myInitialEvents[i];
     }
   }
-  
-  public override void Dispose()
-  {
-  }
 }

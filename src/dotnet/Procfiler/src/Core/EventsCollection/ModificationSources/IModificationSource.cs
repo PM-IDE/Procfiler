@@ -5,7 +5,7 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsCollection.ModificationSources;
 
-public interface IModificationSource : IEventsOwner, IDisposable
+public interface IModificationSource : IEventsOwner
 {
 }
 
@@ -43,8 +43,6 @@ public abstract class ModificationSourceBase : EventsOwnerBase, IModificationSou
 
     return false;
   }
-
-  public abstract void Dispose();
 }
 
 public class MethodStartEndModificationSource : ModificationSourceBase, IModificationSource
@@ -97,6 +95,4 @@ public class MethodStartEndModificationSource : ModificationSourceBase, IModific
       yield return createMethodEvent;
     }
   }
-
-  public override void Dispose() => myShadowStack.Dispose();
 }

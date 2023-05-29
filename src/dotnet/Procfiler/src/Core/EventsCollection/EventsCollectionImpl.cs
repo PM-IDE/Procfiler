@@ -131,12 +131,4 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
     return new OrderedEventsEnumerator(enumerators);
   }
-
-  public void Dispose()
-  {
-    foreach (var modificationSource in myModificationSources)
-    {
-      modificationSource.Dispose();
-    }
-  }
 }

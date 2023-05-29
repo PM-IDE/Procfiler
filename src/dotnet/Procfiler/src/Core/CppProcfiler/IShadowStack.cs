@@ -1,9 +1,9 @@
-using Procfiler.Core.Exceptions;
+using Procfiler.Utils;
 
 namespace Procfiler.Core.CppProcfiler;
 
 
-public interface IShadowStack : IEnumerable<FrameInfo>, IDisposable
+public interface IShadowStack : IEnumerable<FrameInfo>
 {
   long ManagedThreadId { get; }
   long FramesCount { get; }
@@ -12,69 +12,48 @@ public interface IShadowStack : IEnumerable<FrameInfo>, IDisposable
 
 public class ShadowStackImpl : IShadowStack
 {
-  private readonly BinaryReader myReader;
+  private readonly IProcfilerLogger myLogger;
+  private readonly string myBinStackFilePath;
   private readonly long myStartPosition;
-
-  private bool myIsEnumerating;
+  
 
   public long ManagedThreadId { get; }
   public long FramesCount { get; }
 
 
-  public ShadowStackImpl(BinaryReader reader, long startPosition)
+  public ShadowStackImpl(IProcfilerLogger logger, string filePath, long startPosition)
   {
-    myReader = reader;
+    myLogger = logger;
+    myBinStackFilePath = filePath;
     myStartPosition = startPosition;
-    
+
+    using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
+    using var reader = new BinaryReader(fs);
     reader.BaseStream.Seek(startPosition, SeekOrigin.Begin);
     
-    ManagedThreadId = reader.ReadInt64();
-    FramesCount = reader.ReadInt64();
-    
-    reader.BaseStream.Seek(startPosition, SeekOrigin.Begin);
+    ShadowStackHelpers.ReadManagedThreadIdAndFramesCount(reader, out var threadId, out var framesCount);
+    ManagedThreadId = threadId;
+    FramesCount = framesCount;
   }
 
-  
-  public long BytesLength 
-  {
-    get
-    {
-      //start or end indicator + timestamp + function id
-      const long OneFrameLength = 1 + 8 + 8;
-      //managed thread id + framesCount
-      const long HeaderSize = 8 + 8;
 
-      return FramesCount * OneFrameLength + HeaderSize;
-    }
-  }
+  public long BytesLength => ShadowStackHelpers.CalculateByteLength(FramesCount);
 
   public IEnumerator<FrameInfo> GetEnumerator()
   {
-    if (myIsEnumerating)
-    {
-      //throw new InvalidStateException("Can not enumerate while another enumeration is in progress");
-    }
+    using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
+    using var reader = new BinaryReader(fs);
     
-    myIsEnumerating = true;
-    try
+    ShadowStackHelpers.SeekToPositionAndSkipHeader(reader, myStartPosition);
+    
+    var frameInfo = new FrameInfo();
+    for (long i = 0; i < FramesCount; i++)
     {
-      myReader.BaseStream.Seek(myStartPosition, SeekOrigin.Begin);
-      myReader.ReadInt64();
-      myReader.ReadUInt64();
+      frameInfo.IsStart = reader.ReadByte() == 1;
+      frameInfo.TimeStamp = reader.ReadInt64();
+      frameInfo.FunctionId = reader.ReadInt64();
 
-      var frameInfo = new FrameInfo();
-      for (long i = 0; i < FramesCount; i++)
-      {
-        frameInfo.IsStart = myReader.ReadByte() == 1;
-        frameInfo.TimeStamp = myReader.ReadInt64();
-        frameInfo.FunctionId = myReader.ReadInt64();
-
-        yield return frameInfo;
-      }
-    }
-    finally
-    {
-      myIsEnumerating = false;
+      yield return frameInfo;
     }
   }
 
@@ -82,9 +61,30 @@ public class ShadowStackImpl : IShadowStack
   {
     return GetEnumerator();
   }
+}
 
-  public void Dispose()
+public static class ShadowStackHelpers
+{
+  public static void ReadManagedThreadIdAndFramesCount(BinaryReader reader, out long managedThreadId, out long framesCount)
   {
-    myReader.Dispose();
+    managedThreadId = reader.ReadInt64();
+    framesCount = reader.ReadInt64();
+  }
+
+  public static long CalculateByteLength(long framesCount)
+  {
+    //start or end indicator + timestamp + function id
+    const long OneFrameLength = 1 + 8 + 8;
+    //managed thread id + framesCount
+    const long HeaderSize = 8 + 8;
+
+    return framesCount * OneFrameLength + HeaderSize;
+  }
+
+  public static void SeekToPositionAndSkipHeader(BinaryReader reader, long position)
+  {
+    reader.BaseStream.Seek(position, SeekOrigin.Begin);
+    reader.ReadInt64();
+    reader.ReadUInt64();
   }
 }

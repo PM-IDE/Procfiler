@@ -45,22 +45,23 @@ public class ShadowStacksImpl : IShadowStacks
     using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
     using var br = new BinaryReader(fs);
 
-    foreach (var shadowStack in EnumerateShadowStacksInternal(br))
+    foreach (var (_, position) in EnumerateShadowStacksInternal(br))
     {
-      yield return shadowStack;
+      yield return new ShadowStackImpl(myLogger, myPathToBinaryStacksFile, position);
     }
   }
 
-  private static IEnumerable<IShadowStack> EnumerateShadowStacksInternal(BinaryReader br)
+  private static IEnumerable<(long ManagedThreadId, long Position)> EnumerateShadowStacksInternal(BinaryReader br)
   {
     var fs = br.BaseStream;
     var position = 0L;
     while (position < fs.Length)
     {
-      var shadowStack = new ShadowStackImpl(br, position);
-      yield return shadowStack;
+      fs.Seek(position, SeekOrigin.Begin);
+      ShadowStackHelpers.ReadManagedThreadIdAndFramesCount(br, out var threadId, out var framesCount);
+      yield return (threadId, position);
 
-      position += shadowStack.BytesLength;
+      position += ShadowStackHelpers.CalculateByteLength(framesCount);
     }
   }
 
@@ -74,9 +75,7 @@ public class ShadowStacksImpl : IShadowStacks
       return null;
     }
 
-    var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
-    var binaryReader = new BinaryReader(fs);
-    var foundShadowStack = new ShadowStackImpl(binaryReader, offset);
+    var foundShadowStack = new ShadowStackImpl(myLogger, myPathToBinaryStacksFile, offset);
     Debug.Assert(foundShadowStack.ManagedThreadId == managedThreadId);
 
     return foundShadowStack;
@@ -97,7 +96,7 @@ public class ShadowStacksImpl : IShadowStacks
 
         foreach (var shadowStack in EnumerateShadowStacksInternal(br))
         {
-          myManagedThreadsToOffsets[shadowStack.ManagedThreadId] = fs.Position;
+          myManagedThreadsToOffsets[shadowStack.ManagedThreadId] = shadowStack.Position;
         }
 
         myIsInitialized = true;

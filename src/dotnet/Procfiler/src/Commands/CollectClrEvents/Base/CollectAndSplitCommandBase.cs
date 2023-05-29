@@ -72,7 +72,6 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
 
       foreach (var (key, managedEvents) in eventsByKey)
       {
-        lifetime.AddDispose(managedEvents);
         await ProcessEventsAsync(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
       }
 
