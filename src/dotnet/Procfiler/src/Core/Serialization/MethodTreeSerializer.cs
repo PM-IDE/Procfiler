@@ -48,6 +48,7 @@ public class MethodTreeSerializer : IMethodTreeEventSerializer
         AddIndent();
       }
 
+      sb.Append($"[{eventRecord.Stamp}] ");
       sb.Append(eventRecord.EventName);
       using (sb.AppendBraces())
       {

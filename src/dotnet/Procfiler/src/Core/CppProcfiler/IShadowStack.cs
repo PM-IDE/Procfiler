@@ -52,7 +52,7 @@ public class ShadowStackImpl : IShadowStack
   {
     if (myIsEnumerating)
     {
-      throw new InvalidStateException("Can not enumerate while another enumeration is in progress");
+      //throw new InvalidStateException("Can not enumerate while another enumeration is in progress");
     }
     
     myIsEnumerating = true;

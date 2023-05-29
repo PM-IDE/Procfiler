@@ -27,6 +27,7 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
         var processor = Container.Resolve<IUnitedEventsProcessor>(); 
         processor.ApplyMultipleMutators(eventsForThread, globalData, EmptyCollections<Type>.EmptySet);
         TestUtil.CheckMethodConsistencyOrThrow(threadId, eventsForThread, globalData, Container);
+        eventsForThread.Dispose();
       }
 
       return ValueTask.CompletedTask;

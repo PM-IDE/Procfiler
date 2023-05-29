@@ -81,7 +81,7 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
     if (!context.GlobalData.MethodIdToFqn.TryGetValue(methodId, out var fqn))
     {
       myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
-      return null;
+      fqn = methodId.ToString();
     }
 
     var creationContext = new EventsCreationContext(context.FrameInfo.TimeStamp, context.ManagedThreadId);

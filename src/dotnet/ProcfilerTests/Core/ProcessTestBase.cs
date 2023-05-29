@@ -23,13 +23,13 @@ public abstract class ProcessTestBase : TestWithContainerBase
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(
-    KnownSolution solution, Action<Dictionary<long, IEventsCollection>> testFunc)
+    KnownSolution solution, Action<Dictionary<long, IEventsCollection>, SessionGlobalData> testFunc)
   {
     StartProcessAndDoTest(solution, (events, _) =>
     {
       var eventsByThreads = SplitEventsHelper.SplitByKey(
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
-      testFunc(eventsByThreads);
+      testFunc(eventsByThreads, events.GlobalData);
       return ValueTask.CompletedTask;
     });
   }

@@ -5,6 +5,7 @@ using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
+using Procfiler.Core.Serialization;
 using Procfiler.Utils;
 
 namespace ProcfilerTests.Core;
@@ -39,13 +40,17 @@ public static class TestUtil
   {
     void AssertFail(string message)
     {
-      SerializeBrokenStacks(container, globalData, threadId);
+      SerializeBrokenStacks(container, globalData, threadId, events);
       Assert.Fail(message);
     }
     
     var frames = new Stack<string>();
+    var index = -1;
+    string? assertMessage = null;
+    
     foreach (var (_, eventRecord) in events)
     {
+      ++index;
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStart))
       {
         if (isStart)
@@ -56,16 +61,23 @@ public static class TestUtil
         {
           if (frames.Count == 0)
           {
-            AssertFail("Stack was empty");
+            assertMessage = $"Stack was empty, index = {index}, ts = {eventRecord.Stamp}";
+            continue;
           }
           
           var topMost = frames.Pop();
           if (topMost != frame)
           {
-            AssertFail($"{topMost} != {frame}");
+            assertMessage = $"{topMost} != {frame}, index = {index}, ts = {eventRecord.Stamp}";
+            break;
           }
         }
       }
+    }
+
+    if (assertMessage is { })
+    {
+      AssertFail(assertMessage);
     }
 
     if (frames.Count != 0)
@@ -74,13 +86,21 @@ public static class TestUtil
     }
   }
 
-  private static void SerializeBrokenStacks(IContainer container, SessionGlobalData globalData, long brokenThreadId)
+  private static void SerializeBrokenStacks(
+    IContainer container, 
+    SessionGlobalData globalData, 
+    long brokenThreadId,
+    IEventsCollection eventsCollection)
   {
     var savePath = PathUtils.CreateTempFolderPath();
     var serializer = container.Resolve<IStackTraceSerializer>();
     Console.WriteLine($"Serializing broken stacks at {savePath}, thread ID {brokenThreadId}");
 
     serializer.SerializeStackTraces(globalData, savePath);
+
+    var eventsSerializer = container.Resolve<IMethodTreeEventSerializer>();
+    using var fs = File.OpenWrite(Path.Combine(savePath, "events.txt"));
+    eventsSerializer.SerializeEventsAsync(eventsCollection.Select(ptr => ptr.Event), fs).AsTask().GetAwaiter().GetResult();
   }
 
   public static EventRecordWithMetadata CreateRandomEvent(string eventClass, EventMetadata metadata)

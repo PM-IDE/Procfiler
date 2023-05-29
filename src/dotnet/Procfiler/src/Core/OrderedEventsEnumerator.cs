@@ -5,13 +5,7 @@ namespace Procfiler.Core;
 
 public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnumerator<EventRecordWithPointer>
 {
-  private struct EnumeratorState
-  {
-    public required IEnumerator<EventRecordWithPointer> Enumerator { get; init; }
-    public bool Finished { get; set; }
-  }
-
-  private readonly EnumeratorState[] myStates;
+  private readonly IEnumerator<EventRecordWithPointer>[] myEnumerators;
   private readonly IEnumerable<EventRecordWithPointer>[] myCollections;
   private readonly PriorityQueue<int, long> myQueue;
 
@@ -29,7 +23,7 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
   {
     //reference to invariant: EventsMustBeOrderedByStamp
     myCollections = eventsByTraces.ToArray();
-    myStates = new EnumeratorState[myCollections.Length];
+    myEnumerators = new IEnumerator<EventRecordWithPointer>[myCollections.Length];
     myQueue = new PriorityQueue<int, long>();
     
     Reset();
@@ -40,14 +34,10 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
   {
     if (myLastReturnedEnumerator != -1)
     {
-      var lastUsedState = myStates[myLastReturnedEnumerator];
-      if (lastUsedState.Enumerator.MoveNext())
+      ref var enumerator = ref myEnumerators[myLastReturnedEnumerator];
+      if (enumerator.MoveNext())
       {
-        myQueue.Enqueue(myLastReturnedEnumerator, lastUsedState.Enumerator.Current.Event.Stamp);
-      }
-      else
-      {
-        lastUsedState.Finished = true;
+        myQueue.Enqueue(myLastReturnedEnumerator, enumerator.Current.Event.Stamp);
       }
     }
     
@@ -56,11 +46,8 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
       if (myQueue.Count == 0) return false;
       
       var next = myQueue.Dequeue();
-      ref var currentEnumeratorState = ref myStates[next];
-      
-      if (currentEnumeratorState.Finished) continue;
+      ref var enumerator = ref myEnumerators[next];
 
-      var enumerator = currentEnumeratorState.Enumerator;
       Current = enumerator.Current;
       myLastReturnedEnumerator = next;
       
@@ -73,22 +60,15 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
     myQueue.Clear();
     for (var i = 0; i < myCollections.Length; i++)
     {
-      myStates[i] = new EnumeratorState
-      {
-        Enumerator = myCollections[i].GetEnumerator()
-      };
+      myEnumerators[i] = myCollections[i].GetEnumerator();
     }
     
     for (var i = 0; i < myCollections.Length; i++)
     {
-      ref var state = ref myStates[i];
-      if (!state.Enumerator.MoveNext())
+      ref var enumerator = ref myEnumerators[i];
+      if (enumerator.MoveNext())
       {
-        state.Finished = true;
-      }
-      else
-      {
-        myQueue.Enqueue(i, state.Enumerator.Current.Event.Stamp);
+        myQueue.Enqueue(i, enumerator.Current.Event.Stamp);
       }
     }
   }
