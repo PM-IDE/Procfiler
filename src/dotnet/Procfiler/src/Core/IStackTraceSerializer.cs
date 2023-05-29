@@ -26,12 +26,9 @@ public class StackTraceSerializer : IStackTraceSerializer
   public void SerializeStack(
     IShadowStack shadowStack, SessionGlobalData globalData, string savePath)
   {
-    var encoding = Encoding.UTF8;
-    var sb = new StringBuilder();
-
     using var fs = File.OpenWrite(savePath);
-
-    sb = sb.Clear();
+    using var sw = new StreamWriter(fs);
+    
     var indent = 0;
       
     foreach (var frame in shadowStack)
@@ -43,18 +40,16 @@ public class StackTraceSerializer : IStackTraceSerializer
         
       for (var i = 0; i < indent; ++i)
       {
-        sb.AppendSpace();
+        sw.Write(' ');
       }
-        
-      sb.Append(frame.Serialize(globalData)).AppendNewLine();
+
+      sw.Write(frame.Serialize(globalData));
+      sw.Write('\n');
 
       if (frame.IsStart)
       {
         ++indent;
       }
     }
-
-    sb.AppendNewLine();
-    fs.Write(encoding.GetBytes(sb.ToString()));
   }
 }
