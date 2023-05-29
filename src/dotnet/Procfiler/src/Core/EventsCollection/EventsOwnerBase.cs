@@ -2,7 +2,7 @@ using Procfiler.Core.EventRecord;
 
 namespace Procfiler.Core.EventsCollection;
 
-public abstract class EventsOwnerBase : IEventsOwner, IEnumerable<EventRecordWithPointer>
+public abstract class EventsOwnerBase : IEventsOwner
 {
   private readonly InsertedEvents myInsertedEvents;
   protected readonly EventPointersManager PointersManager;

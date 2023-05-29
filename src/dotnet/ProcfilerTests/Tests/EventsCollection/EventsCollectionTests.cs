@@ -27,11 +27,11 @@ public class EventsCollectionTests
     var collection = CreateNewCollection(events);
     var eventsToInsert = CreateInitialArrayOfRandomEvents(10);
     
-    collection.ApplyNotPureActionForAllEvents((ptr, _) =>
+    collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
       foreach (var eventRecord in eventsToInsert)
       {
-        collection.InsertBefore(ptr, eventRecord);
+        collection.InsertBefore(eventWithPtr.EventPointer, eventRecord);
       }
       
       return true;
@@ -67,11 +67,11 @@ public class EventsCollectionTests
   private static EventRecordWithMetadata? SlowlyFindEventFor(IEventsCollection collection, EventPointer pointer)
   {
     EventRecordWithMetadata? eventRecordAtIndex = null;
-    collection.ApplyNotPureActionForAllEvents((ptr, e) =>
+    collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
-      if (ptr == pointer)
+      if (eventWithPtr.EventPointer == pointer)
       {
-        eventRecordAtIndex = e;
+        eventRecordAtIndex = eventWithPtr.Event;
         return true;
       }
 
@@ -138,12 +138,12 @@ public class EventsCollectionTests
 
     var index = 0;
     var added = false;
-    collection.ApplyNotPureActionForAllEvents((ptr, _) =>
+    collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
       if (!added)
       {
         added = true;
-        collection.InsertAfter(ptr, eventsToInsert[index++]);
+        collection.InsertAfter(eventWithPtr.EventPointer, eventsToInsert[index++]);
       }
       else
       {
@@ -171,9 +171,9 @@ public class EventsCollectionTests
     var eventsToInsert = CreateInitialArrayOfRandomEvents();
 
     var index = 0;
-    collection.ApplyNotPureActionForAllEvents((ptr, _) =>
+    collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
-      collection.InsertBefore(ptr, eventsToInsert[index++]);
+      collection.InsertBefore(eventWithPtr.EventPointer, eventsToInsert[index++]);
       return false;
     });
 
@@ -202,14 +202,9 @@ public class EventsCollectionTests
   private static EventRecordWithPointer? GetFirstEvent(IEventsCollection collection)
   {
     EventRecordWithPointer? eventRecordAtIndex = null;
-    collection.ApplyNotPureActionForAllEvents((ptr, e) =>
+    collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
-      eventRecordAtIndex = new EventRecordWithPointer
-      {
-        Event = e,
-        EventPointer =  ptr
-      };
-      
+      eventRecordAtIndex = eventWithPtr;
       return true;
     });
 
@@ -230,14 +225,9 @@ public class EventsCollectionTests
   private static EventRecordWithPointer? SlowlyGetLastEvent(IEventsCollection collection)
   {
     EventRecordWithPointer? eventRecordAtIndex = null;
-    collection.ApplyNotPureActionForAllEvents((ptr, e) =>
+    collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
-      eventRecordAtIndex = new EventRecordWithPointer
-      {
-        Event = e,
-        EventPointer = ptr
-      };
-      
+      eventRecordAtIndex = eventWithPtr;
       return false;
     });
 

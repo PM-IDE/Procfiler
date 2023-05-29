@@ -67,10 +67,10 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
   {
     var finished = false;
     EventPointer? lastPtr = null;
-    events.ApplyNotPureActionForAllEvents((ptr, eventRecord) =>
+    events.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
-      lastPtr = ptr;
-      while (!finished && enumerator.Current.TimeStamp < eventRecord.Stamp)
+      lastPtr = eventWithPtr.EventPointer;
+      while (!finished && enumerator.Current.TimeStamp < eventWithPtr.Event.Stamp)
       {
         var ctx = new FromFrameInfoCreationContext
         {
@@ -81,7 +81,7 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
         
         if (myFactory.TryCreateMethodEvent(ctx) is { } createMethodEvent)
         {
-          events.InsertBefore(ptr, createMethodEvent);
+          events.InsertBefore(eventWithPtr.EventPointer, createMethodEvent);
         }
 
         if (!enumerator.MoveNext())

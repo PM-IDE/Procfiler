@@ -29,7 +29,7 @@ public interface IMutableEventsCollection : IRemovableEventsCollection, IInserta
 {
 }
 
-public interface IEventsOwner
+public interface IEventsOwner : IMutableEventsCollection, IFreezableCollection, IEnumerable<EventRecordWithPointer>
 {
   long Count { get; }
 }
@@ -39,12 +39,7 @@ public interface ILazilyModifiableEventsCollection
   void InjectModificationSource(IModificationSource modificationSource);
 }
 
-public interface IEventsCollection : 
-  IFreezableCollection, 
-  IMutableEventsCollection, 
-  ILazilyModifiableEventsCollection, 
-  IEnumerable<EventRecordWithPointer>,
-  IEventsOwner
+public interface IEventsCollection : ILazilyModifiableEventsCollection, IEventsOwner
 {
-  void ApplyNotPureActionForAllEvents(Func<EventPointer, EventRecordWithMetadata, bool> action);
+  void ApplyNotPureActionForAllEvents(Func<EventRecordWithPointer, bool> action);
 }

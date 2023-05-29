@@ -25,11 +25,11 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   public void InjectModificationSource(IModificationSource modificationSource) => 
     myModificationSources.Add(modificationSource);
 
-  public void ApplyNotPureActionForAllEvents(Func<EventPointer, EventRecordWithMetadata, bool> action)
+  public void ApplyNotPureActionForAllEvents(Func<EventRecordWithPointer, bool> action)
   {
     foreach (var eventWithPtr in this)
     {
-      var shouldStop = action(eventWithPtr.EventPointer, eventWithPtr.Event);
+      var shouldStop = action(eventWithPtr);
       if (shouldStop) return;
     }
   }
