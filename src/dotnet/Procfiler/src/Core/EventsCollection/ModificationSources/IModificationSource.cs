@@ -9,40 +9,28 @@ public interface IModificationSource : IEventsOwner, IDisposable
 {
 }
 
-public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSource
+public abstract class ModificationSourceBase : EventsOwnerBase, IModificationSource
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly IProcfilerEventsFactory myEventsFactory;
-  private readonly SessionGlobalData myGlobalData;
-  private readonly IShadowStack myShadowStack;
-  private readonly HashSet<int> myRemovedIndexes;
+  protected readonly HashSet<int> RemovedIndexes;
 
-
-  public MethodStartEndModificationSource(
-    IProcfilerLogger logger, 
-    IProcfilerEventsFactory eventsFactory,
-    SessionGlobalData globalData,
-    IShadowStack shadowStack) : base(shadowStack.FramesCount)
+  
+  protected ModificationSourceBase(long initialEventsCount) : base(initialEventsCount)
   {
-    myLogger = logger;
-    myGlobalData = globalData;
-    myShadowStack = shadowStack;
-    myEventsFactory = eventsFactory;
-    myRemovedIndexes = new HashSet<int>();
+    RemovedIndexes = new HashSet<int>();
   }
-
-
+  
+  
   public override bool Remove(EventPointer pointer)
   {
     AssertNotFrozen();
     if (pointer.IsInInitialArray)
     {
-      if (myRemovedIndexes.Contains(pointer.IndexInArray))
+      if (RemovedIndexes.Contains(pointer.IndexInArray))
       {
         return false;
       }
 
-      myRemovedIndexes.Add(pointer.IndexInArray);
+      RemovedIndexes.Add(pointer.IndexInArray);
       DecreaseCount();
       return true;
     }
@@ -56,6 +44,31 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
     return false;
   }
 
+  public abstract void Dispose();
+}
+
+public class MethodStartEndModificationSource : ModificationSourceBase, IModificationSource
+{
+  private readonly IProcfilerLogger myLogger;
+  private readonly IProcfilerEventsFactory myEventsFactory;
+  private readonly SessionGlobalData myGlobalData;
+  private readonly IShadowStack myShadowStack;
+  
+
+
+  public MethodStartEndModificationSource(
+    IProcfilerLogger logger, 
+    IProcfilerEventsFactory eventsFactory,
+    SessionGlobalData globalData,
+    IShadowStack shadowStack) : base(shadowStack.FramesCount)
+  {
+    myLogger = logger;
+    myGlobalData = globalData;
+    myShadowStack = shadowStack;
+    myEventsFactory = eventsFactory;
+  }
+
+  
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
   {
     var index = -1;
@@ -76,7 +89,7 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
         continue;
       }
 
-      if (myRemovedIndexes.Contains(index))
+      if (RemovedIndexes.Contains(index))
       {
         createMethodEvent.IsRemoved = true;
       }
@@ -85,5 +98,5 @@ public class MethodStartEndModificationSource : EventsOwnerBase, IModificationSo
     }
   }
 
-  public void Dispose() => myShadowStack.Dispose();
+  public override void Dispose() => myShadowStack.Dispose();
 }

@@ -22,8 +22,11 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   }
   
 
-  public void InjectModificationSource(IModificationSource modificationSource) => 
+  public void InjectModificationSource(IModificationSource modificationSource)
+  {
     myModificationSources.Add(modificationSource);
+    IncreaseCount(modificationSource.Count);
+  }
 
   public void ApplyNotPureActionForAllEvents(Func<EventRecordWithPointer, bool> action)
   {
@@ -123,7 +126,6 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
     
     foreach (var modificationSource in myModificationSources)
     {
-      IncreaseCount(modificationSource.Count);
       enumerators.Add(modificationSource);
     }
 

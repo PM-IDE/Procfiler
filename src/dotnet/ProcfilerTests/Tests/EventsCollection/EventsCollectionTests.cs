@@ -290,5 +290,57 @@ public class EventsCollectionTests
     new EventsCollectionImpl(events, TestLogger.CreateInstance());
   
   private static EventRecordWithMetadata[] CreateInitialArrayOfRandomEvents(int count = 200) =>
-    Enumerable.Range(0, count).Select(_ => TestUtil.CreateAbsolutelyRandomEvent()).ToArray();
+    Enumerable.Range(0, count).Select(_ => TestUtil.CreateAbsolutelyRandomEvent()).OrderBy(e => e.Stamp).ToArray();
+
+  [Test]
+  public void TestEnumerationWithModificationSource()
+  {
+    var events = CreateInitialArrayOfRandomEvents();
+    var modificationSourceEvents = CreateInitialArrayOfRandomEvents();
+    var collection = CreateNewCollection(events);
+    var modificationSource = new TestModificationSource(modificationSourceEvents);
+    collection.InjectModificationSource(modificationSource);
+
+    var concatenation = events.Concat(modificationSourceEvents).OrderBy(x => x.Stamp);
+    
+    AssertCollectionsAreSame(collection, concatenation);
+  }
+
+  [Test]
+  public void TestCollectionCountAfterModificationInjection()
+  {
+    var events = CreateInitialArrayOfRandomEvents();
+    var collection = CreateNewCollection(events);
+
+    const int ModificationSourcesCount = 10;
+    var additionalLength = 0;
+    for (var i = 0; i < ModificationSourcesCount; i++)
+    {
+      var modificationEvents = CreateInitialArrayOfRandomEvents();
+      additionalLength += modificationEvents.Length;
+      collection.InjectModificationSource(new TestModificationSource(modificationEvents));
+    }
+
+    Assert.That(collection.Count, Is.EqualTo(events.Length + additionalLength));
+  }
+
+  [Test]
+  public void TestEnumerationWithManyModificationSources()
+  {
+    var events = CreateInitialArrayOfRandomEvents();
+    var collection = CreateNewCollection(events);
+
+    const int ModificationSourcesCount = 10;
+
+    var modifications = new List<EventRecordWithMetadata[]>();
+    for (var i = 0; i < ModificationSourcesCount; i++)
+    {
+      var modificationEvents = CreateInitialArrayOfRandomEvents();
+      modifications.Add(modificationEvents);
+      collection.InjectModificationSource(new TestModificationSource(modificationEvents));
+    }
+
+    var concatenation = events.Concat(modifications.SelectMany(source => source)).OrderBy(e => e.Stamp);
+    AssertCollectionsAreSame(collection, concatenation);
+  }
 }
