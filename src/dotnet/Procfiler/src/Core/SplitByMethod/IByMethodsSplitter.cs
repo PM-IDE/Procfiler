@@ -1,3 +1,4 @@
+using JetBrains.Lifetimes;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
@@ -13,6 +14,7 @@ public interface IByMethodsSplitter
 {
   Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
+    Lifetime lifetime,
     string filterPattern,
     bool inlineInnerCalls,
     bool mergeUndefinedThreadEvents,
@@ -49,6 +51,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
   
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
+    Lifetime lifetime,
     string filterPattern,
     bool inlineInnerCalls,
     bool mergeUndefinedThreadEvents,
@@ -63,6 +66,8 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
       using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(Split)}::PreparingTrace_{key}", myLogger);
 
       ProcessManagedThreadEvents(threadEvents, events.GlobalData);
+      lifetime.AddDispose(threadEvents);
+      
       var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
       var eventsTracesByMethods = mySplitter.Split(mergedEvents, filterPattern, inlineInnerCalls);
 

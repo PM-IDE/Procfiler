@@ -1,4 +1,5 @@
-﻿using Procfiler.Commands.CollectClrEvents.Context;
+﻿using JetBrains.Lifetimes;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.Processes;
@@ -10,7 +11,7 @@ namespace Procfiler.Commands.CollectClrEvents;
 
 public interface ICommandExecutorDependantOnContext
 {
-  ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, ValueTask> func);
+  ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, Lifetime, ValueTask> func);
 }
 
 [AppComponent]
@@ -41,7 +42,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   }
 
 
-  public ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, ValueTask> func) =>
+  public ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, Lifetime, ValueTask> func) =>
     context switch
     {
       CollectClrEventsFromExeWithRepeatContext repeatContext => ExecuteCommandWithRetryExe(repeatContext, func),
@@ -52,7 +53,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     };
 
   private async ValueTask ExecuteCommandWithArgumentsList(
-    CollectClrEventsFromExeWithArguments context, Func<CollectedEvents,ValueTask> func)
+    CollectClrEventsFromExeWithArguments context, Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     foreach (var currentArguments in context.Arguments)
     {
@@ -69,7 +70,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   }
 
   private async ValueTask ExecuteCommandWithRetryExe(
-    CollectClrEventsFromExeWithRepeatContext context, Func<CollectedEvents, ValueTask> func)
+    CollectClrEventsFromExeWithRepeatContext context, Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     for (var i = 0; i < context.RepeatCount; i++)
     {
@@ -79,11 +80,11 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
   private async ValueTask ExecuteCommandWithRunningProcess(
     CollectClrEventsFromRunningProcessContext context,
-    Func<CollectedEvents, ValueTask> func)
+    Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     if (await CollectEventsFromProcess(context, context.ProcessId, null) is var events)
     {
-      await func(events);
+      await func(events, Lifetime.Eternal);
     }
   }
 
@@ -97,7 +98,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
   private async ValueTask ExecuteCommandWithLaunchingProcess(
     CollectClrEventsFromExeContext context,
-    Func<CollectedEvents, ValueTask> func)
+    Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     var (pathToCsproj, tfm, _, _, clearTemp, _, _) = context.ProjectBuildInfo;
     var buildResultNullable = myProjectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
@@ -109,6 +110,9 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
     var buildResult = buildResultNullable.Value;
 
+    var ld = new LifetimeDefinition();
+    ld.AssertEverTerminated();
+    
     try
     {
       var launcherDto = new DotnetProcessLauncherDto
@@ -162,11 +166,12 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       
       if (events.HasValue)
       {
-        await func(events.Value);
+        await func(events.Value, ld.Lifetime);
       }
     }
     finally
     {
+      ld.Terminate();
       if (clearTemp)
       {
         buildResult.ClearUnderlyingFolder();

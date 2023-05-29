@@ -46,7 +46,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     Func<EventRecordWithMetadata, TKey> keyExtractor,
     CollectAndSplitContext collectAndSplitContext)
   {
-    return ExecuteCommandAsync(context, async collectedEvents =>
+    return ExecuteCommandAsync(context, async (collectedEvents, lifetime) =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       
@@ -72,12 +72,8 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
 
       foreach (var (key, managedEvents) in eventsByKey)
       {
+        lifetime.AddDispose(managedEvents);
         await ProcessEventsAsync(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
-      }
-      
-      foreach (var (_, events) in eventsByKey)
-      {
-        events.Dispose();
       }
 
       SerializeStacks(context, globalData);

@@ -15,7 +15,7 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
   
   private void DoTest(KnownSolution knownSolution)
   {
-    StartProcessAndDoTest(knownSolution, events =>
+    StartProcessAndDoTest(knownSolution, (events, _) =>
     {
       var globalData = events.GlobalData;
       var eventsByThreads = SplitEventsHelper.SplitByKey(
