@@ -7,11 +7,11 @@ public interface IEventMetadata : IDictionary<string, string>
 public class EventMetadata : IEventMetadata
 {
   private readonly List<string?> myNames;
-  private readonly List<string?> myValue;
+  private readonly List<string?> myValues;
 
   public bool IsReadOnly => false;
   public ICollection<string> Keys => CreateArrayOfNotNullElementsFrom(myNames, Count);
-  public ICollection<string> Values => CreateArrayOfNotNullElementsFrom(myValue, Count);
+  public ICollection<string> Values => CreateArrayOfNotNullElementsFrom(myValues, Count);
 
   public int Count { get; private set; }
   
@@ -19,7 +19,7 @@ public class EventMetadata : IEventMetadata
   public EventMetadata(TraceEvent traceEvent)
   {
     var length = traceEvent.PayloadNames.Length;
-    myValue = new List<string?>(length);
+    myValues = new List<string?>(length);
     myNames = new List<string?>(length);
     
     for (var i = 0; i < length; i++)
@@ -27,17 +27,28 @@ public class EventMetadata : IEventMetadata
       var serializedValue = Convert.ToString(traceEvent.PayloadValue(i)) ??
                             traceEvent.PayloadString(i);
 
-      myValue.Add(string.Intern(serializedValue));
+      myValues.Add(string.Intern(serializedValue));
       myNames.Add(string.Intern(traceEvent.PayloadNames[i]));
     }
 
     Count = length;
   }
 
+  public EventMetadata(IEventMetadata otherMetadata)
+  {
+    myValues = new List<string?>();
+    myNames = new List<string?>();
+
+    foreach (var (key, value) in otherMetadata)
+    {
+      Add(key, value);
+    }
+  }
+
   public EventMetadata()
   {
     const int EmptyMetadataExpectedAttributesCount = 0;
-    myValue = new List<string?>(EmptyMetadataExpectedAttributesCount);
+    myValues = new List<string?>(EmptyMetadataExpectedAttributesCount);
     myNames = new List<string?>(EmptyMetadataExpectedAttributesCount);
     
     Count = EmptyMetadataExpectedAttributesCount;
@@ -51,7 +62,7 @@ public class EventMetadata : IEventMetadata
     for (var i = 0; i < myNames.Count; i++)
     {
       myNames[i] = null;
-      myValue[i] = null;
+      myValues[i] = null;
     }
 
     Count = 0;
@@ -87,7 +98,7 @@ public class EventMetadata : IEventMetadata
     if (ContainsKey(key)) throw new ArgumentException(key);
     
     myNames.Add(string.Intern(key));
-    myValue.Add(string.Intern(value));
+    myValues.Add(string.Intern(value));
     ++Count;
   }
 
@@ -102,7 +113,7 @@ public class EventMetadata : IEventMetadata
     if (index < 0) return false;
 
     myNames[index] = null;
-    myValue[index] = null;
+    myValues[index] = null;
     --Count;
     return true;
   }
@@ -113,7 +124,7 @@ public class EventMetadata : IEventMetadata
     var index = FindKey(key);
     if (index < 0) return false;
 
-    var foundValue = myValue[index];
+    var foundValue = myValues[index];
     Debug.Assert(foundValue is { });
     value = foundValue;
     return true;
@@ -135,7 +146,7 @@ public class EventMetadata : IEventMetadata
         return;
       }
       
-      myValue[index] = value;
+      myValues[index] = value;
     }
   }
   
@@ -158,7 +169,7 @@ public class EventMetadata : IEventMetadata
     {
       if (myNames[i] is not { } name) continue;
       
-      var value = myValue[i];
+      var value = myValues[i];
       Debug.Assert(value is { });
       yield return new KeyValuePair<string, string>(name, value);
     }

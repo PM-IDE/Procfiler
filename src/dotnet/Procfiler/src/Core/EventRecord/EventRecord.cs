@@ -26,6 +26,15 @@ public class EventRecord
     : this(@event.TimeStampQPC, @event.EventName, managedThreadId, @event.ActivityID)
   {
   }
+
+  public EventRecord(EventRecord other)
+  {
+    Stamp = other.Stamp;
+    EventClass = other.EventClass;
+    ManagedThreadId = other.ManagedThreadId;
+    ActivityId = other.ActivityId;
+    EventName = other.EventName;
+  }
 }
 
 public class EventRecordWithMetadata : EventRecord
@@ -44,6 +53,11 @@ public class EventRecordWithMetadata : EventRecord
     : base(stamp, eventClass, managedThreadId, Guid.Empty)
   {
     Metadata = metadata;
+  }
+
+  public EventRecordWithMetadata(EventRecordWithMetadata other) : base(other)
+  {
+    Metadata = new EventMetadata(other.Metadata);
   }
 }
 
