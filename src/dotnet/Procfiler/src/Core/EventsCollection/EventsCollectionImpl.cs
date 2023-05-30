@@ -9,7 +9,10 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   private readonly IProcfilerLogger myLogger;
   private readonly EventRecordWithMetadata[] myInitialEvents;
   private readonly List<IModificationSource> myModificationSources;
+
   
+  public override long Count => PointersManager.Count + myModificationSources.Select(source => source.Count).Sum();
+
 
   public EventsCollectionImpl(EventRecordWithMetadata[] initialEvents, IProcfilerLogger logger)
     : base(initialEvents.Length)
@@ -25,7 +28,6 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   public void InjectModificationSource(IModificationSource modificationSource)
   {
     myModificationSources.Add(modificationSource);
-    IncreaseCount(modificationSource.Count);
   }
 
   public void ApplyNotPureActionForAllEvents(Func<EventRecordWithPointer, bool> action)
@@ -49,26 +51,8 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
       return false;
     }
-    
-    if (pointer.IsInInitialArray)
-    {
-      if (myInitialEvents[pointer.IndexInArray].IsRemoved)
-      {
-        return false;
-      }
 
-      myInitialEvents[pointer.IndexInArray].IsRemoved = true;
-      DecreaseCount();
-      return true;
-    }
-
-    if (PointersManager.Remove(pointer))
-    {
-      DecreaseCount();
-      return true;
-    }
-
-    return false;
+    return PointersManager.Remove(pointer);
   }
 
   private IModificationSource? TryFindModificationSourceForOwner(EventPointer pointer)
@@ -87,6 +71,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   
   public override EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
+    AssertNotFrozen();
     if (!ReferenceEquals(pointer.Owner, this))
     {
       if (TryFindModificationSourceForOwner(pointer) is { } modificationSource)
@@ -102,6 +87,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
   public override EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
+    AssertNotFrozen();
     if (!ReferenceEquals(pointer.Owner, this))
     {
       if (TryFindModificationSourceForOwner(pointer) is { } modificationSource)

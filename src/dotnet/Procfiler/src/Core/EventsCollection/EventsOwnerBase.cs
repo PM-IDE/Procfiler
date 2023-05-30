@@ -4,20 +4,17 @@ namespace Procfiler.Core.EventsCollection;
 
 public abstract class EventsOwnerBase : IEventsOwner
 {
-  private readonly InsertedEvents myInsertedEvents;
   protected readonly EventPointersManager PointersManager;
 
   private bool myIsFrozen;
-  
-  
-  public long Count { get; private set; }
-  
-  
+
+
+  public abstract long Count { get; }
+
+
   protected EventsOwnerBase(long initialEventsCount)
   {
-    myInsertedEvents = new InsertedEvents();
-    PointersManager = new EventPointersManager(initialEventsCount, myInsertedEvents, this);
-    Count = initialEventsCount;
+    PointersManager = new EventPointersManager(initialEventsCount, new InsertedEvents(), this);
   }
 
   
@@ -32,9 +29,9 @@ public abstract class EventsOwnerBase : IEventsOwner
     var current = PointersManager.First;
     while (current is { })
     {
-      if (PointersManager.GetFor(current.Value) is { } insertedEvent)
+      if (PointersManager.TryGetInsertedEvent(current.Value) is { } insertedEvent)
       {
-        if (!insertedEvent.IsRemoved)
+        if (!PointersManager.IsRemoved(current.Value))
         {
           yield return new EventRecordWithPointer
           {
@@ -52,49 +49,29 @@ public abstract class EventsOwnerBase : IEventsOwner
           ++currentIndex;
         }
 
-        if (!initialEventsEnumerator.Current.IsRemoved)
+        if (!PointersManager.IsRemoved(current.Value))
         {
           yield return new EventRecordWithPointer
           {
             Event = initialEventsEnumerator.Current,
             EventPointer = current.Value
-          }; 
+          };
         }
       }
 
       current = PointersManager.Next(current.Value);
     }
   }
-  
-  public virtual EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
-  {
-    PointersManager.AssertStateOrThrow(pointer);
-    AssertNotFrozen();
-    myInsertedEvents.InsertAfter(pointer, eventToInsert);
-    IncreaseCount();
-    
-    var insertedEventPointer = PointersManager.Next(pointer);
-    Debug.Assert(insertedEventPointer is { });
-    return insertedEventPointer.Value;
-  }
-  
-  public virtual EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert)
-  {
-    PointersManager.AssertStateOrThrow(pointer);
-    AssertNotFrozen();
-    myInsertedEvents.InsertBefore(pointer, eventToInsert);
-    IncreaseCount();
-    
-    var insertedEventPointer = PointersManager.PrevInternal(pointer);
-    Debug.Assert(insertedEventPointer is { });
-    return insertedEventPointer.Value;
-  }
+
+  public virtual EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert) => 
+    PointersManager.InsertAfter(pointer, eventToInsert);
+
+  public virtual EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert) => 
+    PointersManager.InsertBefore(pointer, eventToInsert);
+
 
   public abstract bool Remove(EventPointer pointer);
 
-  protected void IncreaseCount(long delta = 1) => Count += delta;
-  protected void DecreaseCount(long delta = 1) => Count -= delta;
-  
   public void Freeze() => myIsFrozen = true;
   public void UnFreeze() => myIsFrozen = false;
 

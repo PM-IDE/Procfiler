@@ -11,7 +11,6 @@ public class EventRecord
   public long ManagedThreadId { get; }
   public Guid ActivityId { get; }
   public string EventName { get; set; }
-  public bool IsRemoved { get; set; }
 
 
   public EventRecord(long stamp, string eventClass, long managedThreadId, Guid activityId)

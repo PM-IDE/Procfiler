@@ -11,37 +11,15 @@ public interface IModificationSource : IEventsOwner
 
 public abstract class ModificationSourceBase : EventsOwnerBase, IModificationSource
 {
-  protected readonly HashSet<int> RemovedIndexes;
-
-  
   protected ModificationSourceBase(long initialEventsCount) : base(initialEventsCount)
   {
-    RemovedIndexes = new HashSet<int>();
   }
   
   
   public override bool Remove(EventPointer pointer)
   {
     AssertNotFrozen();
-    if (pointer.IsInInitialArray)
-    {
-      if (RemovedIndexes.Contains(pointer.IndexInArray))
-      {
-        return false;
-      }
-
-      RemovedIndexes.Add(pointer.IndexInArray);
-      DecreaseCount();
-      return true;
-    }
-
-    if (PointersManager.Remove(pointer))
-    {
-      DecreaseCount();
-      return true;
-    }
-
-    return false;
+    return PointersManager.Remove(pointer);
   }
 }
 
@@ -51,7 +29,9 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   private readonly IProcfilerEventsFactory myEventsFactory;
   private readonly SessionGlobalData myGlobalData;
   private readonly IShadowStack myShadowStack;
-  
+
+
+  public override long Count => PointersManager.Count;
 
 
   public MethodStartEndModificationSource(
@@ -69,11 +49,8 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
   {
-    var index = -1;
     foreach (var frameInfo in myShadowStack)
     {
-      ++index;
-      
       var creationContext = new FromFrameInfoCreationContext
       {
         FrameInfo = frameInfo,
@@ -82,11 +59,6 @@ public class MethodStartEndModificationSource : ModificationSourceBase
       };
 
       var createdMethodEvent = myEventsFactory.CreateMethodEvent(creationContext);
-      if (RemovedIndexes.Contains(index))
-      {
-        createdMethodEvent.IsRemoved = true;
-      }
-      
       yield return createdMethodEvent;
     }
   }

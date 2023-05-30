@@ -7,13 +7,20 @@ public class EventPointersManager
   private readonly InsertedEvents myInsertedEvents;
   private readonly IEventsOwner myOwner;
   private readonly long myInitialCount;
+  private readonly HashSet<int> myRemovedIndexesInInitialArray;
+
+  private long myCurrentInitialEventsCount;
+
+  public long Count => myCurrentInitialEventsCount + myInsertedEvents.Count;
 
   
   public EventPointersManager(long initialCount, InsertedEvents insertedEvents, IEventsOwner owner)
   {
+    myRemovedIndexesInInitialArray = new HashSet<int>();
     myInsertedEvents = insertedEvents;
     myOwner = owner;
     myInitialCount = initialCount;
+    myCurrentInitialEventsCount = initialCount;
   }
 
   
@@ -30,33 +37,50 @@ public class EventPointersManager
       return startPointer;
     }
   }
+  
+  public EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
+  {
+    AssertStateOrThrow(pointer);
+    myInsertedEvents.InsertAfter(pointer, eventToInsert);
+    
+    var insertedEventPointer = Next(pointer);
+    Debug.Assert(insertedEventPointer is { });
+    return insertedEventPointer.Value;
+  }
+  
+  public EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert)
+  {
+    AssertStateOrThrow(pointer);
+    myInsertedEvents.InsertBefore(pointer, eventToInsert);
+    
+    var insertedEventPointer = PrevInternal(pointer);
+    Debug.Assert(insertedEventPointer is { });
+    return insertedEventPointer.Value;
+  }
+  
+  private void DecreaseCount(long delta = 1) => myCurrentInitialEventsCount -= delta;
 
   public bool Remove(EventPointer pointer)
   {
-    Debug.Assert(!pointer.IsInInitialArray);
-    Debug.Assert(pointer.IsInFirstEvents || pointer.IsInInsertedMap);
-
-    EventRecordWithMetadata eventToRemove;
-    if (pointer.IsInFirstEvents)
+    if (pointer.IsInInitialArray)
     {
-      Debug.Assert(myInsertedEvents.FirstEvents is { });
-      eventToRemove = myInsertedEvents.FirstEvents[pointer.IndexInInsertionMap];
-    }
-    else
-    {
-      eventToRemove = GetInsertedEventsListOrThrow(pointer)[pointer.IndexInInsertionMap];
+      if (myRemovedIndexesInInitialArray.Contains(pointer.IndexInArray)) return false;
+      
+      myRemovedIndexesInInitialArray.Add(pointer.IndexInArray);
+      DecreaseCount();
+      return true;
     }
 
-    if (eventToRemove.IsRemoved)
-    {
-      return false;
-    }
-
-    eventToRemove.IsRemoved = true;
-    return true;
+    return myInsertedEvents.Remove(pointer);
   }
 
-  public EventRecordWithMetadata? GetFor(EventPointer pointer)
+  public bool IsRemoved(EventPointer pointer) => pointer.IsInInitialArray switch
+  {
+    true => myRemovedIndexesInInitialArray.Contains(pointer.IndexInArray),
+    false => myInsertedEvents.IsRemoved(pointer)
+  };
+
+  public EventRecordWithMetadata? TryGetInsertedEvent(EventPointer pointer)
   {
     AssertStateOrThrow(pointer);
     return pointer.IsInInsertedMap switch
@@ -69,7 +93,7 @@ public class EventPointersManager
       _ => null
     };
   }
-  
+
   public EventPointer? Next(in EventPointer current)
   {
     AssertStateOrThrow(current);
