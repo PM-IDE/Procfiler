@@ -1,6 +1,5 @@
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
-using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
 namespace Procfiler.Core;

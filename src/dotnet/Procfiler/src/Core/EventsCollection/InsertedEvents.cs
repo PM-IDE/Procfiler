@@ -1,5 +1,4 @@
-﻿using Microsoft.Diagnostics.Tracing.Parsers.FrameworkEventSource;
-using Procfiler.Core.EventRecord;
+﻿using Procfiler.Core.EventRecord;
 using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsCollection;

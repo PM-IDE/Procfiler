@@ -1,6 +1,5 @@
 ﻿using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
-using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Utils;
 
 namespace Procfiler.Core.SplitByMethod;

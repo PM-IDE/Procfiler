@@ -1,4 +1,3 @@
-using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 
 namespace Procfiler.Core;
