@@ -99,8 +99,7 @@ public static class TestUtil
     serializer.SerializeStackTraces(globalData, savePath);
 
     var eventsSerializer = container.Resolve<IMethodTreeEventSerializer>();
-    using var fs = File.OpenWrite(Path.Combine(savePath, "events.txt"));
-    eventsSerializer.SerializeEventsAsync(eventsCollection.Select(ptr => ptr.Event), fs).AsTask().GetAwaiter().GetResult();
+    eventsSerializer.SerializeEvents(eventsCollection.Select(ptr => ptr.Event), Path.Combine(savePath, "events.txt"));
   }
 
   public static EventRecordWithMetadata CreateRandomEvent(string eventClass, EventMetadata metadata)

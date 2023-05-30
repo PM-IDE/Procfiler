@@ -107,8 +107,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     var extension = outputFormat.GetExtension();
     var filePath = Path.Combine(context.CommonContext.OutputPath, $"{key.ToString()}.{extension}");
 
-    await using var fs = File.OpenWrite(filePath);
-    await myDelegatingEventsSerializer.SerializeEventsAsync(mergedEvents, fs, outputFormat);
+    myDelegatingEventsSerializer.SerializeEvents(mergedEvents, filePath, outputFormat);
   }
 
   private void SerializeStacks(CollectClrEventsContext context, SessionGlobalData globalData)

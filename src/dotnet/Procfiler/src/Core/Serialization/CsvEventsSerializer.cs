@@ -15,22 +15,25 @@ public class CsvEventsSerializer : ICsvEventsSerializer
   private const char Delimiter = '\t'; 
 
   
-  public async ValueTask SerializeEventsAsync(IEnumerable<EventRecordWithMetadata> events, Stream stream)
+  public void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path)
   {
+    using var fs = File.OpenWrite(path);
+    using var sw = new StreamWriter(fs);
     using var enumerator = events.GetEnumerator();
+    
     if (!enumerator.MoveNext()) return;
     
     var firstEvent = enumerator.Current;
-    await stream.WriteAsync(SerializeCsvHeader(firstEvent));
-    await stream.WriteAsync(SerializeEventToCsvBytes(firstEvent));
+    sw.Write(SerializeCsvHeader(firstEvent));
+    sw.Write(SerializeEventToCsvBytes(firstEvent));
 
     while (enumerator.MoveNext())
     {
-      await stream.WriteAsync(SerializeEventToCsvBytes(enumerator.Current));
+      sw.Write(SerializeEventToCsvBytes(enumerator.Current));
     }
   }
   
-  private static ReadOnlyMemory<byte> SerializeCsvHeader(EventRecordWithMetadata firstEvent)
+  private static string SerializeCsvHeader(EventRecordWithMetadata firstEvent)
   {
     var sb = new StringBuilder();
 
@@ -45,10 +48,10 @@ public class CsvEventsSerializer : ICsvEventsSerializer
     }
 
     sb.AppendNewLine();
-    return Encoding.UTF8.GetBytes(sb.ToString()).AsMemory();
+    return sb.ToString();
   }
   
-  private static ReadOnlyMemory<byte> SerializeEventToCsvBytes(EventRecordWithMetadata @event)
+  private static string SerializeEventToCsvBytes(EventRecordWithMetadata @event)
   {
     var sb = new StringBuilder();
 
@@ -61,8 +64,8 @@ public class CsvEventsSerializer : ICsvEventsSerializer
     {
       sb.Append(StringBuilderExtensions.SerializeValue(value)).Append(Delimiter);
     }
-    
-    sb.Append("\n");
-    return Encoding.UTF8.GetBytes(sb.ToString()).AsMemory();
+
+    sb.AppendNewLine();
+    return sb.ToString();
   }
 }

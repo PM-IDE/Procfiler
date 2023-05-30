@@ -6,12 +6,12 @@ namespace Procfiler.Core.Serialization;
 
 public interface IDelegatingEventsSerializer
 {
-  ValueTask SerializeEventsAsync(IEnumerable<EventRecordWithMetadata> events, Stream stream, FileFormat fileFormat);
+  void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path, FileFormat fileFormat);
 }
 
 public interface IEventsSerializer
 {
-  ValueTask SerializeEventsAsync(IEnumerable<EventRecordWithMetadata> events, Stream stream);
+  void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path);
 }
 
 
@@ -30,13 +30,19 @@ public class DelegatingEventsSerializer : IDelegatingEventsSerializer
   }
 
 
-  public ValueTask SerializeEventsAsync(
-    IEnumerable<EventRecordWithMetadata> events,
-    Stream stream,
-    FileFormat fileFormat) => fileFormat switch
+  public void SerializeEvents(
+    IEnumerable<EventRecordWithMetadata> events, string path, FileFormat fileFormat)
   {
-    FileFormat.Csv => myCsvEventsSerializer.SerializeEventsAsync(events, stream),
-    FileFormat.MethodCallTree => myTreeEventSerializer.SerializeEventsAsync(events, stream),
-    _ => throw new ArgumentOutOfRangeException(nameof(fileFormat), fileFormat, null)
-  };
+    switch (fileFormat)
+    {
+      case FileFormat.Csv:
+        myCsvEventsSerializer.SerializeEvents(events, path);
+        return;
+      case FileFormat.MethodCallTree:
+        myTreeEventSerializer.SerializeEvents(events, path);
+        return;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(fileFormat), fileFormat, null);
+    }
+  }
 }
