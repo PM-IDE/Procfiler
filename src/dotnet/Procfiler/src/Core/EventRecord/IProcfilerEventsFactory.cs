@@ -26,6 +26,8 @@ public interface IProcfilerEventsFactory
   EventRecordWithMetadata CreateMethodEndEvent(EventsCreationContext context, string methodName);
   EventRecordWithMetadata CreateMethodExecutionEvent(EventsCreationContext context, string methodName);
   EventRecordWithMetadata CreateMethodEvent(FromFrameInfoCreationContext context);
+
+  void FillExistingEventWith(FromFrameInfoCreationContext context, EventRecordWithMetadata existingEvent);
 }
 
 [AppComponent]
@@ -33,7 +35,7 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
 {
   private readonly IProcfilerLogger myLogger;
 
-  
+
   public ProcfilerEventsFactory(IProcfilerLogger logger)
   {
     myLogger = logger;
@@ -46,21 +48,33 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
   }
 
   private static EventRecordWithMetadata CreateMethodStartOrEndEvent(
-    EventsCreationContext context, string eventName, string methodName)
+    EventsCreationContext context, string eventClass, string methodName)
   {
     var (stamp, managedThreadId) = context;
-    var metadata = CreateMetadataForMethodName(methodName);
-    
-    return new EventRecordWithMetadata(stamp, eventName, managedThreadId, metadata)
+    var metadata = CreateMethodEventMetadata(methodName);
+
+    return new EventRecordWithMetadata(stamp, eventClass, managedThreadId, metadata)
     {
-      EventName = eventName + "_{" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(methodName) + "}"
+      EventName = CreateMethodStartOrEndEventName(eventClass, methodName)
     };
   }
-  
-  private static EventMetadata CreateMetadataForMethodName(string methodName) => new()
+
+  private static string CreateMethodStartOrEndEventName(string eventName, string fqn)
   {
-    [TraceEventsConstants.ProcfilerMethodName] = methodName
-  };
+    return eventName + "_{" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(fqn) + "}";
+  }
+
+  private static void SetMethodNameInMetadata(IEventMetadata metadata, string fqn)
+  {
+    metadata[TraceEventsConstants.ProcfilerMethodName] = fqn;
+  }
+
+  private static IEventMetadata CreateMethodEventMetadata(string fqn)
+  {
+    var metadata = new EventMetadata();
+    SetMethodNameInMetadata(metadata, fqn);
+    return metadata;
+  }
 
   public EventRecordWithMetadata CreateMethodEndEvent(EventsCreationContext context, string methodName)
   {
@@ -70,12 +84,26 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
   public EventRecordWithMetadata CreateMethodExecutionEvent(EventsCreationContext context, string methodName)
   {
     var (stamp, managedThreadId) = context;
-    var metadata = CreateMetadataForMethodName(methodName);
-    var name = $"{TraceEventsConstants.ProcfilerMethodExecution}_{methodName}";
+    var metadata = CreateMethodEventMetadata(methodName);
+    var name = CreateEventNameForMethodExecutionEvent(methodName);
     return new EventRecordWithMetadata(stamp, name, managedThreadId, metadata);
   }
-  
+
+  private static string CreateEventNameForMethodExecutionEvent(string fqn) => 
+    $"{TraceEventsConstants.ProcfilerMethodExecution}_{fqn}";
+
   public EventRecordWithMetadata CreateMethodEvent(FromFrameInfoCreationContext context)
+  {
+    var fqn = ExtractMethodName(context);
+    var creationContext = new EventsCreationContext(context.FrameInfo.TimeStamp, context.ManagedThreadId);
+    return context.FrameInfo.IsStart switch
+    {
+      true => CreateMethodStartEvent(creationContext, fqn),
+      false => CreateMethodEndEvent(creationContext, fqn)
+    };
+  }
+
+  private string ExtractMethodName(FromFrameInfoCreationContext context)
   {
     var methodId = context.FrameInfo.FunctionId;
     if (!context.GlobalData.MethodIdToFqn.TryGetValue(methodId, out var fqn))
@@ -84,11 +112,14 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
       fqn = $"System.Undefined.{methodId}[instance.void..()]";
     }
 
-    var creationContext = new EventsCreationContext(context.FrameInfo.TimeStamp, context.ManagedThreadId);
-    return context.FrameInfo.IsStart switch
-    {
-      true => CreateMethodStartEvent(creationContext, fqn),
-      false => CreateMethodEndEvent(creationContext, fqn)
-    };
+    return fqn;
+  }
+
+  public void FillExistingEventWith(FromFrameInfoCreationContext context, EventRecordWithMetadata existingEvent)
+  {
+    existingEvent.UpdateWith(context);
+    var fqn = ExtractMethodName(context);
+    existingEvent.EventName = CreateMethodStartOrEndEventName(existingEvent.EventClass, fqn);
+    SetMethodNameInMetadata(existingEvent.Metadata, fqn);
   }
 }

@@ -6,10 +6,10 @@ namespace Procfiler.Core.EventRecord;
 
 public class EventRecord
 {
-  public long Stamp { get; }
+  public long Stamp { get; private set; }
   public string EventClass { get; set; }
-  public long ManagedThreadId { get; }
-  public Guid ActivityId { get; }
+  public long ManagedThreadId { get; private set; }
+  public Guid ActivityId { get; private set; }
   public string EventName { get; set; }
 
 
@@ -34,6 +34,18 @@ public class EventRecord
     ManagedThreadId = other.ManagedThreadId;
     ActivityId = other.ActivityId;
     EventName = other.EventName;
+  }
+
+  
+  public void UpdateWith(FromFrameInfoCreationContext context)
+  {
+    Stamp = context.FrameInfo.TimeStamp;
+    ManagedThreadId = context.ManagedThreadId;
+    EventClass = context.FrameInfo.IsStart switch
+    {
+      true => TraceEventsConstants.ProcfilerMethodStart,
+      false => TraceEventsConstants.ProcfilerMethodEnd
+    };
   }
 }
 
