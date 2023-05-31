@@ -1,5 +1,4 @@
-﻿using Procfiler.Core.CppProcfiler;
-using Procfiler.Core.EventsCollection;
+﻿using Procfiler.Core.EventsCollection;
 using Procfiler.Utils;
 
 namespace Procfiler.Core.Collector;

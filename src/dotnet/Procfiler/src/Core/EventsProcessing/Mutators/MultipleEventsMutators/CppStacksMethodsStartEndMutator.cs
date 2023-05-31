@@ -1,5 +1,4 @@
 using Procfiler.Core.Collector;
-using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.CppProcfiler.ShadowStacks;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;

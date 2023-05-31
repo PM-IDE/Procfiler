@@ -1,5 +1,3 @@
-using Procfiler.Core.CppProcfiler;
-
 namespace Procfiler.Core.Collector;
 
 public interface IFromEventsShadowStacks : IShadowStacks
