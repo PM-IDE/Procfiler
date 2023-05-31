@@ -18,6 +18,15 @@ public interface ISplitEventsByMethodCommand : ICommandWithContext<CollectClrEve
 {
 }
 
+public enum InlineMode
+{
+  NotInline,
+  
+  OnlyEvents,
+  EventsAndMethodsEvents,
+  EventsAndMethodsEventsWithFilter
+}
+
 [CommandLineCommand]
 public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMethodCommand
 {
@@ -31,8 +40,8 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
 
   private Option<string> FilterOption { get; } = new("--filter", static () => string.Empty, "Regex to filter");
 
-  private Option<bool> InlineInnerMethodsCalls { get; } = 
-    new("--inline", static () => true, "Should we inline inner methods calls to all previous traces");
+  private Option<InlineMode> InlineInnerMethodsCalls { get; } = 
+    new("--inline", static () => InlineMode.NotInline, "Should we inline inner methods calls to all previous traces");
 
 
   public SplitEventsByMethodCommand(

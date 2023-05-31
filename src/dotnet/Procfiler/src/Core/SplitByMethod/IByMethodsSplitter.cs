@@ -16,7 +16,7 @@ public interface IByMethodsSplitter
     CollectedEvents events,
     Lifetime lifetime,
     string filterPattern,
-    bool inlineInnerCalls,
+    InlineMode inlineMode,
     bool mergeUndefinedThreadEvents,
     bool addAsyncMethods);
 }
@@ -53,7 +53,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
     CollectedEvents events,
     Lifetime lifetime,
     string filterPattern,
-    bool inlineInnerCalls,
+    InlineMode inlineMode,
     bool mergeUndefinedThreadEvents,
     bool addAsyncMethods)
   {
@@ -68,7 +68,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
       ProcessManagedThreadEvents(threadEvents, events.GlobalData);
       
       var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
-      var eventsTracesByMethods = mySplitter.Split(mergedEvents, filterPattern, inlineInnerCalls);
+      var eventsTracesByMethods = mySplitter.Split(mergedEvents, filterPattern, inlineMode);
 
       foreach (var (methodName, traces) in eventsTracesByMethods)
       {

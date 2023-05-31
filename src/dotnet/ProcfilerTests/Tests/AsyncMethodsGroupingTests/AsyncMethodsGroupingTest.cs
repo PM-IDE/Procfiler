@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Autofac;
 using JetBrains.Lifetimes;
+using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing;
@@ -52,7 +53,9 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
     {
       var processingContext = EventsProcessingContext.DoEverything(events.Events, events.GlobalData);
       Container.Resolve<IUnitedEventsProcessor>().ProcessFullEventLog(processingContext);
-      var methods = Container.Resolve<IByMethodsSplitter>().Split(events, lifetime, string.Empty, false, false, true);
+
+      var splitter = Container.Resolve<IByMethodsSplitter>();
+      var methods = splitter.Split(events, lifetime, string.Empty, InlineMode.EventsAndMethodsEvents, false, true);
       var asyncMethodsPrefix = Container.Resolve<IAsyncMethodsGrouper>().AsyncMethodsPrefix;
 
       var asyncMethods = methods.Where(pair => pair.Key.StartsWith(asyncMethodsPrefix));

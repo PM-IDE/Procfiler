@@ -1,4 +1,5 @@
 using Autofac;
+using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing;
@@ -19,7 +20,8 @@ public static class SplitByMethodsTestUtil
     var processor = container.Resolve<IUnitedEventsProcessor>();
     processor.ProcessFullEventLog(processingContext);
     processor.ApplyMultipleMutators(mainThreadEvents, events.GlobalData, EmptyCollections<Type>.EmptySet);
-    
-    return container.Resolve<IEventsCollectionByMethodsSplitter>().Split(mainThreadEvents, filterPattern, true);
+
+    var splitter = container.Resolve<IEventsCollectionByMethodsSplitter>();
+    return splitter.Split(mainThreadEvents, filterPattern, InlineMode.EventsAndMethodsEvents);
   }
 }
