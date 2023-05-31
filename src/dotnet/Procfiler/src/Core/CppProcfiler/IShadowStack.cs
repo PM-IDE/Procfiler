@@ -7,7 +7,6 @@ public interface IShadowStack : IEnumerable<FrameInfo>
 {
   long ManagedThreadId { get; }
   long FramesCount { get; }
-  long BytesLength { get; }
 }
 
 public class ShadowStackImpl : IShadowStack
@@ -36,9 +35,7 @@ public class ShadowStackImpl : IShadowStack
     FramesCount = framesCount;
   }
 
-
-  public long BytesLength => ShadowStackHelpers.CalculateByteLength(FramesCount);
-
+  
   public IEnumerator<FrameInfo> GetEnumerator()
   {
     using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
