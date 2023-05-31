@@ -2,14 +2,7 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.CppProcfiler;
 
-
-public interface IShadowStack : IEnumerable<FrameInfo>
-{
-  long ManagedThreadId { get; }
-  long FramesCount { get; }
-}
-
-public class ShadowStackImpl : IShadowStack
+public class CppShadowStackImpl : ICppShadowStack
 {
   private readonly IProcfilerLogger myLogger;
   private readonly string myBinStackFilePath;
@@ -20,7 +13,7 @@ public class ShadowStackImpl : IShadowStack
   public long FramesCount { get; }
 
 
-  public ShadowStackImpl(IProcfilerLogger logger, string filePath, long startPosition)
+  public CppShadowStackImpl(IProcfilerLogger logger, string filePath, long startPosition)
   {
     myLogger = logger;
     myBinStackFilePath = filePath;
@@ -30,7 +23,7 @@ public class ShadowStackImpl : IShadowStack
     using var reader = new BinaryReader(fs);
     reader.BaseStream.Seek(startPosition, SeekOrigin.Begin);
     
-    ShadowStackHelpers.ReadManagedThreadIdAndFramesCount(reader, out var threadId, out var framesCount);
+    CppShadowStackHelpers.ReadManagedThreadIdAndFramesCount(reader, out var threadId, out var framesCount);
     ManagedThreadId = threadId;
     FramesCount = framesCount;
   }
@@ -41,7 +34,7 @@ public class ShadowStackImpl : IShadowStack
     using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
     using var reader = new BinaryReader(fs);
     
-    ShadowStackHelpers.SeekToPositionAndSkipHeader(reader, myStartPosition);
+    CppShadowStackHelpers.SeekToPositionAndSkipHeader(reader, myStartPosition);
     
     var frameInfo = new FrameInfo();
     for (long i = 0; i < FramesCount; i++)
@@ -57,31 +50,5 @@ public class ShadowStackImpl : IShadowStack
   IEnumerator IEnumerable.GetEnumerator()
   {
     return GetEnumerator();
-  }
-}
-
-public static class ShadowStackHelpers
-{
-  public static void ReadManagedThreadIdAndFramesCount(BinaryReader reader, out long managedThreadId, out long framesCount)
-  {
-    managedThreadId = reader.ReadInt64();
-    framesCount = reader.ReadInt64();
-  }
-
-  public static long CalculateByteLength(long framesCount)
-  {
-    //start or end indicator + timestamp + function id
-    const long OneFrameLength = 1 + 8 + 8;
-    //managed thread id + framesCount
-    const long HeaderSize = 8 + 8;
-
-    return framesCount * OneFrameLength + HeaderSize;
-  }
-
-  public static void SeekToPositionAndSkipHeader(BinaryReader reader, long position)
-  {
-    reader.BaseStream.Seek(position, SeekOrigin.Begin);
-    reader.ReadInt64();
-    reader.ReadUInt64();
   }
 }

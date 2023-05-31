@@ -28,7 +28,7 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   private readonly IProcfilerLogger myLogger;
   private readonly IProcfilerEventsFactory myEventsFactory;
   private readonly SessionGlobalData myGlobalData;
-  private readonly IShadowStack myShadowStack;
+  private readonly ICppShadowStack myShadowStack;
 
 
   public override long Count => PointersManager.Count;
@@ -38,7 +38,7 @@ public class MethodStartEndModificationSource : ModificationSourceBase
     IProcfilerLogger logger, 
     IProcfilerEventsFactory eventsFactory,
     SessionGlobalData globalData,
-    IShadowStack shadowStack) : base(shadowStack.FramesCount)
+    ICppShadowStack shadowStack) : base(shadowStack.FramesCount)
   {
     myLogger = logger;
     myGlobalData = globalData;

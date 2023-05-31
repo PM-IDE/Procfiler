@@ -9,13 +9,20 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Collector;
 
-public readonly record struct ClrEventsCollectionContext(
+public record ClrEventsCollectionContext(
+  int Pid,
+  int Duration,
+  int Timeout,
+  ProvidersCategoryKind ProvidersCategoryKind
+);
+
+public record ClrEventsCollectionContextWithBinaryStacks(
   int Pid,
   int Duration,
   int Timeout,
   ProvidersCategoryKind ProvidersCategoryKind,
   string? PathToBinaryStacks
-);
+) : ClrEventsCollectionContext(Pid, Duration, Timeout, ProvidersCategoryKind);
 
 public interface IClrEventsCollector
 {
@@ -52,8 +59,14 @@ public class ClrEventsCollector : IClrEventsCollector
     try
     {
       using var tempPathCookie = new TempFileCookie(myLogger);
-      var (pid, duration, timeout, category, binaryStacksPath) = context;
+      var (pid, duration, timeout, category) = context;
       await ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
+      var binaryStacksPath = context switch
+      {
+        ClrEventsCollectionContextWithBinaryStacks ctx => ctx.PathToBinaryStacks,
+        _ => null
+      };
+      
       return ReadEventsFromFile(tempPathCookie, binaryStacksPath);
     }
     catch (Exception ex)
@@ -105,7 +118,7 @@ public class ClrEventsCollector : IClrEventsCollector
     }
   }
 
-  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie, string binaryStacks)
+  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie, string? binaryStacks)
   {
     var options = new TraceLogOptions
     {
@@ -118,7 +131,7 @@ public class ClrEventsCollector : IClrEventsCollector
     return ReadEventsFromFileInternal(etlxFilePath, binaryStacks);
   }
 
-  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, string binaryStacksPath)
+  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, string? binaryStacksPath)
   {
     using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFile), myLogger);
     using var traceLog = new TraceLog(etlxFilePath);
@@ -130,8 +143,13 @@ public class ClrEventsCollector : IClrEventsCollector
     var statistics = new Statistics();
     var events = new EventRecordWithMetadata[traceLog.EventCount];
     var context = new CreatingEventContext(stackSource, traceLog);
-    var stacks = myBinaryShadowStacksReader.ReadStackEvents(binaryStacksPath);
-    var globalData = new SessionGlobalData(stacks);
+    var shadowStacks = binaryStacksPath switch
+    {
+      { } => myBinaryShadowStacksReader.ReadStackEvents(binaryStacksPath),
+      null => new FromEventsShadowStacks(stackSource)
+    };
+    
+    var globalData = new SessionGlobalData(shadowStacks);
 
     using (var _ = new PerformanceCookie("ProcessingEvents", myLogger))
     {
@@ -150,7 +168,7 @@ public class ClrEventsCollector : IClrEventsCollector
 
     return new CollectedEvents(CreateEventCollection(events), globalData);
   }
-  
+
   private IEventsCollection CreateEventCollection(EventRecordWithMetadata[] events)
   {
     using (new PerformanceCookie($"{GetType()}::SortingEvents", myLogger))
@@ -189,7 +207,7 @@ public class ClrEventsCollector : IClrEventsCollector
     var typeIdToName = TryExtractTypeIdToName(traceEvent, record.Metadata);
     var methodIdToFqn = TryExtractMethodToId(traceEvent, record.Metadata);
     
-    return new EventWithGlobalDataUpdate(record, typeIdToName, methodIdToFqn);
+    return new EventWithGlobalDataUpdate(traceEvent, record, typeIdToName, methodIdToFqn);
   }
 
   private static TypeIdToName? TryExtractTypeIdToName(

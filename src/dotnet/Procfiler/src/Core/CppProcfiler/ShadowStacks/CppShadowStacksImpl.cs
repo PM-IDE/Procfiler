@@ -2,27 +2,7 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.CppProcfiler;
 
-public interface IShadowStacks
-{
-  IEnumerable<IShadowStack> EnumerateStacks();
-  IShadowStack? FindShadowStack(long managedThreadId);
-}
-
-public class EmptyShadowStacks : IShadowStacks
-{
-  public static EmptyShadowStacks Instance { get; } = new();
-  
-
-  private EmptyShadowStacks()
-  {
-  }
-  
-  
-  public IEnumerable<IShadowStack> EnumerateStacks() => EmptyCollections<IShadowStack>.EmptyList;
-  public IShadowStack? FindShadowStack(long managedThreadId) => null;
-}
-
-public class ShadowStacksImpl : IShadowStacks
+public class CppShadowStacksImpl : ICppShadowStacks
 {
   private readonly object mySync = new();
   private readonly IProcfilerLogger myLogger;
@@ -32,7 +12,7 @@ public class ShadowStacksImpl : IShadowStacks
   private bool myIsInitialized;
   
   
-  public ShadowStacksImpl(IProcfilerLogger logger, string pathToBinaryStacksFile)
+  public CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinaryStacksFile)
   {
     myLogger = logger;
     myPathToBinaryStacksFile = pathToBinaryStacksFile;
@@ -40,14 +20,14 @@ public class ShadowStacksImpl : IShadowStacks
   }
 
   
-  public IEnumerable<IShadowStack> EnumerateStacks()
+  public IEnumerable<ICppShadowStack> EnumerateStacks()
   {
     using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
     using var br = new BinaryReader(fs);
 
     foreach (var (_, position) in EnumerateShadowStacksInternal(br))
     {
-      yield return new ShadowStackImpl(myLogger, myPathToBinaryStacksFile, position);
+      yield return new CppShadowStackImpl(myLogger, myPathToBinaryStacksFile, position);
     }
   }
 
@@ -58,14 +38,14 @@ public class ShadowStacksImpl : IShadowStacks
     while (position < fs.Length)
     {
       fs.Seek(position, SeekOrigin.Begin);
-      ShadowStackHelpers.ReadManagedThreadIdAndFramesCount(br, out var threadId, out var framesCount);
+      CppShadowStackHelpers.ReadManagedThreadIdAndFramesCount(br, out var threadId, out var framesCount);
       yield return (threadId, position);
 
-      position += ShadowStackHelpers.CalculateByteLength(framesCount);
+      position += CppShadowStackHelpers.CalculateByteLength(framesCount);
     }
   }
 
-  public IShadowStack? FindShadowStack(long managedThreadId)
+  public ICppShadowStack? FindShadowStack(long managedThreadId)
   {
     InitializeThreadIdsToOffsetsIfNeeded();
     
@@ -75,7 +55,7 @@ public class ShadowStacksImpl : IShadowStacks
       return null;
     }
 
-    var foundShadowStack = new ShadowStackImpl(myLogger, myPathToBinaryStacksFile, offset);
+    var foundShadowStack = new CppShadowStackImpl(myLogger, myPathToBinaryStacksFile, offset);
     Debug.Assert(foundShadowStack.ManagedThreadId == managedThreadId);
 
     return foundShadowStack;

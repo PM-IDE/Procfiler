@@ -41,6 +41,6 @@ public class BinaryShadowStacksReaderImpl : IBinaryShadowStacksReader
   }
 
   
-  public IShadowStacks ReadStackEvents(string path) => new ShadowStacksImpl(myLogger, path);
+  public IShadowStacks ReadStackEvents(string path) => new CppShadowStacksImpl(myLogger, path);
 }
 

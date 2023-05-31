@@ -1,5 +1,6 @@
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
+using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
 namespace Procfiler.Core;
@@ -7,7 +8,6 @@ namespace Procfiler.Core;
 public interface IStackTraceSerializer
 {
   void SerializeStackTraces(SessionGlobalData globalData, string directory);
-  void SerializeStack(IShadowStack stack, SessionGlobalData globalData, string savePath);
 }
 
 [AppComponent]
@@ -15,7 +15,44 @@ public class StackTraceSerializer : IStackTraceSerializer
 {
   public void SerializeStackTraces(SessionGlobalData globalData, string directory)
   {
-    foreach (var shadowStack in globalData.Stacks.EnumerateStacks())
+    switch (globalData.Stacks)
+    {
+      case IFromEventsShadowStacks fromEventsShadowStacks:
+        SerializeFromEventsStacks(fromEventsShadowStacks, directory);
+        return;
+      case ICppShadowStacks cppShadowStacks:
+        SerializeCppStacks(cppShadowStacks, globalData, directory);
+        return;
+      default:
+        throw new ArgumentOutOfRangeException(globalData.Stacks.GetType().Name);
+    }
+  }
+
+  private void SerializeFromEventsStacks(IFromEventsShadowStacks shadowStacks, string directory)
+  {
+    var sb = new StringBuilder();
+    using var fs = File.OpenWrite(Path.Combine(directory, "stacks.txt"));
+    using var sw = new StreamWriter(fs);
+    
+    foreach (var (_, stack) in shadowStacks.StackTraceInfos)
+    {
+      sw.Write($"{stack.StackTraceId}\n");
+
+      sb = sb.Clear();
+      foreach (var frame in stack.Frames)
+      {
+        sb = sb.AppendTab().Append(frame).AppendNewLine();
+      }
+
+      sb = sb.AppendNewLine();
+      
+      sw.Write(sb.ToString());
+    }
+  }
+  
+  private void SerializeCppStacks(ICppShadowStacks shadowStacks, SessionGlobalData globalData, string directory)
+  {
+    foreach (var shadowStack in shadowStacks.EnumerateStacks())
     {
       var path = Path.Combine(directory, $"stacks_{shadowStack.ManagedThreadId}.txt");
       SerializeStack(shadowStack, globalData, path);
@@ -23,7 +60,7 @@ public class StackTraceSerializer : IStackTraceSerializer
   }
 
   public void SerializeStack(
-    IShadowStack shadowStack, SessionGlobalData globalData, string savePath)
+    ICppShadowStack shadowStack, SessionGlobalData globalData, string savePath)
   {
     using var fs = File.OpenWrite(savePath);
     using var sw = new StreamWriter(fs);

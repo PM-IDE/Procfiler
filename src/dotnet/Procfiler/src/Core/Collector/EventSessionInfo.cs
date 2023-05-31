@@ -17,9 +17,9 @@ public class SessionGlobalData
   public IShadowStacks Stacks { get; }
 
 
-  public SessionGlobalData(IShadowStacks stacks)
+  public SessionGlobalData(IShadowStacks shadowStacks)
   {
-    Stacks = stacks;
+    Stacks = shadowStacks;
     myMethodIdToFqn = new Dictionary<long, string>();
     myTypeIdsToNames = new Dictionary<long, string>();
   }
@@ -29,6 +29,11 @@ public class SessionGlobalData
   {
     AddTypeIdWithName(update.TypeIdToName);
     AddMethodIdWithName(update.MethodIdToFqn);
+
+    if (Stacks is IFromEventsShadowStacks fromEventsShadowStacks)
+    {
+      fromEventsShadowStacks.AddStack(update.OriginalEvent);
+    }
   }
 
   private void AddMethodIdWithName(MethodIdToFqn? updateMethodIdToFqn)

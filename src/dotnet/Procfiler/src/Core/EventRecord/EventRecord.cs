@@ -11,6 +11,7 @@ public class EventRecord
   public long ManagedThreadId { get; private set; }
   public Guid ActivityId { get; private set; }
   public string EventName { get; set; }
+  public int StackTraceId { get; }
 
 
   public EventRecord(long stamp, string eventClass, long managedThreadId, Guid activityId)

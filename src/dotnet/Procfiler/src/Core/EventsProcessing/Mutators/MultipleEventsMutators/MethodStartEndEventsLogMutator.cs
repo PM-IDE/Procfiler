@@ -3,7 +3,6 @@ using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
-using Procfiler.Core.EventsCollection.ModificationSources;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
 using Procfiler.Core.EventsProcessing.Mutators.Core.Passes;
 using Procfiler.Utils;
@@ -13,6 +12,11 @@ namespace Procfiler.Core.EventsProcessing.Mutators.MultipleEventsMutators;
 
 public interface IMethodStartEndEventsLogMutator : IMultipleEventsMutator
 {
+}
+
+public interface IMethodsStartEndProcessor
+{
+  void Process(IEventsCollection events, SessionGlobalData context);
 }
 
 [EventMutator(MultipleEventMutatorsPasses.MethodStartEndInserter)]
@@ -41,20 +45,13 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
   {
     if (events.Count == 0) return;
 
-    using var collectionEnumerator = events.GetEnumerator();
-    if (!collectionEnumerator.MoveNext())
+    IMethodsStartEndProcessor processor = context.Stacks switch
     {
-      return;
-    }
-
-    var managedThreadId = collectionEnumerator.Current.Event.ManagedThreadId;
-    if (context.Stacks.FindShadowStack(managedThreadId) is not { } foundShadowStack)
-    {
-      myLogger.LogWarning("Managed thread {Id} was not in shadow stacks", managedThreadId);
-      return;
-    }
-
-    var modificationSource = new MethodStartEndModificationSource(myLogger, myFactory, context, foundShadowStack);
-    events.InjectModificationSource(modificationSource);
+      IFromEventsShadowStacks => new FromEventsMethodsStartEndMutator(myFactory, myLogger),
+      ICppShadowStacks => new CppStacksMethodsStartEndMutator(myFactory, myLogger),
+      _ => throw new ArgumentOutOfRangeException(context.Stacks.GetType().Name)
+    };
+    
+    processor.Process(events, context);
   }
 }
