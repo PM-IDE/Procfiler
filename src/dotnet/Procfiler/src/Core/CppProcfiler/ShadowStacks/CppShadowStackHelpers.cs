@@ -1,4 +1,4 @@
-namespace Procfiler.Core.CppProcfiler;
+namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 
 public static class CppShadowStackHelpers
 {

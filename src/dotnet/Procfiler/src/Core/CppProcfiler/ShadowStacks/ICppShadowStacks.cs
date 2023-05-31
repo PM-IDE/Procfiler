@@ -1,4 +1,6 @@
-namespace Procfiler.Core.CppProcfiler;
+using Procfiler.Core.Collector;
+
+namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 
 public interface ICppShadowStacks : IShadowStacks
 {

@@ -1,5 +1,6 @@
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
+using Procfiler.Core.CppProcfiler.ShadowStacks;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 

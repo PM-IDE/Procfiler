@@ -1,6 +1,6 @@
 using Procfiler.Utils;
 
-namespace Procfiler.Core.CppProcfiler;
+namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 
 public class CppShadowStackImpl : ICppShadowStack
 {
