@@ -45,7 +45,11 @@ module ProcfilerScriptsUtils =
         new Process(StartInfo=startInfo)
         
     let buildProjectFromSolution solutionDirectory projectName =
-        let args = $"msbuild /t:{projectName} /p:Configuration=\"Release\""
+        let projectPath = $"./{projectName}/{projectName}.csproj"
+        let pRelease = "/p:Configuration=\"Release\""
+        let pSolutionDir = $"/p:SolutionDir={solutionDirectory}{Path.DirectorySeparatorChar}"
+        
+        let args = $"msbuild {projectPath} {pRelease} {pSolutionDir}"
         let buildProcess = createProcess "dotnet" args solutionDirectory
         
         match buildProcess.Start() with
@@ -54,9 +58,9 @@ module ProcfilerScriptsUtils =
         | true ->
             buildProcess.WaitForExit()
             match buildProcess.ExitCode with
-            | 0 -> printfn $"Successfully built {solutionDirectory}"
+            | 0 -> printfn $"Successfully built {solutionDirectory}/{projectName}"
             | _ ->
-                printfn $"Error happened when building solution {solutionDirectory}:"
+                printfn $"Error happened when building solution {solutionDirectory}/{projectName}:"
                 
     let buildProcfiler =
         let parentDirectory = Directory.GetCurrentDirectory() |> Directory.GetParent
@@ -64,11 +68,13 @@ module ProcfilerScriptsUtils =
         let dotnetSourcePath = Path.Combine(dir, "dotnet")
         
         let framework = net7
+        
         printfn "Started building ProcfilerBuildTasks"
         buildProjectFromSolution dotnetSourcePath "ProcfilerBuildTasks"
         
         printfn "Started building whole Procfiler solution"
         buildProjectFromSolution dotnetSourcePath "Procfiler"
+        
         Path.Combine(dotnetSourcePath, "Procfiler", "bin", "Release", framework, "Procfiler.dll")
         
     let getAllCsprojFiles solutionsDirectory =
