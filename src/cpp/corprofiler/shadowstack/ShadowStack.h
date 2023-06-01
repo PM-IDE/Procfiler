@@ -5,8 +5,13 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <stack>
+#include <atomic>
 #include "../../util/util.h"
 #include "../info/FunctionInfo.h"
+
+#ifndef PROCFILER_SHADOW_STACK_H
+#define PROCFILER_SHADOW_STACK_H
 
 enum FunctionEventKind {
     Started,
@@ -27,63 +32,65 @@ struct FunctionEvent {
 
 struct EventsWithThreadId {
     std::vector<FunctionEvent>* Events;
+    std::stack<FunctionID>* CurrentStack;
     DWORD ThreadId;
 
     explicit EventsWithThreadId(DWORD threadId) {
         Events = new std::vector<FunctionEvent>();
+        CurrentStack = new std::stack<FunctionID>();
         ThreadId = threadId;
     }
 
     ~EventsWithThreadId() {
         delete Events;
     }
+
+    void AddFunctionEvent(FunctionEvent event) {
+        Events->push_back(event);
+
+        if (event.EventKind == FunctionEventKind::Started) {
+            CurrentStack->push(event.Id);
+        } else {
+            CurrentStack->pop();
+        }
+    }
 };
 
 class ShadowStack {
 private:
-    const UINT32 ourMethodStartEventId = 8000;
-    const UINT32 ourMethodEndEventId = 8001;
-    const UINT32 ourMethodInfoEventId = 8002;
+    static EventsWithThreadId* GetOrCreatePerThreadEvents(DWORD threadId);
 
-    const wstring ourMethodStartEventName = ToWString("ProcfilerMethodStart");
-    const wstring ourMethodEndEventName = ToWString("ProcfilerMethodEnd");
-    const wstring ourMethodInfoEventName = ToWString("ProcfilerMethodInfo");
-    const wstring ourEventPipeProviderName = ToWString("ProcfilerCppEventPipeProvider");
-
-    std::map<FunctionID, FunctionInfo> myResolvedFunctions;
-
-    static std::vector<FunctionEvent>* GetOrCreatePerThreadEvents(DWORD threadId);
-
-    std::string myDebugCallStacksSavePath;
-    ICorProfilerInfo12* myProfilerInfo;
     ProcfilerLogger* myLogger;
+    std::atomic<int> myCurrentAddition{0};
+    std::atomic<bool> myCanProcessFunctionEvents{true};
 
-    EVENTPIPE_PROVIDER myEventPipeProvider{};
-    EVENTPIPE_EVENT myMethodStartEvent{};
-    EVENTPIPE_EVENT myMethodEndEvent{};
-    EVENTPIPE_EVENT myMethodInfoEvent{};
-
-    HRESULT InitializeProvidersAndEvents();
-    HRESULT DefineProcfilerEventPipeProvider();
-    HRESULT DefineProcfilerMethodInfoEvent();
-
-    HRESULT DefineProcfilerMethodStartEvent();
-    HRESULT DefineProcfilerMethodEndEvent();
-
-    HRESULT LogFunctionEvent(const FunctionEvent& event, const DWORD& threadId);
-    HRESULT LogMethodInfo(const FunctionID& functionId, const FunctionInfo& functionInfo);
-
-    static HRESULT DefineMethodStartOrEndEventInternal(const wstring& eventName,
-                                                       EVENTPIPE_PROVIDER provider,
-                                                       EVENTPIPE_EVENT* ourEventId,
-                                                       ICorProfilerInfo12* profilerInfo,
-                                                       UINT32 eventId);
+    bool CanProcessFunctionEvents();
 public:
-    explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
+    explicit ShadowStack(ProcfilerLogger* logger);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);
     void AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp);
-    void DebugWriteToFile();
-    void WriteEventsToEventPipe();
+    void HandleExceptionCatchEnter(FunctionID catcherFunctionID, DWORD threadId, int64_t timestamp);
+
+    void SuppressFurtherMethodsEvents();
+    void WaitForPendingMethodsEvents();
+    void AdjustShadowStacks();
+    std::map<ThreadID, EventsWithThreadId*>* GetAllStacks() const;
 };
+
+struct FunctionEventProcessingCookie {
+private:
+    std::atomic<int>* myProcessingCount;
+public:
+    explicit FunctionEventProcessingCookie(std::atomic<int>* processingCount) {
+        myProcessingCount = processingCount;
+        myProcessingCount->fetch_add(1, std::memory_order_seq_cst);
+    }
+
+    ~FunctionEventProcessingCookie() {
+        myProcessingCount->fetch_sub(1, std::memory_order_seq_cst);
+    }
+};
+
+#endif

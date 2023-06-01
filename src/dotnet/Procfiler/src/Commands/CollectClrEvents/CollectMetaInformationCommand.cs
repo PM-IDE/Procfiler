@@ -22,7 +22,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
 
   public override ValueTask ExecuteAsync(CollectClrEventsContext context)
   {
-    return ExecuteCommandAsync(context, async events =>
+    return ExecuteCommandAsync(context, async (events, _) =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       var map = SplitEventsHelper.SplitByKey(Logger, events.Events, SplitEventsHelper.EventClassKeyExtractor);
@@ -30,7 +30,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
       foreach (var (name, eventsByName) in map)
       {
         var payloadValues = new Dictionary<string, Dictionary<string, int>>();
-        foreach (var eventRecord in eventsByName)
+        foreach (var (_, eventRecord) in eventsByName)
         {
           foreach (var (payloadName, payloadValue) in eventRecord.Metadata)
           {
@@ -71,7 +71,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
             await sw.WriteLineAsync($"{payloadName};{valueString};{count}");
           }
         }
-            
+
         break; 
       }
 

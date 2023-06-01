@@ -1,8 +1,11 @@
+using Autofac;
 using Procfiler.Commands.CollectClrEvents.Split;
+using Procfiler.Core;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
+using Procfiler.Core.Serialization;
 using Procfiler.Utils;
 
 namespace ProcfilerTests.Core;
@@ -18,7 +21,7 @@ public static class TestUtil
   }
 
   public static IEventsCollection FindEventsForMainThread(
-    Dictionary<int, IEventsCollection> eventsByThreads)
+    Dictionary<long, IEventsCollection> eventsByThreads)
   {
     var (_, mainThreadEvents) = eventsByThreads.Where(e => e.Key != -1).MaxBy(e => e.Value.Count);
     return mainThreadEvents;
@@ -32,11 +35,22 @@ public static class TestUtil
     return new EventsProcessingContext(managedThreadEvents, globalData, config);
   }
 
-  public static void CheckMethodConsistencyOrThrow(IEventsCollection events)
+  public static void CheckMethodConsistencyOrThrow(
+    long threadId, IEventsCollection events, SessionGlobalData globalData, IContainer container)
   {
-    var frames = new Stack<string>();
-    foreach (var eventRecord in events)
+    void AssertFail(string message)
     {
+      SerializeBrokenStacks(container, globalData, threadId, events);
+      Assert.Fail(message);
+    }
+    
+    var frames = new Stack<string>();
+    var index = -1;
+    string? assertMessage = null;
+    
+    foreach (var (_, eventRecord) in events)
+    {
+      ++index;
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStart))
       {
         if (isStart)
@@ -45,19 +59,47 @@ public static class TestUtil
         }
         else
         {
+          if (frames.Count == 0)
+          {
+            assertMessage = $"Stack was empty, index = {index}, ts = {eventRecord.Stamp}";
+            continue;
+          }
+          
           var topMost = frames.Pop();
           if (topMost != frame)
           {
-            Assert.Fail($"{topMost} != {frame}");
+            assertMessage = $"{topMost} != {frame}, index = {index}, ts = {eventRecord.Stamp}";
+            break;
           }
         }
       }
     }
 
+    if (assertMessage is { })
+    {
+      AssertFail(assertMessage);
+    }
+
     if (frames.Count != 0)
     {
-      Assert.Fail("frames.Count != 0");
+      AssertFail("frames.Count != 0");
     }
+  }
+
+  private static void SerializeBrokenStacks(
+    IContainer container, 
+    SessionGlobalData globalData, 
+    long brokenThreadId,
+    IEventsCollection eventsCollection)
+  {
+    var savePath = PathUtils.CreateTempFolderPath();
+    var serializer = container.Resolve<IStackTraceSerializer>();
+    Console.WriteLine($"Serializing broken stacks at {savePath}, thread ID {brokenThreadId}");
+
+    serializer.SerializeStackTraces(globalData, savePath);
+
+    var eventsSerializer = container.Resolve<IMethodTreeEventSerializer>();
+    eventsSerializer.SerializeEvents(eventsCollection.Select(ptr => ptr.Event), Path.Combine(savePath, "events.txt"));
   }
 
   public static EventRecordWithMetadata CreateRandomEvent(string eventClass, EventMetadata metadata)

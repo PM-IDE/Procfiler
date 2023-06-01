@@ -1,5 +1,3 @@
-using Procfiler.Core.EventRecord;
-
 namespace Procfiler.Utils;
 
 public static class StringBuilderExtensions
@@ -28,13 +26,14 @@ public static class StringBuilderExtensions
       .AppendNewLine();
   }
 
+  public static StringBuilder AppendSpace(this StringBuilder sb) => sb.Append(' ');
+
   public static PairedCharCookie AppendBraces(this StringBuilder sb) => new PairedCharCookie(sb, '(', ')');
 
   public static string SerializeValue<T>(T value)
   {
     if (value is null) return string.Empty;
     if (value is string @string) return @string;
-    if (value is StackTraceInfo) return nameof(StackTraceInfo);
     if (value is IEnumerable<char> chars) return new string(chars.ToArray());
     if (value is not IEnumerable enumerable) return value.ToString() ?? string.Empty;
     

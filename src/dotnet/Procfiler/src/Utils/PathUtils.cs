@@ -73,4 +73,54 @@ public static class PathUtils
       logger.LogError(ex, "Failed to delete directory {Path}", path);
     }
   }
+
+  public static string CreateTempFilePath()
+  {
+    return Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+  }
+  
+  public static string CreateTempFolderPath()
+  {
+    return Directory.CreateTempSubdirectory().FullName;
+  }
+
+  public static FileStream OpenReadWithRetryOrThrow(
+    IProcfilerLogger logger, string path, int retryCount = 5, int timeoutMs = 500)
+  {
+    for (var i = 0; i < retryCount; ++i)
+    {
+      try
+      {
+        return File.OpenRead(path);
+      }
+      catch (IOException)
+      {
+        const string Message = "Failed to open {Path}, retry number {Index}/{Total}, timeout = {Timeout}";
+        logger.LogTrace(Message, path, i + 1, retryCount, timeoutMs);
+        Thread.Sleep(timeoutMs);
+      }
+    }
+
+    throw new IOException($"Failed to open {path} after {retryCount} retries with timeout {timeoutMs}");
+  }
+
+  public static async Task<FileStream> OpenReadWithRetryOrThrowAsync(
+    IProcfilerLogger logger, string path, int retryCount = 5, int timeoutMs = 500)
+  {
+    for (var i = 0; i < retryCount; ++i)
+    {
+      try
+      {
+        return File.OpenRead(path);
+      }
+      catch (IOException)
+      {
+        const string Message = "Failed to open {Path}, retry number {Index}/{Total}, timeout = {Timeout}";
+        logger.LogTrace(Message, path, i + 1, retryCount, timeoutMs);
+        await Task.Delay(timeoutMs);
+      }
+    }
+
+    throw new IOException($"Failed to open {path} after {retryCount} retries with timeout {timeoutMs}");
+  }
 }

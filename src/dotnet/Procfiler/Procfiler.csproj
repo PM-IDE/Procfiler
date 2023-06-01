@@ -1,19 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+    <UsingTask TaskName="ProcfilerBuildTasks.BuildCppProcfiler" 
+               AssemblyFile="$(SolutionDir)/ProcfilerBuildTasks/bin/$(Configuration)/$(TargetFramework)/ProcfilerBuildTasks.dll" />
+    
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <LangVersion>latest</LangVersion>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
-        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.4.0" />
       <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
+      <PackageReference Include="JetBrains.Lifetimes" Version="2023.2.1" />
       <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.351802" />
       <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.0.7" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0-preview.7.22375.6" />
@@ -42,5 +44,12 @@
     <ItemGroup>
       <ProjectReference Include="..\ProcfilerEventSources\ProcfilerEventSources.csproj" />
     </ItemGroup>
-
+    
+    <Target Name="BuildCppProcfiler" AfterTargets="Build">
+        <BuildCppProcfiler CppProcfilerFolderPath="$(SolutionDir)..\cpp\" />
+    </Target>
+    
+    <Target Name="CopyCppProcfiler" AfterTargets="BuildCppProcfiler" Outputs="$(OutputPath)CppProcfiler.dll">
+        <Copy SourceFiles="$(SolutionDir)..\cpp\build\Release\CppProcfiler.dll" DestinationFolder="$(OutputPath)" />
+    </Target>
 </Project>

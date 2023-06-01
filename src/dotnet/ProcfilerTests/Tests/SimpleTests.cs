@@ -10,7 +10,7 @@ public class SimpleTests : ProcessTestBase
   [TestCaseSource(nameof(Source))]
   public void TestSimpleManagedThreadSplitAttributes(KnownSolution knownSolution)
   {
-    StartProcessAndDoTest(knownSolution, events =>
+    StartProcessAndDoTest(knownSolution, (events, _) =>
     {
       Assert.That(events.Events, Has.Count.GreaterThan(KnownSolution.ConsoleApp1.ExpectedEventsCount));
       var eventsByThreads = SplitEventsHelper.SplitByKey(
@@ -26,13 +26,13 @@ public class SimpleTests : ProcessTestBase
   [TestCaseSource(nameof(Source))]
   public void TestSimpleSplitByNamesAttributes(KnownSolution knownSolution)
   {
-    StartProcessAndDoTest(knownSolution, events =>
+    StartProcessAndDoTest(knownSolution, (events, _) =>
     {
       Assert.That(events.Events, Has.Count.GreaterThan(KnownSolution.ConsoleApp1.ExpectedEventsCount));
       var eventsByNames = SplitEventsHelper.SplitByKey(TestLogger.CreateInstance(), events.Events, SplitEventsHelper.EventClassKeyExtractor);
       foreach (var (name, traceEvents) in eventsByNames)
       {
-        foreach (var traceEvent in traceEvents)
+        foreach (var (_, traceEvent) in traceEvents)
         {
           Assert.That(traceEvent.EventName.Replace('/', '_'), Is.EqualTo(name));
         }

@@ -37,7 +37,7 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
   {
     var sessionInfos = new List<EventSessionInfo>();
     
-    await ExecuteCommandAsync(context, collectedEvents =>
+    await ExecuteCommandAsync(context, (collectedEvents, _) =>
     {
       var (events, globalData) = collectedEvents;
       var processingContext = EventsProcessingContext.DoEverythingWithoutMethodStartEnd(events, globalData);

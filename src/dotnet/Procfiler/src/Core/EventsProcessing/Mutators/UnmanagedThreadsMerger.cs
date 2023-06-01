@@ -55,45 +55,62 @@ public class UndefinedThreadsEventsMerger : IUndefinedThreadsEventsMerger
   private IEnumerable<EventRecordWithMetadata> MergeLazyInternal(
     IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
   {
-    var managedCurrent = managedThreadEvents.First;
-    var undefinedCurrent = undefinedThreadEvents.First;
+    var managedFinished = false;
+    var undefinedFinished = false;
+    using var managedEnumerator = managedThreadEvents.GetEnumerator();
+    using var undefinedEnumerator = undefinedThreadEvents.GetEnumerator();
+    
+    if (!managedEnumerator.MoveNext()) managedFinished = true;
+    if (!undefinedEnumerator.MoveNext()) undefinedFinished = true;
 
-    while (managedCurrent is { } || undefinedCurrent is { })
+    while (!managedFinished || !undefinedFinished)
     {
-      if (managedCurrent is null)
+      if (managedFinished)
       {
-        while (undefinedCurrent is { })
+        while (!undefinedFinished)
         {
-          yield return undefinedThreadEvents.GetFor(undefinedCurrent.Value);
-          undefinedCurrent = undefinedThreadEvents.NextNotDeleted(undefinedCurrent.Value);
+          yield return undefinedEnumerator.Current.Event;
+          if (!undefinedEnumerator.MoveNext())
+          {
+            undefinedFinished = true;
+          }
         }
 
         break;
       }
 
-      if (undefinedCurrent is null)
+      if (undefinedFinished)
       {
-        while (managedCurrent is { })
+        while (!managedFinished)
         {
-          yield return managedThreadEvents.GetFor(managedCurrent.Value);
-          managedCurrent = managedThreadEvents.NextNotDeleted(managedCurrent.Value);
+          yield return managedEnumerator.Current.Event;
+          if (!managedEnumerator.MoveNext())
+          {
+            managedFinished = true;
+          }
         }
 
         break;
       }
 
-      var managedEvent = managedThreadEvents.GetFor(managedCurrent.Value);
-      var undefinedEvent = undefinedThreadEvents.GetFor(undefinedCurrent.Value);
+      var managedEvent = managedEnumerator.Current.Event;
+      var undefinedEvent = undefinedEnumerator.Current.Event;
 
       if (managedEvent.Stamp < undefinedEvent.Stamp)
       {
         yield return managedEvent;
-        managedCurrent = managedThreadEvents.NextNotDeleted(managedCurrent.Value);
+        if (!managedEnumerator.MoveNext())
+        {
+          managedFinished = true;
+        }
       }
       else
       {
         yield return undefinedEvent;
-        undefinedCurrent = undefinedThreadEvents.NextNotDeleted(undefinedCurrent.Value);
+        if (!undefinedEnumerator.MoveNext())
+        {
+          undefinedFinished = true;
+        }
       }
     }
   }

@@ -4,4 +4,4 @@
 open Scripts.Core
 
 let args = fsi.CommandLineArgs
-SplitByMethods.launchProcfilerOnSolutionsFolderInAllConfigs args[1] args[2]
+SplitByMethods.launchProcfilerOnFolderOfSolutions args[1] args[2]

@@ -1,4 +1,6 @@
 #include "ProcfilerCorProfilerCallback.h"
+#include "../util/performance_counter.h"
+#include "../util/env_constants.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
@@ -28,8 +30,9 @@ void StaticHandleFunctionTailCall(FunctionID funcId,
 
 int64_t ProcfilerCorProfilerCallback::GetCurrentTimestamp() {
     LARGE_INTEGER value;
-    if (!QueryPerformanceCounter(&value)) {
-        myLogger->Log("Failed to get current timestamp");
+
+    if (!QueryPerformanceCounter2(&value)) {
+        myLogger->LogInformation("Failed to get current timestamp");
         return -1;
     }
 
@@ -64,21 +67,21 @@ ICorProfilerInfo12* ProcfilerCorProfilerCallback::GetProfilerInfo() {
 }
 
 HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk) {
-    myLogger->Log("Started initializing CorProfiler callback");
+    myLogger->LogInformation("Started initializing CorProfiler callback");
     void** ptr = reinterpret_cast<void**>(&this->myProfilerInfo);
 
     HRESULT result = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo12, ptr);
     if (FAILED(result)) {
-        myLogger->Log("Failed to query interface: " + std::to_string(result));
+        myLogger->LogInformation("Failed to query interface: " + std::to_string(result));
         return E_FAIL;
     }
 
-    myShadowStack = new ShadowStack(myProfilerInfo, myLogger);
-    DWORD eventMask = COR_PRF_ALL;
+    InitializeShadowStack();
 
+    DWORD eventMask = COR_PRF_MONITOR_ALL;
     result = myProfilerInfo->SetEventMask(eventMask);
     if (FAILED(result)) {
-        myLogger->Log("Failed to set event mask: " + std::to_string(result));
+        myLogger->LogInformation("Failed to set event mask: " + std::to_string(result));
         return E_FAIL;
     }
 
@@ -87,19 +90,42 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
                                                          StaticHandleFunctionTailCall);
 
     if (FAILED(result)) {
-        myLogger->Log("Failed to set enter-leave hooks: " + std::to_string(result));
+        myLogger->LogInformation("Failed to set enter-leave hooks: " + std::to_string(result));
         return E_FAIL;
     }
 
-    myLogger->Log("Initialized CorProfiler callback");
+    myLogger->LogInformation("Initialized CorProfiler callback");
+    return S_OK;
+}
+
+void ProcfilerCorProfilerCallback::InitializeShadowStack() {
+    myShadowStack = new ShadowStack(myLogger);
+
+    if (IsEnvVarDefined(binaryStackSavePath)) {
+        myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
+    } else if (IsEnvVarDefined(shadowStackDebugSavePath)) {
+        myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo, myLogger);
+    } else if (IsEnvVarDefined(eventPipeSaveShadowStack)) {
+        myShadowStackSerializer = new EventPipeShadowStackSerializer(myProfilerInfo, myLogger);
+    } else {
+        myShadowStackSerializer = new ShadowStackSerializerStub();
+    }
+
+    myShadowStackSerializer->Init();
+}
+
+HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
+    myShadowStack->HandleExceptionCatchEnter(functionId, GetCurrentManagedThreadId(), GetCurrentTimestamp());
     return S_OK;
 }
 
 HRESULT ProcfilerCorProfilerCallback::Shutdown() {
-    myLogger->Log("Shutting down profiler");
+    myLogger->LogInformation("Shutting down profiler");
 
-    myShadowStack->DebugWriteToFile();
-    myShadowStack->WriteEventsToEventPipe();
+    myShadowStack->SuppressFurtherMethodsEvents();
+    myShadowStack->WaitForPendingMethodsEvents();
+    myShadowStack->AdjustShadowStacks();
+    myShadowStackSerializer->Serialize(myShadowStack);
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
@@ -115,6 +141,7 @@ ProcfilerCorProfilerCallback::ProcfilerCorProfilerCallback(ProcfilerLogger* logg
         myLogger(logger) {
     ourCallback = this;
     myShadowStack = nullptr;
+    myShadowStackSerializer = nullptr;
 }
 
 HRESULT ProcfilerCorProfilerCallback::AppDomainCreationStarted(AppDomainID appDomainId) {
@@ -370,10 +397,6 @@ HRESULT ProcfilerCorProfilerCallback::ExceptionUnwindFinallyLeave() {
     return S_OK;
 }
 
-HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
-    return S_OK;
-}
-
 HRESULT ProcfilerCorProfilerCallback::ExceptionCatcherLeave() {
     return S_OK;
 }
@@ -554,6 +577,9 @@ ProcfilerCorProfilerCallback::~ProcfilerCorProfilerCallback() {
 
     delete myShadowStack;
     myShadowStack = nullptr;
+    
+    delete myShadowStackSerializer;
+    myShadowStackSerializer = nullptr;
 }
 
 DWORD ProcfilerCorProfilerCallback::GetCurrentManagedThreadId() {

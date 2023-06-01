@@ -1,5 +1,7 @@
-﻿using Procfiler.Commands.CollectClrEvents.Context;
+﻿using JetBrains.Lifetimes;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.Processes;
 using Procfiler.Core.Processes.Build;
 using Procfiler.Utils;
@@ -9,7 +11,7 @@ namespace Procfiler.Commands.CollectClrEvents;
 
 public interface ICommandExecutorDependantOnContext
 {
-  ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, ValueTask> func);
+  ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, Lifetime, ValueTask> func);
 }
 
 [AppComponent]
@@ -19,22 +21,28 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   private readonly IClrEventsCollector myClrEventsCollector;
   private readonly IDotnetProjectBuilder myProjectBuilder;
   private readonly IDotnetProcessLauncher myDotnetProcessLauncher;
+  private readonly ICppProcfilerLocator myCppProcfilerLocator;
+  private readonly IBinaryStackSavePathCreator myBinaryStackSavePathCreator;
 
 
   public CommandExecutorImpl(
     IDotnetProcessLauncher dotnetProcessLauncher, 
     IClrEventsCollector clrEventsCollector,
     IDotnetProjectBuilder projectBuilder,
-    IProcfilerLogger logger)
+    IProcfilerLogger logger, 
+    ICppProcfilerLocator cppProcfilerLocator, 
+    IBinaryStackSavePathCreator binaryStackSavePathCreator)
   {
     myDotnetProcessLauncher = dotnetProcessLauncher;
     myClrEventsCollector = clrEventsCollector;
     myProjectBuilder = projectBuilder;
     myLogger = logger;
+    myCppProcfilerLocator = cppProcfilerLocator;
+    myBinaryStackSavePathCreator = binaryStackSavePathCreator;
   }
 
 
-  public ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, ValueTask> func) =>
+  public ValueTask Execute(CollectClrEventsContext context, Func<CollectedEvents, Lifetime, ValueTask> func) =>
     context switch
     {
       CollectClrEventsFromExeWithRepeatContext repeatContext => ExecuteCommandWithRetryExe(repeatContext, func),
@@ -45,7 +53,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     };
 
   private async ValueTask ExecuteCommandWithArgumentsList(
-    CollectClrEventsFromExeWithArguments context, Func<CollectedEvents,ValueTask> func)
+    CollectClrEventsFromExeWithArguments context, Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     foreach (var currentArguments in context.Arguments)
     {
@@ -62,7 +70,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   }
 
   private async ValueTask ExecuteCommandWithRetryExe(
-    CollectClrEventsFromExeWithRepeatContext context, Func<CollectedEvents, ValueTask> func)
+    CollectClrEventsFromExeWithRepeatContext context, Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     for (var i = 0; i < context.RepeatCount; i++)
     {
@@ -72,23 +80,27 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
   private async ValueTask ExecuteCommandWithRunningProcess(
     CollectClrEventsFromRunningProcessContext context,
-    Func<CollectedEvents, ValueTask> func)
+    Func<CollectedEvents, Lifetime, ValueTask> func)
   {
-    if (await CollectEventsFromProcess(context, context.ProcessId) is { } events)
+    if (await CollectEventsFromProcess(context, context.ProcessId, null) is var events)
     {
-      await func(events);
+      await func(events, Lifetime.Eternal);
     }
   }
 
-  private ValueTask<CollectedEvents> CollectEventsFromProcess(CollectClrEventsContext context, int processId)
+  private ValueTask<CollectedEvents> CollectEventsFromProcess(
+    CollectClrEventsContext context, int processId, string? binaryStacksPath)
   {
     var (_, _, _, _, category, _, duration, timeout, _) = context.CommonContext;
-    return myClrEventsCollector.CollectEventsAsync(processId, duration, timeout, category);
+    var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
+      processId, duration, timeout, category, binaryStacksPath);
+    
+    return myClrEventsCollector.CollectEventsAsync(collectionContext);
   }
 
   private async ValueTask ExecuteCommandWithLaunchingProcess(
     CollectClrEventsFromExeContext context,
-    Func<CollectedEvents, ValueTask> func)
+    Func<CollectedEvents, Lifetime, ValueTask> func)
   {
     var (pathToCsproj, tfm, _, _, clearTemp, _, _) = context.ProjectBuildInfo;
     var buildResultNullable = myProjectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
@@ -100,13 +112,18 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
     var buildResult = buildResultNullable.Value;
 
+    var ld = new LifetimeDefinition();
+    ld.AssertEverTerminated();
+    
     try
     {
       var launcherDto = new DotnetProcessLauncherDto
       {
         Arguments = context.CommonContext.Arguments,
         RedirectOutput = context.CommonContext.PrintProcessOutput,
-        PathToDotnetExecutable = buildResult.BuiltDllPath
+        PathToDotnetExecutable = buildResult.BuiltDllPath,
+        CppProcfilerPath = myCppProcfilerLocator.FindCppProcfilerPath(),
+        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(buildResult)
       };
       
       if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
@@ -120,7 +137,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       CollectedEvents? events = null;
       try
       {
-        events = await CollectEventsFromProcess(context, process.Id);
+        events = await CollectEventsFromProcess(context, process.Id, launcherDto.BinaryStacksSavePath);
       }
       catch (Exception ex)
       {
@@ -148,14 +165,15 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
         const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
         myLogger.LogInformation(Message, process.Id, pathToCsproj); 
       }
-    
+      
       if (events.HasValue)
       {
-        await func(events.Value);
+        await func(events.Value, ld.Lifetime);
       }
     }
     finally
     {
+      ld.Terminate();
       if (clearTemp)
       {
         buildResult.ClearUnderlyingFolder();

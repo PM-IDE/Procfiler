@@ -1,4 +1,7 @@
+using Autofac;
 using Procfiler.Core.EventRecord;
+using Procfiler.Core.EventsProcessing;
+using Procfiler.Utils;
 using ProcfilerTests.Core;
 using TestsUtil;
 
@@ -13,12 +16,15 @@ public class EventTimeStampsConsistencyTest : ProcessTestBase
   
   private void DoTest(KnownSolution knownSolution)
   {
-    StartProcessSplitEventsByThreadsAndDoTest(knownSolution, eventsByThreads =>
+    StartProcessSplitEventsByThreadsAndDoTest(knownSolution, (eventsByThreads, globalData) =>
     {
       foreach (var (_, events) in eventsByThreads)
       {
+        var processor = Container.Resolve<IUnitedEventsProcessor>(); 
+        processor.ApplyMultipleMutators(events, globalData, EmptyCollections<Type>.EmptySet);
+        
         EventRecordWithMetadata? prev = null;
-        foreach (var currentEvent in events)
+        foreach (var (_, currentEvent) in events)
         {
           if (prev is null)
           {

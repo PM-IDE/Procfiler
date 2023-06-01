@@ -1,5 +1,6 @@
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
+using Procfiler.Utils;
 
 namespace Procfiler.Core.Collector;
 
@@ -8,40 +9,40 @@ public readonly record struct CollectedEvents(
   SessionGlobalData GlobalData
 );
 
-public readonly record struct TypeIdToName(string Id, string Name);
-public readonly record struct MethodIdToFqn(string Id, string Fqn);
+public readonly record struct TypeIdToName(long Id, string Name);
+public readonly record struct MethodIdToFqn(long Id, string Fqn);
 
 public readonly record struct EventWithGlobalDataUpdate(
+  TraceEvent OriginalEvent,
   EventRecordWithMetadata Event,
-  StackTraceInfo? StackTrace,
   TypeIdToName? TypeIdToName, 
   MethodIdToFqn? MethodIdToFqn
 );
 
-public readonly record struct CreatingEventContext(
-  MutableTraceEventStackSource Source,
-  TraceLog Log,
-  Dictionary<int, StackTraceInfo> StackTraces)
+public readonly record struct CreatingEventContext(MutableTraceEventStackSource Source, TraceLog Log);
+
+public record StackTraceInfo(int StackTraceId, int ManagedThreadId, string[] Frames)
 {
-  private readonly Dictionary<int, int> myStacksHashCodesToIds = new();
-
-  public StackTraceInfo? GetsStackTraceInfo(TraceEvent @event)
+  protected virtual bool PrintMembers(StringBuilder builder)
   {
-    var id = @event.CallStackIndex();
-    if (id == CallStackIndex.Invalid) return null;
+    builder
+      .LogPrimitiveValue(nameof(StackTraceId), StackTraceId)
+      .Append(StringBuilderExtensions.SerializeValue(Frames));
 
-    var intId = (int) id;
-    if (StackTraces.TryGetValue(intId, out var existing)) return existing;
+    return true;
+  }
 
-    var info = @event.CreateEventStackTraceInfoOrThrow(Source);
-    var infoHash = info.GetHashCode();
-    if (myStacksHashCodesToIds.TryGetValue(infoHash, out var existingId))
+  public override int GetHashCode()
+  {
+    if (Frames.Length == 0) return ManagedThreadId;
+
+    var hash = Frames[0].AsSpan().CalculateHash();
+
+    for (var i = 1; i < Frames.Length; ++i)
     {
-      return StackTraces[existingId];
+      hash = HashCode.Combine(hash, Frames[i].AsSpan().CalculateHash());
     }
 
-    myStacksHashCodesToIds[infoHash] = intId;
-    StackTraces[intId] = info;
-    return info;
+    return HashCode.Combine(hash, ManagedThreadId);
   }
 }

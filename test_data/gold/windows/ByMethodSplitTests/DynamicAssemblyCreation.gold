@@ -1,6 +1,6 @@
-Method: dynamicassemblycreation!Program.<Main>$(class System.String[])
+Method: DynamicAssemblyCreation.Program.Main[void..(class.System.String[])]
 
 Trace 0
-	[start] dynamicassemblycreation!Program.<Main>$(class System.String[])
-	[ end ] dynamicassemblycreation!Program.<Main>$(class System.String[])
+	[start] DynamicAssemblyCreation.Program.Main[void..(class.System.String[])]
+	[ end ] DynamicAssemblyCreation.Program.Main[void..(class.System.String[])]
 

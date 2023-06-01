@@ -1,5 +1,6 @@
 using Procfiler.Core.Collector.CustomTraceEvents;
 using Procfiler.Core.Constants.TraceEvents;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing.Mutators;
@@ -8,9 +9,24 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Collector;
 
+public record ClrEventsCollectionContext(
+  int Pid,
+  int Duration,
+  int Timeout,
+  ProvidersCategoryKind ProvidersCategoryKind
+);
+
+public record ClrEventsCollectionContextWithBinaryStacks(
+  int Pid,
+  int Duration,
+  int Timeout,
+  ProvidersCategoryKind ProvidersCategoryKind,
+  string? PathToBinaryStacks
+) : ClrEventsCollectionContext(Pid, Duration, Timeout, ProvidersCategoryKind);
+
 public interface IClrEventsCollector
 {
-  ValueTask<CollectedEvents> CollectEventsAsync(int pid, int duration, int timeout, ProvidersCategoryKind category);
+  ValueTask<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context);
 }
 
 [AppComponent]
@@ -20,28 +36,38 @@ public class ClrEventsCollector : IClrEventsCollector
   private readonly IEventPipeProvidersProvider myEventPipeProvidersProvider;
   private readonly ITransportCreationWaiter myTransportCreationWaiter;
   private readonly ICustomClrEventsFactory myCustomClrEventsFactory;
+  private readonly IBinaryShadowStacksReader myBinaryShadowStacksReader;
 
 
   public ClrEventsCollector(
     IProcfilerLogger logger,
     IEventPipeProvidersProvider eventPipeProvidersProvider,
     ITransportCreationWaiter transportCreationWaiter,
-    ICustomClrEventsFactory customClrEventsFactory)
+    ICustomClrEventsFactory customClrEventsFactory, 
+    IBinaryShadowStacksReader binaryShadowStacksReader)
   {
     myLogger = logger;
     myEventPipeProvidersProvider = eventPipeProvidersProvider;
     myTransportCreationWaiter = transportCreationWaiter;
     myCustomClrEventsFactory = customClrEventsFactory;
+    myBinaryShadowStacksReader = binaryShadowStacksReader;
   }
 
 
-  public async ValueTask<CollectedEvents> CollectEventsAsync(int pid, int duration, int timeout, ProvidersCategoryKind category)
+  public async ValueTask<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context)
   {
     try
     {
       using var tempPathCookie = new TempFileCookie(myLogger);
+      var (pid, duration, timeout, category) = context;
       await ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
-      return ReadEventsFromFile(tempPathCookie);
+      var binaryStacksPath = context switch
+      {
+        ClrEventsCollectionContextWithBinaryStacks ctx => ctx.PathToBinaryStacks,
+        _ => null
+      };
+      
+      return ReadEventsFromFile(tempPathCookie, binaryStacksPath);
     }
     catch (Exception ex)
     {
@@ -92,7 +118,7 @@ public class ClrEventsCollector : IClrEventsCollector
     }
   }
 
-  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie)
+  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie, string? binaryStacks)
   {
     var options = new TraceLogOptions
     {
@@ -102,10 +128,10 @@ public class ClrEventsCollector : IClrEventsCollector
     var etlxFilePath = TraceLog.CreateFromEventPipeDataFile(tempPathCookie.FullFilePath, options: options);
     using var etlxCookie = new TempFileCookie(etlxFilePath, myLogger);
 
-    return ReadEventsFromFileInternal(etlxFilePath);
+    return ReadEventsFromFileInternal(etlxFilePath, binaryStacks);
   }
 
-  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath)
+  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, string? binaryStacksPath)
   {
     using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFile), myLogger);
     using var traceLog = new TraceLog(etlxFilePath);
@@ -116,8 +142,14 @@ public class ClrEventsCollector : IClrEventsCollector
     
     var statistics = new Statistics();
     var events = new EventRecordWithMetadata[traceLog.EventCount];
-    var context = new CreatingEventContext(stackSource, traceLog, new Dictionary<int, StackTraceInfo>());
-    var globalData = new SessionGlobalData();
+    var context = new CreatingEventContext(stackSource, traceLog);
+    var shadowStacks = binaryStacksPath switch
+    {
+      { } => myBinaryShadowStacksReader.ReadStackEvents(binaryStacksPath),
+      null => new FromEventsShadowStacks(stackSource)
+    };
+    
+    var globalData = new SessionGlobalData(shadowStacks);
 
     using (var _ = new PerformanceCookie("ProcessingEvents", myLogger))
     {
@@ -134,10 +166,10 @@ public class ClrEventsCollector : IClrEventsCollector
 
     statistics.LogMyself(myLogger);
 
-    return new CollectedEvents(GetSortedLinkedListOfEvents(events), globalData);
+    return new CollectedEvents(CreateEventCollection(events), globalData);
   }
-  
-  private IEventsCollection GetSortedLinkedListOfEvents(EventRecordWithMetadata[] events)
+
+  private IEventsCollection CreateEventCollection(EventRecordWithMetadata[] events)
   {
     using (new PerformanceCookie($"{GetType()}::SortingEvents", myLogger))
     {
@@ -147,9 +179,9 @@ public class ClrEventsCollector : IClrEventsCollector
         if (first.Stamp < second.Stamp) return -1;
         return 0;
       });
-
-      return new EventsCollectionImpl(events, myLogger);
     }
+    
+    return new EventsCollectionImpl(events, myLogger);
   }
   
   private EventWithGlobalDataUpdate CreateEventWithMetadataFromClrEvent(
@@ -168,16 +200,14 @@ public class ClrEventsCollector : IClrEventsCollector
       traceEvent = myCustomClrEventsFactory.CreateWrapperEvent(traceEvent);
     }
 
-    var stackTraceInfo = context.GetsStackTraceInfo(traceEvent);
-    UpdateStatisticsAfterEventProcession(traceEvent, stackTraceInfo, ref statistics);
-    var managedThreadId = stackTraceInfo?.ManagedThreadId ?? -1;
-    var stackTraceId = stackTraceInfo?.StackTraceId ?? -1;
-    var record = new EventRecordWithMetadata(traceEvent, managedThreadId, stackTraceId);
+    UpdateStatisticsAfterEventProcession(traceEvent, ref statistics);
+    var managedThreadId = traceEvent.GetManagedThreadIdThroughStack(context.Source);
+    var record = new EventRecordWithMetadata(traceEvent, managedThreadId, (int)traceEvent.CallStackIndex());
 
     var typeIdToName = TryExtractTypeIdToName(traceEvent, record.Metadata);
     var methodIdToFqn = TryExtractMethodToId(traceEvent, record.Metadata);
     
-    return new EventWithGlobalDataUpdate(record, stackTraceInfo, typeIdToName, methodIdToFqn);
+    return new EventWithGlobalDataUpdate(traceEvent, record, typeIdToName, methodIdToFqn);
   }
 
   private static TypeIdToName? TryExtractTypeIdToName(
@@ -190,7 +220,7 @@ public class ClrEventsCollector : IClrEventsCollector
 
     if (id is { } && name is { })
     {
-      return new TypeIdToName(id, name);
+      return new TypeIdToName(id.ParseId(), name);
     }
 
     return null;
@@ -209,9 +239,9 @@ public class ClrEventsCollector : IClrEventsCollector
     if (name is { } && methodNamespace is { } && signature is { } && methodId is { })
     {
       var mergedName = MutatorsUtil.ConcatenateMethodDetails(name, methodNamespace, signature);
-      return new MethodIdToFqn(methodId, mergedName);
+      return new MethodIdToFqn(methodId.ParseId(), mergedName);
     }
-
+    
     return null;
   }
   
@@ -234,20 +264,11 @@ public class ClrEventsCollector : IClrEventsCollector
     return stackSource;
   }
 
-  private static void UpdateStatisticsAfterEventProcession(
-    TraceEvent @event,
-    StackTraceInfo? stackTraceInfo,
-    ref Statistics statistics)
+  private static void UpdateStatisticsAfterEventProcession(TraceEvent @event, ref Statistics statistics)
   {
     statistics.EventsCountMap.AddOrIncrement(@event.EventName);
-    statistics.EventsWithManagedThreadIs.AddCase((stackTraceInfo?.ManagedThreadId ?? -1) != -1);
+    statistics.EventsWithManagedThreadIs.AddCase(@event.ThreadID != -1);
     ++statistics.EventsCount;
-
-    if (stackTraceInfo is { } && stackTraceInfo.Frames.Length > 0)
-    {
-      statistics.StackTracesPerEvents.AddOrIncrement(@event.EventName);
-      ++statistics.EventsWithStackTraces;
-    }
 
     if (!statistics.EventNamesToPayloadProperties.TryGetValue(@event.EventName, out _))
     {

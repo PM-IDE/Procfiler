@@ -6,7 +6,7 @@ namespace Procfiler.Commands.CollectClrEvents.Split;
 
 public static class SplitEventsHelper
 {
-  public static Func<EventRecordWithMetadata, int> ManagedThreadIdExtractor { get; } =
+  public static Func<EventRecordWithMetadata, long> ManagedThreadIdExtractor { get; } =
     @event => @event.ManagedThreadId;
 
   public static Func<EventRecordWithMetadata, string> EventClassKeyExtractor { get; } =
@@ -18,8 +18,8 @@ public static class SplitEventsHelper
     Func<EventRecordWithMetadata, TKey> keyExtractor) where TKey : notnull
   {
     var map = new Dictionary<TKey, List<EventRecordWithMetadata>>();
-    var initialListCapacity = events.Count / 20;
-    foreach (var eventRecord in events)
+    var initialListCapacity = (int)events.Count / 20;
+    foreach (var (_, eventRecord) in events)
     {
       var list = map.GetOrCreate(keyExtractor(eventRecord), () => new List<EventRecordWithMetadata>(initialListCapacity));
       list.Add(eventRecord);

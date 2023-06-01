@@ -3,24 +3,32 @@
 using System.Reflection;
 using System.Runtime.Loader;
 
-AppDomain.CurrentDomain.AssemblyResolve += (_, _) =>
-{
-  Console.WriteLine("Hello from App Domain assembly resolve");
-  return null;
-};
+namespace NotExistingAssemblyLoading;
 
-try
+internal class Program
 {
-  var loadContext = new AssemblyLoadContext(null);
-  loadContext.Resolving += (_, _) =>
+  public static void Main(string[] args)
   {
-    Console.WriteLine("Hello from Load Context handler");
-    return null;
-  };
+    AppDomain.CurrentDomain.AssemblyResolve += (_, _) =>
+    {
+      Console.WriteLine("Hello from App Domain assembly resolve");
+      return null;
+    };
 
-  loadContext.LoadFromAssemblyName(new AssemblyName("asdasdasdasd"));
-}
-catch (Exception ex)
-{
-  Console.WriteLine(ex.Message);
+    try
+    {
+      var loadContext = new AssemblyLoadContext(null);
+      loadContext.Resolving += (_, _) =>
+      {
+        Console.WriteLine("Hello from Load Context handler");
+        return null;
+      };
+
+      loadContext.LoadFromAssemblyName(new AssemblyName("asdasdasdasd"));
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine(ex.Message);
+    }
+  }
 }

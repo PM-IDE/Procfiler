@@ -46,7 +46,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     Func<EventRecordWithMetadata, TKey> keyExtractor,
     CollectAndSplitContext collectAndSplitContext)
   {
-    return ExecuteCommandAsync(context, async collectedEvents =>
+    return ExecuteCommandAsync(context, async (collectedEvents, lifetime) =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       
@@ -75,7 +75,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
         await ProcessEventsAsync(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
       }
 
-      await SerializeStacksAsync(context, globalData);
+      SerializeStacks(context, globalData);
     });
   }
 
@@ -94,7 +94,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
 
     if (correspondingEvents.Count == 0) return;
 
-    IEnumerable<EventRecordWithMetadata> mergedEvents = correspondingEvents;
+    IEnumerable<EventRecordWithMetadata> mergedEvents = correspondingEvents.Select(pair => pair.Event);
     if (undefinedThreadEvents is { })
     {
       using (new PerformanceCookie($"{GetType().Name}::MergingEvents", Logger))
@@ -107,15 +107,12 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     var extension = outputFormat.GetExtension();
     var filePath = Path.Combine(context.CommonContext.OutputPath, $"{key.ToString()}.{extension}");
 
-    await using var fs = File.OpenWrite(filePath);
-    await myDelegatingEventsSerializer.SerializeEventsAsync(mergedEvents, fs, outputFormat);
+    myDelegatingEventsSerializer.SerializeEvents(mergedEvents, filePath, outputFormat);
   }
 
-  private async ValueTask SerializeStacksAsync(CollectClrEventsContext context, SessionGlobalData globalData)
+  private void SerializeStacks(CollectClrEventsContext context, SessionGlobalData globalData)
   {
-    var stacksFilePath = Path.Combine(context.CommonContext.OutputPath, "stacks.txt");
-    await using var fs = new FileStream(stacksFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-    await myStackTraceSerializer.SerializeStackTracesAsync(globalData.Stacks.Values, fs);
+    myStackTraceSerializer.SerializeStackTraces(globalData, context.CommonContext.OutputPath);
   }
 
   private static EventsProcessingContext CreateContext(

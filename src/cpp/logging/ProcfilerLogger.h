@@ -1,5 +1,8 @@
 #include "iostream"
 
+#ifndef PROCFILER_PROCFILER_LOGGER_H
+#define PROCFILER_PROCFILER_LOGGER_H
+
 class ProcfilerLogger {
 private:
     bool myIsEnabled;
@@ -7,5 +10,9 @@ private:
 public:
     ProcfilerLogger();
 
-    void Log(const std::string& message);
+    void LogInformation(const std::string& message);
+    void LogError(const std::string& message);
 };
+
+
+#endif //PROCFILER_PROCFILER_LOGGER_H

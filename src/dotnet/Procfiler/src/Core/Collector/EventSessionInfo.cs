@@ -1,5 +1,4 @@
-﻿using Procfiler.Core.EventRecord;
-using Procfiler.Core.EventsCollection;
+﻿using Procfiler.Core.EventsCollection;
 using Procfiler.Utils;
 
 namespace Procfiler.Core.Collector;
@@ -8,44 +7,39 @@ public record EventSessionInfo(IEnumerable<IEventsCollection> Events, SessionGlo
 
 public class SessionGlobalData
 {
-  private readonly Dictionary<string, string> myMethodIdToFqn;
-  private readonly Dictionary<string, string> myTypeIdsToNames;
-  private readonly Dictionary<int, StackTraceInfo> myStacks;
+  private readonly Dictionary<long, string> myMethodIdToFqn;
+  private readonly Dictionary<long, string> myTypeIdsToNames;
 
   
-  public IReadOnlyDictionary<int, StackTraceInfo> Stacks => myStacks;
-  public IReadOnlyDictionary<string, string> TypeIdToNames => myTypeIdsToNames;
-  public IReadOnlyDictionary<string, string> MethodIdToFqn => myMethodIdToFqn;
+  public IReadOnlyDictionary<long, string> TypeIdToNames => myTypeIdsToNames;
+  public IReadOnlyDictionary<long, string> MethodIdToFqn => myMethodIdToFqn;
+  public IShadowStacks Stacks { get; }
 
 
-  public SessionGlobalData()
+  public SessionGlobalData(IShadowStacks shadowStacks)
   {
-    myMethodIdToFqn = new Dictionary<string, string>();
-    myTypeIdsToNames = new Dictionary<string, string>();
-    myStacks = new Dictionary<int, StackTraceInfo>();
+    Stacks = shadowStacks;
+    myMethodIdToFqn = new Dictionary<long, string>();
+    myTypeIdsToNames = new Dictionary<long, string>();
   }
 
 
   public void AddInfoFrom(EventWithGlobalDataUpdate update)
   {
-    AddStack(update.StackTrace);
     AddTypeIdWithName(update.TypeIdToName);
     AddMethodIdWithName(update.MethodIdToFqn);
+
+    if (Stacks is IFromEventsShadowStacks fromEventsShadowStacks)
+    {
+      fromEventsShadowStacks.AddStack(update.OriginalEvent);
+    }
   }
 
   private void AddMethodIdWithName(MethodIdToFqn? updateMethodIdToFqn)
   {
     if (updateMethodIdToFqn is { })
     {
-      myTypeIdsToNames[updateMethodIdToFqn.Value.Id] = updateMethodIdToFqn.Value.Fqn;
-    }
-  }
-
-  private void AddStack(StackTraceInfo? stack)
-  {
-    if (stack is { })
-    {
-      myStacks[stack.StackTraceId] = stack;
+      myMethodIdToFqn[updateMethodIdToFqn.Value.Id] = updateMethodIdToFqn.Value.Fqn;
     }
   }
 
@@ -60,7 +54,6 @@ public class SessionGlobalData
   public void MergeWith(SessionGlobalData other)
   {
     myTypeIdsToNames.MergeOrThrow(other.myTypeIdsToNames);
-    myStacks.MergeOrThrow(other.myStacks);
     myMethodIdToFqn.MergeOrThrow(other.myMethodIdToFqn);
   }
 }

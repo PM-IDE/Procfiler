@@ -17,7 +17,7 @@ public interface ISplitEventsByManagedThreadIdCommand : ICommandWithContext<Coll
 }
 
 [CommandLineCommand]
-public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<int>, ISplitEventsByManagedThreadIdCommand
+public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<long>, ISplitEventsByManagedThreadIdCommand
 {
   private readonly IManagedEventsFromUndefinedThreadExtractor myManagedEventsExtractor;
 
@@ -47,15 +47,15 @@ public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<int>, ISp
     return ExecuteSimpleSplitCommand(context, SplitEventsHelper.ManagedThreadIdExtractor, collectAndSplitContext);
   }
 
-  protected override KeyValuePair<int, IEventsCollection?>? FindEventsForUndefinedThread(
-    Dictionary<int, IEventsCollection> eventsByKey)
+  protected override KeyValuePair<long, IEventsCollection?>? FindEventsForUndefinedThread(
+    Dictionary<long, IEventsCollection> eventsByKey)
   {
     var value = DictionaryExtensions.GetValueOrDefault(eventsByKey, -1);
-    return new KeyValuePair<int, IEventsCollection?>(-1, value);
+    return new KeyValuePair<long, IEventsCollection?>(-1, value);
   }
 
   protected override IEventsCollection? AddNewManagedThreadsFromUndefined(
-    IDictionary<int, IEventsCollection> events,
+    IDictionary<long, IEventsCollection> events,
     SessionGlobalData globalData,
     IEventsCollection? undefinedEvents)
   {

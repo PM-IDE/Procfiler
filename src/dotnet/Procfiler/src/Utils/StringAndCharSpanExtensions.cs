@@ -19,4 +19,10 @@ public static class StringAndCharSpanExtensions
   }
 
   public static string RemoveRn(this string text) => text.Replace("\r\n", "\n");
+
+  public static long ParseId(this string textId) => textId.Contains('x') switch
+  {
+    true => Convert.ToInt64(textId, 16),
+    false => Convert.ToInt64(textId)
+  };
 }

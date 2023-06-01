@@ -109,7 +109,7 @@ public class UnitedEventsProcessorImpl : IUnitedEventsProcessor
     var singleMutators = mySingleEventMutators.Where(m => !disabledMutators.Contains(m.GetType())).ToList();
     var statefulMutators = myStatefulSingleEventsMutators.Where(m => !disabledMutators.Contains(m.GetType())).ToList();
     
-    foreach (var eventRecord in events)
+    foreach (var (_, eventRecord) in events)
     {
       foreach (var singleEventMutator in singleMutators)
       {

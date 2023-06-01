@@ -1,67 +1,56 @@
-using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 
 namespace Procfiler.Core;
 
-public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEnumerator<EventRecordWithMetadata>
+public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnumerator<EventRecordWithPointer>
 {
-  private readonly IEventsCollection[] myCollections;
-  private readonly EventPointer?[] myFirstValues;
-  private readonly EventPointer?[] myNextEventsNodes;
+  private readonly IEnumerator<EventRecordWithPointer>[] myEnumerators;
+  private readonly IEnumerable<EventRecordWithPointer>[] myCollections;
   private readonly PriorityQueue<int, long> myQueue;
 
+  private int myLastReturnedEnumerator = -1;
 
-  public EventRecordWithMetadata Current { get; private set; } = null!;
+
+  public EventRecordWithPointer Current { get; private set; }
   object IEnumerator.Current => Current;
 
   
   /// <invariant name = "EventsMustBeOrderedByStamp">
   /// The Lists of events in eventsByManagedThreads should be sorted by "Stamp" property
   /// </invariant>
-  public OrderedEventsEnumerator(IEnumerable<IEventsCollection> eventsByTraces)
+  public OrderedEventsEnumerator(IEnumerable<IEnumerable<EventRecordWithPointer>> eventsByTraces)
   {
     //reference to invariant: EventsMustBeOrderedByStamp
     myCollections = eventsByTraces.ToArray();
-    myNextEventsNodes = new EventPointer?[myCollections.Length];
+    myEnumerators = new IEnumerator<EventRecordWithPointer>[myCollections.Length];
     myQueue = new PriorityQueue<int, long>();
-
-    myFirstValues = new EventPointer?[myCollections.Length];
-    var index = 0;
-    foreach (var list in myCollections)
-    {
-      myFirstValues[index++] = list.First;
-    }
-
+    
     Reset();
   }
 
   
   public bool MoveNext()
   {
+    if (myLastReturnedEnumerator != -1)
+    {
+      ref var enumerator = ref myEnumerators[myLastReturnedEnumerator];
+      if (enumerator.MoveNext())
+      {
+        myQueue.Enqueue(myLastReturnedEnumerator, enumerator.Current.Event.Stamp);
+      }
+    }
+    
     while (true)
     {
       if (myQueue.Count == 0) return false;
+      
       var next = myQueue.Dequeue();
-      var currentPointer = myNextEventsNodes[next];
+      ref var enumerator = ref myEnumerators[next];
 
-      if (currentPointer is { } && 
-          myCollections[next].TryGetForWithDeletionCheck(currentPointer.Value) is { } eventRecord)
-      {
-        Current = eventRecord;
-        
-        if (myCollections[next].NextNotDeleted(currentPointer.Value) is { } nextNode &&
-            myCollections[next].TryGetForWithDeletionCheck(nextNode) is { } nextEvent)
-        {
-          myNextEventsNodes[next] = nextNode;
-          myQueue.Enqueue(next, nextEvent.Stamp); 
-        }
-        else
-        {
-          myNextEventsNodes[next] = null;
-        }
-        
-        return true;
-      }
+      Current = enumerator.Current;
+      myLastReturnedEnumerator = next;
+      
+      return true;
     }
   }
 
@@ -70,22 +59,20 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithMetadata>, IEn
     myQueue.Clear();
     for (var i = 0; i < myCollections.Length; i++)
     {
-      var firstValue = myFirstValues[i];
-
-      if (firstValue is { } &&
-          myCollections[i].TryGetForWithDeletionCheck(firstValue.Value) is { } eventRecord)
+      myEnumerators[i] = myCollections[i].GetEnumerator();
+    }
+    
+    for (var i = 0; i < myCollections.Length; i++)
+    {
+      ref var enumerator = ref myEnumerators[i];
+      if (enumerator.MoveNext())
       {
-        myNextEventsNodes[i] = firstValue;
-        myQueue.Enqueue(i, eventRecord.Stamp);
-      }
-      else
-      {
-        myNextEventsNodes[i] = null;
+        myQueue.Enqueue(i, enumerator.Current.Event.Stamp);
       }
     }
   }
   
-  public IEnumerator<EventRecordWithMetadata> GetEnumerator() => this;
+  public IEnumerator<EventRecordWithPointer> GetEnumerator() => this;
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

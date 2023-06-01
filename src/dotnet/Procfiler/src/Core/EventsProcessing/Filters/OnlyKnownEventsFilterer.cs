@@ -141,11 +141,11 @@ public class OnlyKnownEventsFilterer : IEventsFilter
 
   public void Filter(IEventsCollection events)
   {
-    foreach (var eventRecord in events)
+    foreach (var (ptr, eventRecord) in events)
     {
       if (!ourAllowedEvents.Contains(eventRecord.EventClass))
       {
-        events.Remove(eventRecord);
+        events.Remove(ptr);
       }
     }
   }

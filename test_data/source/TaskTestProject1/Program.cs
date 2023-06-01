@@ -1,14 +1,23 @@
 ﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
 
-var x = 0;
-var task1 = new Task<int>(() => ++x);
-var task2 = task1.ContinueWith(result =>
+namespace TaskTestProject1;
+
+internal class Program
 {
-  x += result.Result;
-});
+  public static void Main(string[] args)
+  {
+    Console.WriteLine("Hello, World!");
 
-task1.Start();
+    var x = 0;
+    var task1 = new Task<int>(() => ++x);
+    var task2 = task1.ContinueWith(result =>
+    {
+      x += result.Result;
+    });
 
-task2.Wait();
-Console.WriteLine(x);
+    task1.Start();
+
+    task2.Wait();
+    Console.WriteLine(x);
+  }
+}

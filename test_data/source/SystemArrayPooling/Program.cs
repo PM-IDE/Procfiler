@@ -1,21 +1,29 @@
 ﻿using System.Buffers;
 
-var pool = ArrayPool<string>.Shared;
+namespace SystemArrayPooling;
 
-var arrays = new List<string[]>();
-
-for (var j = 0; j < 10; ++j)
+internal class Program
 {
-  for (var i = 0; i < 100; ++i)
+  public static void Main(string[] args)
   {
-    arrays.Add(pool.Rent(Random.Shared.Next(0, 1000 * j)));
-  }
+    var pool = ArrayPool<string>.Shared;
 
-  while (arrays.Count > 0)
-  {
-    var index = Random.Shared.Next(arrays.Count);
-    var buffer = arrays[index];
-    arrays.RemoveAt(index);
-    pool.Return(buffer);
-  } 
+    var arrays = new List<string[]>();
+
+    for (var j = 0; j < 10; ++j)
+    {
+      for (var i = 0; i < 100; ++i)
+      {
+        arrays.Add(pool.Rent(Random.Shared.Next(0, 1000 * j)));
+      }
+
+      while (arrays.Count > 0)
+      {
+        var index = Random.Shared.Next(arrays.Count);
+        var buffer = arrays[index];
+        arrays.RemoveAt(index);
+        pool.Return(buffer);
+      } 
+    }
+  }
 }

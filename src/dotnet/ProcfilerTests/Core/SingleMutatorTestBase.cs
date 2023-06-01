@@ -1,4 +1,5 @@
 using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler.ShadowStacks;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing.Mutators.Core;
 
@@ -16,11 +17,10 @@ public abstract class SingleMutatorTestBase
     return TestUtil.CreateRandomEvent(EventClass, metadata);
   }
 
-  protected void ExecuteWithRandomEvent(
-    EventMetadata metadata, Action<EventRecordWithMetadata> action)
+  protected void ExecuteWithRandomEvent(EventMetadata metadata, Action<EventRecordWithMetadata> action)
   {
     var eventRecord = CreateRandomEvent(metadata);
-    CreateMutator().Process(eventRecord, new SessionGlobalData());
+    CreateMutator().Process(eventRecord, new SessionGlobalData(EmptyShadowStacks.Instance));
     
     action(eventRecord);
   }

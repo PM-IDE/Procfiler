@@ -1,13 +1,11 @@
-ASYNC_!System.Resources.ResourceFallbackManager+<GetEnumerator>d__5
+ASYNC_SimpleAsyncAwait.Program+<Main>d__0
+Trace:
+SimpleAsyncAwait.Class1
+SimpleAsyncAwait.Class2
+SimpleAsyncAwait.Class3
+
+
+ASYNC_SimpleAsyncAwait.Program+<<Main>g__Foo|0_1>d
 Trace:
 
-
-ASYNC_!Program+<<Main>$>d__0
-Trace:
-Class1
-Class2
-Class3
-
-
-ASYNC_!Program+<<<Main>$>g__Foo|0_1>d
 

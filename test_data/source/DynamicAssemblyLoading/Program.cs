@@ -2,10 +2,17 @@
 
 using System.Reflection;
 
-Console.WriteLine("Hello, World!");
-var directory = Directory.GetParent(Directory.GetCurrentDirectory())?.Parent?.Parent?.FullName!;
-var path = Path.Combine(directory, "SomeAssembly", "SomeAssembly.dll");
-Console.WriteLine(File.Exists(path));
-var asm = Assembly.LoadFrom(path);
-var classInstance = asm.CreateInstance("SomeAssembly.Class1");
-Console.WriteLine(classInstance.GetType().Name);
+namespace DynamicAssemblyLoading;
+
+internal class Program
+{
+  public static void Main(string[] args)
+  {
+    Console.WriteLine("Hello, World!");
+    var path = Path.Combine(Directory.GetCurrentDirectory(), "SomeAssembly", "SomeAssembly.dll");
+    Console.WriteLine(File.Exists(path));
+    var asm = Assembly.LoadFrom(path);
+    var classInstance = asm.CreateInstance("SomeAssembly.Class1");
+    Console.WriteLine(classInstance.GetType().Name);
+  }
+}

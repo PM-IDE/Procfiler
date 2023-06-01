@@ -1,7 +1,6 @@
 using Autofac;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.EventsProcessing;
-using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Utils;
 using ProcfilerTests.Core;
 using TestsUtil;
@@ -16,20 +15,18 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
   
   private void DoTest(KnownSolution knownSolution)
   {
-    StartProcessAndDoTest(knownSolution, events =>
+    StartProcessAndDoTest(knownSolution, (events, _) =>
     {
       var globalData = events.GlobalData;
       var eventsByThreads = SplitEventsHelper.SplitByKey(
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
-      var undefinedThreadEvents = eventsByThreads[-1];
       eventsByThreads.Remove(-1);
       
-      Container.Resolve<IUndefinedThreadsEventsMerger>().Merge(eventsByThreads, undefinedThreadEvents);
-      foreach (var (_, eventsForThread) in eventsByThreads)
+      foreach (var (threadId, eventsForThread) in eventsByThreads)
       {
         var processor = Container.Resolve<IUnitedEventsProcessor>(); 
         processor.ApplyMultipleMutators(eventsForThread, globalData, EmptyCollections<Type>.EmptySet);
-        TestUtil.CheckMethodConsistencyOrThrow(eventsForThread);
+        TestUtil.CheckMethodConsistencyOrThrow(threadId, eventsForThread, globalData, Container);
       }
 
       return ValueTask.CompletedTask;

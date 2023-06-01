@@ -1,6 +1,14 @@
-Method: tasktestproject1!Program.<Main>$(class System.String[])
+Method: TaskTestProject1.Program.Main[void..(class.System.String[])]
 
 Trace 0
-	[start] tasktestproject1!Program.<Main>$(class System.String[])
-	[ end ] tasktestproject1!Program.<Main>$(class System.String[])
+	[start] TaskTestProject1.Program.Main[void..(class.System.String[])]
+		[start] TaskTestProject1.Program+<>c__DisplayClass0_0..ctor[instance.void..()]
+		[ end ] TaskTestProject1.Program+<>c__DisplayClass0_0..ctor[instance.void..()]
+	[ end ] TaskTestProject1.Program.Main[void..(class.System.String[])]
+
+Method: TaskTestProject1.Program+<>c__DisplayClass0_0..ctor[instance.void..()]
+
+Trace 0
+	[start] TaskTestProject1.Program+<>c__DisplayClass0_0..ctor[instance.void..()]
+	[ end ] TaskTestProject1.Program+<>c__DisplayClass0_0..ctor[instance.void..()]
 

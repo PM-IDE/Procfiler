@@ -11,10 +11,11 @@ public interface IMethodTreeEventSerializer : IEventsSerializer
 [AppComponent]
 public class MethodTreeSerializer : IMethodTreeEventSerializer
 {
-  public async ValueTask SerializeEventsAsync(
-    IEnumerable<EventRecordWithMetadata> events,
-    Stream stream)
+  public void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path)
   {
+    using var fs = File.OpenWrite(path);
+    using var sw = new StreamWriter(fs);
+    
     var indent = 0;
     var sb = new StringBuilder();
     
@@ -48,6 +49,7 @@ public class MethodTreeSerializer : IMethodTreeEventSerializer
         AddIndent();
       }
 
+      sb.Append($"[{eventRecord.Stamp}] ");
       sb.Append(eventRecord.EventName);
       using (sb.AppendBraces())
       {
@@ -64,7 +66,7 @@ public class MethodTreeSerializer : IMethodTreeEventSerializer
 
       sb.Append('\n');
 
-      await stream.WriteAsync(Encoding.UTF8.GetBytes(sb.ToString()));
+      sw.Write(sb.ToString());
     }
   }
 }

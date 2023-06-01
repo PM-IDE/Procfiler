@@ -27,4 +27,13 @@ let SplitByNamesTest projectName =
         let fileNamesSet = files |> Array.map Path.GetFileNameWithoutExtension |> Set.ofSeq
         Assert.That(fileNamesSet.Count, Is.GreaterThan 20)
         
+        let containsInliningNames = fileNamesSet.Contains("Method_InliningFailed") ||
+                                    fileNamesSet.Contains("Method_InliningSucceeded")
+        
+        let containsTailCallNames = fileNamesSet.Contains("Method_TailCallSucceeded") ||
+                                    fileNamesSet.Contains("Method_TailCallFailed")
+
+        Assert.That(containsInliningNames, Is.True)
+        Assert.That(containsTailCallNames, Is.True)
+        
     executeTestWithTempFolder doTest

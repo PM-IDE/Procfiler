@@ -1,6 +1,6 @@
-Method: intensivethreadpooluse!Program.<Main>$(class System.String[])
+Method: IntensiveThreadPoolUse.Program.Main[void..(class.System.String[])]
 
 Trace 0
-	[start] intensivethreadpooluse!Program.<Main>$(class System.String[])
-	[ end ] intensivethreadpooluse!Program.<Main>$(class System.String[])
+	[start] IntensiveThreadPoolUse.Program.Main[void..(class.System.String[])]
+	[ end ] IntensiveThreadPoolUse.Program.Main[void..(class.System.String[])]
 
