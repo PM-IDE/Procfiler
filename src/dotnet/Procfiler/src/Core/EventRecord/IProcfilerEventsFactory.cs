@@ -53,7 +53,7 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
     var (stamp, managedThreadId) = context;
     var metadata = CreateMethodEventMetadata(methodName);
 
-    return new EventRecordWithMetadata(stamp, eventClass, managedThreadId, metadata)
+    return new EventRecordWithMetadata(stamp, eventClass, managedThreadId, -1, metadata)
     {
       EventName = CreateMethodStartOrEndEventName(eventClass, methodName)
     };
@@ -86,7 +86,7 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
     var (stamp, managedThreadId) = context;
     var metadata = CreateMethodEventMetadata(methodName);
     var name = CreateEventNameForMethodExecutionEvent(methodName);
-    return new EventRecordWithMetadata(stamp, name, managedThreadId, metadata);
+    return new EventRecordWithMetadata(stamp, name, managedThreadId, -1, metadata);
   }
 
   private static string CreateEventNameForMethodExecutionEvent(string fqn) => 

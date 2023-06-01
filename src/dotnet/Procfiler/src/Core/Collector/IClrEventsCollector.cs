@@ -202,7 +202,7 @@ public class ClrEventsCollector : IClrEventsCollector
 
     UpdateStatisticsAfterEventProcession(traceEvent, ref statistics);
     var managedThreadId = traceEvent.GetManagedThreadIdThroughStack(context.Source);
-    var record = new EventRecordWithMetadata(traceEvent, managedThreadId);
+    var record = new EventRecordWithMetadata(traceEvent, managedThreadId, (int)traceEvent.CallStackIndex());
 
     var typeIdToName = TryExtractTypeIdToName(traceEvent, record.Metadata);
     var methodIdToFqn = TryExtractMethodToId(traceEvent, record.Metadata);

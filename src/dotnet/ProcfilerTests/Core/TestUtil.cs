@@ -106,7 +106,7 @@ public static class TestUtil
   {
     var randomStamp = Random.Shared.NextInt64(long.MaxValue);
     var randomManagedThreadId = Random.Shared.Next(10) - 1;
-    return new EventRecordWithMetadata(randomStamp, eventClass, randomManagedThreadId, metadata);
+    return new EventRecordWithMetadata(randomStamp, eventClass, randomManagedThreadId, -1, metadata);
   }
 
   public static EventRecordWithMetadata CreateAbsolutelyRandomEvent()
@@ -114,7 +114,7 @@ public static class TestUtil
     var randomStamp = Random.Shared.NextInt64(long.MaxValue);
     var randomManagedThreadId = Random.Shared.Next(10) - 1;
     return new EventRecordWithMetadata(
-      randomStamp, CreateRandomEventClass(), randomManagedThreadId, new EventMetadata());
+      randomStamp, CreateRandomEventClass(), randomManagedThreadId, -1, new EventMetadata());
   }
 
   public static string CreateRandomEventClass()

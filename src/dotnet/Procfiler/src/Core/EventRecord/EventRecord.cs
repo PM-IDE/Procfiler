@@ -14,7 +14,7 @@ public class EventRecord
   public int StackTraceId { get; }
 
 
-  public EventRecord(long stamp, string eventClass, long managedThreadId, Guid activityId)
+  public EventRecord(long stamp, string eventClass, long managedThreadId, Guid activityId, int stackTraceId)
   {
     ActivityId = activityId;
     Stamp = stamp;
@@ -23,8 +23,8 @@ public class EventRecord
     EventName = EventClass;
   }
 
-  public EventRecord(TraceEvent @event, long managedThreadId)
-    : this(@event.TimeStampQPC, @event.EventName, managedThreadId, @event.ActivityID)
+  public EventRecord(TraceEvent @event, long managedThreadId, int stackTraceId)
+    : this(@event.TimeStampQPC, @event.EventName, managedThreadId, @event.ActivityID, stackTraceId)
   {
   }
 
@@ -35,6 +35,7 @@ public class EventRecord
     ManagedThreadId = other.ManagedThreadId;
     ActivityId = other.ActivityId;
     EventName = other.EventName;
+    StackTraceId = other.StackTraceId;
   }
 
   
@@ -55,15 +56,15 @@ public class EventRecordWithMetadata : EventRecord
   public IEventMetadata Metadata { get; }
 
   
-  public EventRecordWithMetadata(TraceEvent @event, long managedThreadId) 
-    : base(@event, managedThreadId)
+  public EventRecordWithMetadata(TraceEvent @event, long managedThreadId, int stackTraceId) 
+    : base(@event, managedThreadId, stackTraceId)
   {
     Metadata = new EventMetadata(@event);
   }
 
   public EventRecordWithMetadata(
-    long stamp, string eventClass, long managedThreadId, IEventMetadata metadata)
-    : base(stamp, eventClass, managedThreadId, Guid.Empty)
+    long stamp, string eventClass, long managedThreadId, int stackTraceId, IEventMetadata metadata)
+    : base(stamp, eventClass, managedThreadId, Guid.Empty, stackTraceId)
   {
     Metadata = metadata;
   }
