@@ -36,7 +36,7 @@ module ProcfilerScriptsUtils =
         }
         
         Duration = 10_000
-        Repeat = 50 
+        Repeat = 1
     }
 
     let private createProcess fileName args workingDirectory =
@@ -62,9 +62,16 @@ module ProcfilerScriptsUtils =
             | _ ->
                 printfn $"Error happened when building solution {solutionDirectory}/{projectName}:"
                 
+                
+    let rec private findProperParentDirectory (currentDirectory: string) =
+        let name = Path.GetFileName currentDirectory
+        match name with
+        | "src" -> currentDirectory
+        | _ -> findProperParentDirectory (currentDirectory |> Directory.GetParent).FullName
+
     let buildProcfiler =
-        let parentDirectory = Directory.GetCurrentDirectory() |> Directory.GetParent
-        let dir = parentDirectory.Parent.Parent.Parent.Parent.FullName
+        let parentDirectory = (Directory.GetCurrentDirectory() |> Directory.GetParent).FullName
+        let dir = findProperParentDirectory parentDirectory
         let dotnetSourcePath = Path.Combine(dir, "dotnet")
         
         let framework = net7
