@@ -20,4 +20,4 @@ cmdBuilder.UseDefaults();
 var parser = cmdBuilder.Build();
 
 using var cookie = new PerformanceCookie("Program", container.Resolve<IProcfilerLogger>());
-await parser.InvokeAsync(args);
+parser.Invoke(args);
