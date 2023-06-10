@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <UsingTask TaskName="ProcfilerBuildTasks.BuildCppProcfiler" 
-               AssemblyFile="$(SolutionDir)/ProcfilerBuildTasks/bin/$(Configuration)/$(TargetFramework)/ProcfilerBuildTasks.dll" />
+    <UsingTask TaskName="ProcfilerBuildTasks.BuildCppProcfiler" AssemblyFile="$(SolutionDir)/ProcfilerBuildTasks/bin/$(Configuration)/$(TargetFramework)/ProcfilerBuildTasks.dll" />
     
     <PropertyGroup>
         <OutputType>Exe</OutputType>
