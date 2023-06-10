@@ -1,5 +1,4 @@
 using Autofac;
-using JetBrains.Lifetimes;
 using Procfiler.Commands.CollectClrEvents;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
@@ -14,7 +13,7 @@ public abstract class ProcessTestBase : TestWithContainerBase
   
 
   protected void StartProcessAndDoTest(
-    KnownSolution solution, Func<CollectedEvents, Lifetime, ValueTask> testFunc)
+    KnownSolution solution, Func<CollectedEvents, ValueTask> testFunc)
   {
     var pathToSolutionSource = TestPaths.CreatePathToSolutionsSource();
     var context = solution.CreateContext(pathToSolutionSource);
@@ -25,7 +24,7 @@ public abstract class ProcessTestBase : TestWithContainerBase
   protected void StartProcessSplitEventsByThreadsAndDoTest(
     KnownSolution solution, Action<Dictionary<long, IEventsCollection>, SessionGlobalData> testFunc)
   {
-    StartProcessAndDoTest(solution, (events, _) =>
+    StartProcessAndDoTest(solution, events =>
     {
       var eventsByThreads = SplitEventsHelper.SplitByKey(
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);

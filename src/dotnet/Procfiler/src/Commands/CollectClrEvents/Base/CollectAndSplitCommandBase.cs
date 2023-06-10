@@ -46,7 +46,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     Func<EventRecordWithMetadata, TKey> keyExtractor,
     CollectAndSplitContext collectAndSplitContext)
   {
-    return ExecuteCommandAsync(context, async (collectedEvents, lifetime) =>
+    return ExecuteCommandAsync(context, async collectedEvents =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       

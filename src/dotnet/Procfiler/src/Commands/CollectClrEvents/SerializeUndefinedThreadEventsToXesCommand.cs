@@ -32,7 +32,7 @@ public class SerializeUndefinedThreadEventsToXesCommand : CollectCommandBase
     var serializer = new MergingTracesXesSerializer(mySerializer, Logger);
     var outputPath = Path.Combine(context.CommonContext.OutputPath, "UndefinedEvents.xes");
     
-    await ExecuteCommandAsync(context, (collectedEvents, _) =>
+    await ExecuteCommandAsync(context, collectedEvents =>
     {
       var (events, globalData) = collectedEvents;
       var extractor = SplitEventsHelper.ManagedThreadIdExtractor;

@@ -1,4 +1,3 @@
-using JetBrains.Lifetimes;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core;
 using Procfiler.Core.Collector;
@@ -22,7 +21,7 @@ public abstract partial class CollectCommandBase : ICommandWithContext<CollectCl
   
   public abstract ValueTask ExecuteAsync(CollectClrEventsContext context);
 
-  protected ValueTask ExecuteCommandAsync(CollectClrEventsContext context, Func<CollectedEvents, Lifetime, ValueTask> func)
+  protected ValueTask ExecuteCommandAsync(CollectClrEventsContext context, Func<CollectedEvents, ValueTask> func)
   {
     using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(ExecuteCommandAsync)}", Logger);
     ClearPathBeforeProfilingIfNeeded(context.CommonContext);

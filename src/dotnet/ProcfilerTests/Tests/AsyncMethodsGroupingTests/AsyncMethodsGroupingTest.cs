@@ -1,7 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Autofac;
-using JetBrains.Lifetimes;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
@@ -49,34 +48,31 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
     KnownSolution knownSolution,
     Func<IReadOnlyList<EventRecordWithMetadata>, string> tracesDumber)
   {
-    return Lifetime.Using(lifetime =>
+    var processingContext = EventsProcessingContext.DoEverything(events.Events, events.GlobalData);
+    Container.Resolve<IUnitedEventsProcessor>().ProcessFullEventLog(processingContext);
+
+    var splitter = Container.Resolve<IByMethodsSplitter>();
+    var methods = splitter.Split(events, string.Empty, InlineMode.EventsAndMethodsEvents, false, true);
+    var asyncMethodsPrefix = Container.Resolve<IAsyncMethodsGrouper>().AsyncMethodsPrefix;
+
+    var asyncMethods = methods.Where(pair => pair.Key.StartsWith(asyncMethodsPrefix));
+    var sb = new StringBuilder();
+    var filter = new Regex(knownSolution.NamespaceFilterPattern);
+
+    foreach (var (methodName, methodsTraces) in asyncMethods)
     {
-      var processingContext = EventsProcessingContext.DoEverything(events.Events, events.GlobalData);
-      Container.Resolve<IUnitedEventsProcessor>().ProcessFullEventLog(processingContext);
+      if (!filter.IsMatch(methodName)) continue;
 
-      var splitter = Container.Resolve<IByMethodsSplitter>();
-      var methods = splitter.Split(events, lifetime, string.Empty, InlineMode.EventsAndMethodsEvents, false, true);
-      var asyncMethodsPrefix = Container.Resolve<IAsyncMethodsGrouper>().AsyncMethodsPrefix;
-
-      var asyncMethods = methods.Where(pair => pair.Key.StartsWith(asyncMethodsPrefix));
-      var sb = new StringBuilder();
-      var filter = new Regex(knownSolution.NamespaceFilterPattern);
-
-      foreach (var (methodName, methodsTraces) in asyncMethods)
+      sb.Append(methodName);
+      foreach (var trace in methodsTraces.OrderBy(t => t[0].Stamp))
       {
-        if (!filter.IsMatch(methodName)) continue;
-
-        sb.Append(methodName);
-        foreach (var trace in methodsTraces.OrderBy(t => t[0].Stamp))
-        {
-          sb.AppendNewLine().Append("Trace:").AppendNewLine();
-          sb.Append(tracesDumber(trace));
-        }
-
-        sb.AppendNewLine().AppendNewLine();
+        sb.AppendNewLine().Append("Trace:").AppendNewLine();
+        sb.Append(tracesDumber(trace));
       }
 
-      return sb.ToString();
-    });
+      sb.AppendNewLine().AppendNewLine();
+    }
+
+    return sb.ToString();
   }
 }

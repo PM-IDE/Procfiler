@@ -72,7 +72,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThread);
 
-    await ExecuteCommandAsync(context, (events, lifetime) =>
+    await ExecuteCommandAsync(context, events =>
     {
       var (allEvents, globalData) = events;
       var processingContext = EventsProcessingContext.DoEverything(allEvents, globalData);
@@ -83,7 +83,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
       
       var tracesByMethods = mySplitter.Split(
-        events, lifetime, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
+        events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
 
       foreach (var (methodName, traces) in tracesByMethods)
       {

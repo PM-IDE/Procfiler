@@ -9,7 +9,7 @@ public class GoldProcessBasedTest : ProcessTestBase
 {
   protected void ExecuteTestWithGold(KnownSolution solution, Func<CollectedEvents, string> testFunc)
   {
-    StartProcessAndDoTest(solution, async (events, _) =>
+    StartProcessAndDoTest(solution, async events =>
     {
       var testValue = testFunc(events).RemoveRn();
       var pathToGoldFile = CreateGoldFilePath();

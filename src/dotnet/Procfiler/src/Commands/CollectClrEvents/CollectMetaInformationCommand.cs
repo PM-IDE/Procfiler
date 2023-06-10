@@ -22,7 +22,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
 
   public override ValueTask ExecuteAsync(CollectClrEventsContext context)
   {
-    return ExecuteCommandAsync(context, async (events, _) =>
+    return ExecuteCommandAsync(context, async events =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       var map = SplitEventsHelper.SplitByKey(Logger, events.Events, SplitEventsHelper.EventClassKeyExtractor);
