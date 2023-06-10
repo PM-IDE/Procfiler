@@ -47,7 +47,7 @@ public class SerializeUndefinedThreadEventsToXesCommand : CollectCommandBase
       return ValueTask.CompletedTask;
     });
 
-    await serializer.SerializeAll();
+    serializer.SerializeAll();
   }
 
   protected override Command CreateCommandInternal()

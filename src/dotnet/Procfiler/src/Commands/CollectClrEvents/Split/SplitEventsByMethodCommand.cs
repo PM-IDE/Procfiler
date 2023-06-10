@@ -100,7 +100,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
       return ValueTask.CompletedTask;
     });
     
-    await xesSerializer.SerializeAll();
+    xesSerializer.SerializeAll();
   }
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)

@@ -50,7 +50,7 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
     
     var path = context.CommonContext.OutputPath;
     await using var fs = File.OpenWrite(path);
-    await myXesEventsSerializer.SerializeEventsAsync(sessionInfos, fs);
+    myXesEventsSerializer.SerializeEvents(sessionInfos, fs);
   }
 
   protected override Command CreateCommandInternal()

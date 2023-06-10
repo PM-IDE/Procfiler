@@ -1,11 +1,11 @@
 namespace Procfiler.Utils.Xml;
 
-internal readonly struct StartEndElementCookie : IAsyncDisposable
+internal readonly struct StartEndElementCookie : IDisposable
 {
-  public static async Task<StartEndElementCookie> CreateStartElementAsync(
+  public static StartEndElementCookie CreateStartEndElement(
     XmlWriter xmlWriter, string? prefix, string tagName, string? @namespace)
   {
-    await xmlWriter.WriteStartElementAsync(prefix, tagName, @namespace);
+    xmlWriter.WriteStartElement(prefix, tagName, @namespace);
     return new StartEndElementCookie(xmlWriter);
   }
   
@@ -18,9 +18,6 @@ internal readonly struct StartEndElementCookie : IAsyncDisposable
     myXmlWriter = xmlWriter;
   }
 
-  
-  public ValueTask DisposeAsync()
-  {
-    return new ValueTask(myXmlWriter.WriteEndElementAsync());
-  }
+
+  public void Dispose() => myXmlWriter.WriteEndElement();
 }
