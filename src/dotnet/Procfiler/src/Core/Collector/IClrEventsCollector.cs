@@ -26,7 +26,7 @@ public record ClrEventsCollectionContextWithBinaryStacks(
 
 public interface IClrEventsCollector
 {
-  ValueTask<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context);
+  Task<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context);
 }
 
 [AppComponent]
@@ -54,13 +54,13 @@ public class ClrEventsCollector : IClrEventsCollector
   }
 
 
-  public async ValueTask<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context)
+  public async Task<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context)
   {
     try
     {
       using var tempPathCookie = new TempFileCookie(myLogger);
       var (pid, duration, timeout, category) = context;
-      await ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
+      await ListenToProcessAndWriteToFileAsync(pid, duration, timeout, category, tempPathCookie);
       var binaryStacksPath = context switch
       {
         ClrEventsCollectionContextWithBinaryStacks ctx => ctx.PathToBinaryStacks,
@@ -76,14 +76,14 @@ public class ClrEventsCollector : IClrEventsCollector
     }
   }
 
-  private async ValueTask ListenToProcessAndWriteToFile(
+  private async Task ListenToProcessAndWriteToFileAsync(
     int processId,
     int durationMs,
     int maxWaitForLogWriteTimeoutMs,
     ProvidersCategoryKind category,
     TempFileCookie tempPathCookie)
   {
-    using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFile), myLogger);
+    using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFileAsync), myLogger);
     
     var client = new DiagnosticsClient(processId);
     myTransportCreationWaiter.WaitUntilTransportIsCreatedOrThrow(processId);

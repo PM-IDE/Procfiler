@@ -33,11 +33,11 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
   }
   
   
-  public override async ValueTask ExecuteAsync(CollectClrEventsContext context)
+  public override void Execute(CollectClrEventsContext context)
   {
     var sessionInfos = new List<EventSessionInfo>();
     
-    await ExecuteCommandAsync(context, collectedEvents =>
+    ExecuteCommand(context, collectedEvents =>
     {
       var (events, globalData) = collectedEvents;
       var processingContext = EventsProcessingContext.DoEverythingWithoutMethodStartEnd(events, globalData);
@@ -45,11 +45,10 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
       var eventsByThreadIds = SplitEventsHelper.SplitByKey(Logger, events, SplitEventsHelper.ManagedThreadIdExtractor);
       var sessionInfo = new EventSessionInfo(eventsByThreadIds.Values, globalData);
       sessionInfos.Add(sessionInfo);
-      return ValueTask.CompletedTask;
     });
     
     var path = context.CommonContext.OutputPath;
-    await using var fs = File.OpenWrite(path);
+    using var fs = File.OpenWrite(path);
     myXesEventsSerializer.SerializeEvents(sessionInfos, fs);
   }
 

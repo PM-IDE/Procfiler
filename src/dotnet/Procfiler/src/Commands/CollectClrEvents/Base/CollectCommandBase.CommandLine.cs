@@ -7,7 +7,9 @@ namespace Procfiler.Commands.CollectClrEvents.Base;
 
 public abstract partial class CollectCommandBase
 {
-  public async Task<int> InvokeAsync(InvocationContext context)
+  public Task<int> InvokeAsync(InvocationContext context) => Task.Run(() => Invoke(context));
+
+  public int Invoke(InvocationContext context)
   {
     var parseResult = context.ParseResult;
     if (CheckForParserErrors(parseResult)) return -1;
@@ -16,7 +18,7 @@ public abstract partial class CollectCommandBase
     
     try
     {
-      await ExecuteAsync(CreateCollectClrContextFrom(parseResult));
+      Execute(CreateCollectClrContextFrom(parseResult));
     }
     catch (Exception ex)
     {
@@ -26,8 +28,6 @@ public abstract partial class CollectCommandBase
 
     return 0;
   }
-
-  public int Invoke(InvocationContext context) => InvokeAsync(context).GetAwaiter().GetResult();
 
   public Command CreateCommand()
   {

@@ -20,9 +20,9 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
   }
 
 
-  public override ValueTask ExecuteAsync(CollectClrEventsContext context)
+  public override void Execute(CollectClrEventsContext context)
   {
-    return ExecuteCommandAsync(context, async events =>
+    ExecuteCommand(context, events =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       var map = SplitEventsHelper.SplitByKey(Logger, events.Events, SplitEventsHelper.EventClassKeyExtractor);
@@ -40,7 +40,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
           }
         }
 
-        await SerializeMetadata(context, name, payloadValues);
+        SerializeMetadata(context, name, payloadValues);
       }
     });
   }
@@ -48,7 +48,7 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
   protected override Command CreateCommandInternal() => 
     new("meta-info", "Collects meta-information about CLR events received during listening to process");
 
-  private static async ValueTask SerializeMetadata(
+  private static void SerializeMetadata(
     CollectClrEventsContext context, 
     string name,
     Dictionary<string, Dictionary<string, int>> payloadValues)
@@ -56,19 +56,19 @@ public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInf
     var outputFormat = context.CommonContext.SerializationContext.OutputFormat;
     var extension = outputFormat.GetExtension();
     var pathToMetadataFile = Path.Combine(context.CommonContext.OutputPath, $"{name}.{extension}");
-    await using var fs = new FileStream(pathToMetadataFile, FileMode.OpenOrCreate, FileAccess.Write);
-    await using var sw = new StreamWriter(fs);
+    using var fs = new FileStream(pathToMetadataFile, FileMode.OpenOrCreate, FileAccess.Write);
+    using var sw = new StreamWriter(fs);
 
     switch (outputFormat)
     {
       case FileFormat.Csv:
       {
-        await sw.WriteLineAsync("PayloadName;PayloadValue;Count");
+        sw.WriteLine("PayloadName;PayloadValue;Count");
         foreach (var (payloadName, valuesCount) in payloadValues)
         {
           foreach (var (valueString, count) in valuesCount)
           {
-            await sw.WriteLineAsync($"{payloadName};{valueString};{count}");
+            sw.WriteLine($"{payloadName};{valueString};{count}");
           }
         }
 

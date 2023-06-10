@@ -13,12 +13,12 @@ public abstract class ProcessTestBase : TestWithContainerBase
   
 
   protected void StartProcessAndDoTest(
-    KnownSolution solution, Func<CollectedEvents, ValueTask> testFunc)
+    KnownSolution solution, Action<CollectedEvents> testAction)
   {
     var pathToSolutionSource = TestPaths.CreatePathToSolutionsSource();
     var context = solution.CreateContext(pathToSolutionSource);
 
-    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testFunc).AsTask().Wait();
+    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(
@@ -29,7 +29,6 @@ public abstract class ProcessTestBase : TestWithContainerBase
       var eventsByThreads = SplitEventsHelper.SplitByKey(
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
       testFunc(eventsByThreads, events.GlobalData);
-      return ValueTask.CompletedTask;
     });
   }
 }

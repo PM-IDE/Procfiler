@@ -9,19 +9,19 @@ public class GoldProcessBasedTest : ProcessTestBase
 {
   protected void ExecuteTestWithGold(KnownSolution solution, Func<CollectedEvents, string> testFunc)
   {
-    StartProcessAndDoTest(solution, async events =>
+    StartProcessAndDoTest(solution, events =>
     {
       var testValue = testFunc(events).RemoveRn();
       var pathToGoldFile = CreateGoldFilePath();
       if (!File.Exists(pathToGoldFile))
       {
-        await using var fs = File.CreateText(CreateTmpFilePath());
-        await fs.WriteAsync(testValue);
+        using var fs = File.CreateText(CreateTmpFilePath());
+        fs.WriteAsync(testValue);
         Assert.Fail($"There was not gold file at {pathToGoldFile}");
         return;
       }
 
-      var goldValue = (await File.ReadAllTextAsync(pathToGoldFile)).RemoveRn();
+      var goldValue = File.ReadAllText(pathToGoldFile).RemoveRn();
       if (goldValue != testValue)
       {
         var sb = new StringBuilder();
@@ -31,8 +31,8 @@ public class GoldProcessBasedTest : ProcessTestBase
           .Append("Gold value:").AppendNewLine()
           .Append(goldValue).AppendNewLine();
 
-        await using var fs = File.CreateText(CreateTmpFilePath());
-        await fs.WriteAsync(testValue);
+        using var fs = File.CreateText(CreateTmpFilePath());
+        fs.Write(testValue);
         
         Assert.Fail(sb.ToString());
       }

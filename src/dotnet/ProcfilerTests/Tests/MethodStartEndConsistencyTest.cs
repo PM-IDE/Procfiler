@@ -28,8 +28,6 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
         processor.ApplyMultipleMutators(eventsForThread, globalData, EmptyCollections<Type>.EmptySet);
         TestUtil.CheckMethodConsistencyOrThrow(threadId, eventsForThread, globalData, Container);
       }
-
-      return ValueTask.CompletedTask;
     });
   }
 }

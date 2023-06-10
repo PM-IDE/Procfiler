@@ -16,8 +16,6 @@ public class EventMetadataTestWithRealEventsTest : ProcessTestBase
       {
         DoTestWithMetadata(eventRecord.Metadata);
       }
-      
-      return ValueTask.CompletedTask;
     });
   }
 

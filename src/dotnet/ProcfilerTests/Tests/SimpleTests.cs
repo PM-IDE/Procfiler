@@ -18,8 +18,6 @@ public class SimpleTests : ProcessTestBase
       
       var orderedKeys = eventsByThreads.Keys.OrderByDescending(static key => key);
       Assert.That(orderedKeys.Last(), Is.EqualTo(-1));
-      
-      return ValueTask.CompletedTask;
     });
   }
 
@@ -40,8 +38,6 @@ public class SimpleTests : ProcessTestBase
       
       var count = eventsByNames.Select(e => e.Value.Count).Aggregate((x, y) => x + y);
       Assert.That(count, Is.EqualTo(events.Events.Count));
-      
-      return ValueTask.CompletedTask;
     });
   }
 }

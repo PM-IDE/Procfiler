@@ -27,12 +27,12 @@ public class SerializeUndefinedThreadEventsToXesCommand : CollectCommandBase
   }
 
 
-  public override async ValueTask ExecuteAsync(CollectClrEventsContext context)
+  public override void Execute(CollectClrEventsContext context)
   {
     var serializer = new MergingTracesXesSerializer(mySerializer, Logger);
     var outputPath = Path.Combine(context.CommonContext.OutputPath, "UndefinedEvents.xes");
     
-    await ExecuteCommandAsync(context, collectedEvents =>
+    ExecuteCommand(context, collectedEvents =>
     {
       var (events, globalData) = collectedEvents;
       var extractor = SplitEventsHelper.ManagedThreadIdExtractor;
@@ -44,7 +44,6 @@ public class SerializeUndefinedThreadEventsToXesCommand : CollectCommandBase
       var sessionInfo = new EventSessionInfo(new [] { undefinedThreadEvents }, globalData);
       
       serializer.AddTrace(outputPath, sessionInfo);
-      return ValueTask.CompletedTask;
     });
 
     serializer.SerializeAll();

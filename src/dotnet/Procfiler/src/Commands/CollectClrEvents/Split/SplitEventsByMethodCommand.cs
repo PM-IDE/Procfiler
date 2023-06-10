@@ -63,7 +63,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
   }
 
 
-  public override async ValueTask ExecuteAsync(CollectClrEventsContext context)
+  public override void Execute(CollectClrEventsContext context)
   {
     using var _ = new PerformanceCookie("SplittingEventsByMethods", Logger);
 
@@ -72,7 +72,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThread);
 
-    await ExecuteCommandAsync(context, events =>
+    ExecuteCommand(context, events =>
     {
       var (allEvents, globalData) = events;
       var processingContext = EventsProcessingContext.DoEverything(allEvents, globalData);
@@ -96,8 +96,6 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
           xesSerializer.AddTrace(filePath, sessionInfo);
         }
       }
-
-      return ValueTask.CompletedTask;
     });
     
     xesSerializer.SerializeAll();

@@ -19,14 +19,14 @@ public abstract partial class CollectCommandBase : ICommandWithContext<CollectCl
   }
 
   
-  public abstract ValueTask ExecuteAsync(CollectClrEventsContext context);
+  public abstract void Execute(CollectClrEventsContext context);
 
-  protected ValueTask ExecuteCommandAsync(CollectClrEventsContext context, Func<CollectedEvents, ValueTask> func)
+  protected void ExecuteCommand(CollectClrEventsContext context, Action<CollectedEvents> commandAction)
   {
-    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(ExecuteCommandAsync)}", Logger);
+    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(ExecuteCommand)}", Logger);
     ClearPathBeforeProfilingIfNeeded(context.CommonContext);
     
-    return myCommandExecutor.Execute(context, func);
+    myCommandExecutor.Execute(context, commandAction);
   }
 
   private void ClearPathBeforeProfilingIfNeeded(CollectingClrEventsCommonContext commonContext)
