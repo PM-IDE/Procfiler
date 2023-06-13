@@ -40,6 +40,8 @@ public class MethodStartEndModificationSource : ModificationSourceBase
     SessionGlobalData globalData,
     ICppShadowStack shadowStack) : base(shadowStack.FramesCount)
   {
+    Debug.Assert(shadowStack.FramesCount > 0);
+    
     myLogger = logger;
     myGlobalData = globalData;
     myShadowStack = shadowStack;

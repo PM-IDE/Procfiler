@@ -10,6 +10,7 @@ public readonly struct DotnetProcessLauncherDto
   public required bool RedirectOutput { get; init; }
   public required string BinaryStacksSavePath { get; init; }
   public required string CppProcfilerPath { get; init; }
+  public required string? MethodsFilterRegex { get; init; }
 }
 
 public interface IDotnetProcessLauncher
@@ -48,6 +49,11 @@ public class DotnetProcessLauncher : IDotnetProcessLauncher
       }
     };
 
+    if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
+    {
+      startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
+    }
+    
     var process = new Process
     {
       StartInfo = startInfo,

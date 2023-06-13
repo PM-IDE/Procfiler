@@ -30,15 +30,17 @@ public enum InlineMode
 [CommandLineCommand]
 public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMethodCommand
 {
+  public static Option<string> FilterOption { get; } = new("--filter", static () => string.Empty, "Regex to filter");
+
+  
   private readonly IUnitedEventsProcessor myUnitedEventsProcessor;
   private readonly IXesEventsSerializer myXesEventsSerializer;
   private readonly IByMethodsSplitter mySplitter;
   private readonly IFullMethodNameBeautifier myMethodNameBeautifier;
 
+  
   private Option<bool> GroupAsyncMethods { get; } =
     new("--group-async-methods", static () => true, "Group events from async methods");
-
-  private Option<string> FilterOption { get; } = new("--filter", static () => string.Empty, "Regex to filter");
 
   private Option<InlineMode> InlineInnerMethodsCalls { get; } = 
     new("--inline", static () => InlineMode.NotInline, "Should we inline inner methods calls to all previous traces");

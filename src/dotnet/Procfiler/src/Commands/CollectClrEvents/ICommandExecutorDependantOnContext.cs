@@ -1,4 +1,5 @@
 ﻿using Procfiler.Commands.CollectClrEvents.Context;
+using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.Processes;
@@ -130,7 +131,8 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
         RedirectOutput = context.CommonContext.PrintProcessOutput,
         PathToDotnetExecutable = buildResult.BuiltDllPath,
         CppProcfilerPath = myCppProcfilerLocator.FindCppProcfilerPath(),
-        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(buildResult)
+        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(buildResult),
+        MethodsFilterRegex = context.CommonContext.CommandParseResult.TryGetOptionValue(SplitEventsByMethodCommand.FilterOption)
       };
       
       if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
