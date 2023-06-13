@@ -1,3 +1,4 @@
+using System.CommandLine;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
 using Procfiler.Core.InstrumentalProfiler;
@@ -22,6 +23,14 @@ public static class KnownSolutionExtensions
   {
     var serializationContext = new SerializationContext(FileFormat.Csv);
     return new CollectingClrEventsCommonContext(
-      string.Empty, serializationContext, null, string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000, false);
+      string.Empty, serializationContext, new TestParseResultsProvider(), string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000, false);
+  }
+}
+
+internal class TestParseResultsProvider : IParseResultInfoProvider
+{
+  public T? TryGetOptionValue<T>(Option<T> option)
+  {
+    return default;
   }
 }

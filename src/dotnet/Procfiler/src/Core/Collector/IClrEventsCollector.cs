@@ -26,7 +26,7 @@ public record ClrEventsCollectionContextWithBinaryStacks(
 
 public interface IClrEventsCollector
 {
-  Task<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context);
+  CollectedEvents CollectEvents(ClrEventsCollectionContext context);
 }
 
 [AppComponent]
@@ -54,13 +54,13 @@ public class ClrEventsCollector : IClrEventsCollector
   }
 
 
-  public async Task<CollectedEvents> CollectEventsAsync(ClrEventsCollectionContext context)
+  public CollectedEvents CollectEvents(ClrEventsCollectionContext context)
   {
     try
     {
       using var tempPathCookie = new TempFileCookie(myLogger);
       var (pid, duration, timeout, category) = context;
-      await ListenToProcessAndWriteToFileAsync(pid, duration, timeout, category, tempPathCookie);
+      ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
       var binaryStacksPath = context switch
       {
         ClrEventsCollectionContextWithBinaryStacks ctx => ctx.PathToBinaryStacks,
@@ -71,19 +71,19 @@ public class ClrEventsCollector : IClrEventsCollector
     }
     catch (Exception ex)
     {
-      myLogger.LogError("{Method}: {Message}", nameof(CollectEventsAsync), ex.Message);
+      myLogger.LogError("{Method}: {Message}", nameof(CollectEvents), ex.Message);
       throw;
     }
   }
 
-  private async Task ListenToProcessAndWriteToFileAsync(
+  private void ListenToProcessAndWriteToFile(
     int processId,
     int durationMs,
     int maxWaitForLogWriteTimeoutMs,
     ProvidersCategoryKind category,
     TempFileCookie tempPathCookie)
   {
-    using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFileAsync), myLogger);
+    using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFile), myLogger);
     
     var client = new DiagnosticsClient(processId);
     myTransportCreationWaiter.WaitUntilTransportIsCreatedOrThrow(processId);
@@ -91,15 +91,17 @@ public class ClrEventsCollector : IClrEventsCollector
     using var session = client.StartEventPipeSession(providers, circularBufferMB: 2048);
     client.ResumeRuntime();
 
-    await using var fs = new FileStream(tempPathCookie.FullFilePath, FileMode.Create, FileAccess.Write);
+    using var fs = new FileStream(tempPathCookie.FullFilePath, FileMode.Create, FileAccess.Write);
     var copyTask = session.EventStream.CopyToAsync(fs);
-    var firstFinishedTask = await Task.WhenAny(Task.Delay(durationMs), copyTask);
+    var whenAnyTask = Task.WhenAny(Task.Delay(durationMs), copyTask);
+    whenAnyTask.Wait();
+    var firstFinishedTask = whenAnyTask.Result;
 
     if (firstFinishedTask != copyTask)
     {
       try
       {
-        await session.StopAsync(CancellationToken.None);
+        session.StopAsync(CancellationToken.None).Wait();
       }
       catch (ServerNotAvailableException)
       {
@@ -108,13 +110,15 @@ public class ClrEventsCollector : IClrEventsCollector
     }
 
     var delayTask = Task.Delay(maxWaitForLogWriteTimeoutMs);
-    firstFinishedTask = await Task.WhenAny(copyTask, delayTask);
+    whenAnyTask = Task.WhenAny(copyTask, delayTask);
+    whenAnyTask.Wait();
+    firstFinishedTask = whenAnyTask.Result;
 
     if (firstFinishedTask == delayTask)
     {
       myLogger.LogInformation("The timeout for waiting for ending of write event pipe logs has expired");
       myLogger.LogInformation("Now we will wait until the writing of events to temp file will be finished");
-      await copyTask;
+      copyTask.Wait();
     }
   }
 

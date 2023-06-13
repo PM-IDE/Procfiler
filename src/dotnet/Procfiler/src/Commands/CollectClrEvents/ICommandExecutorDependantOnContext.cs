@@ -105,8 +105,8 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     var (_, _, _, _, category, _, duration, timeout, _) = context.CommonContext;
     var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
       processId, duration, timeout, category, binaryStacksPath);
-    
-    return myClrEventsCollector.CollectEventsAsync(collectionContext).GetAwaiter().GetResult();
+
+    return myClrEventsCollector.CollectEvents(collectionContext);
   }
 
   private void ExecuteCommandWithLaunchingProcess(
