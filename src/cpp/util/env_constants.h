@@ -8,6 +8,8 @@ const std::string enableConsoleLogging = "PROCFILER_ENABLE_CONSOLE_LOGGING";
 const std::string binaryStackSavePath = "PROCFILER_BINARY_SAVE_STACKS_PATH";
 const std::string eventPipeSaveShadowStack = "PROCFILER_EVENT_PIPE_SAVE_STACKS";
 
+const std::string filterMethodsRegex = "PROCFILER_FILTER_METHODS_REGEX";
+
 
 bool IsEnvVarDefined(const std::string& envVarName);
 bool TryGetEnvVar(const std::string& envVarName, std::string& value);
