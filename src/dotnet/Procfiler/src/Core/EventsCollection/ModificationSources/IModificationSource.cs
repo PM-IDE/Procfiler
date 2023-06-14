@@ -49,19 +49,6 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   }
 
   
-  protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
-  {
-    foreach (var frameInfo in myShadowStack)
-    {
-      var creationContext = new FromFrameInfoCreationContext
-      {
-        FrameInfo = frameInfo,
-        GlobalData = myGlobalData,
-        ManagedThreadId = myShadowStack.ManagedThreadId
-      };
-
-      var createdMethodEvent = myEventsFactory.CreateMethodEvent(creationContext);
-      yield return createdMethodEvent;
-    }
-  }
+  protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() => 
+    myShadowStack.EnumerateMethods(myEventsFactory, myGlobalData);
 }
