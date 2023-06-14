@@ -28,7 +28,7 @@ public class SplitEventsByCategoriesCommand : CollectAndSplitCommandBase<string>
   }
 
 
-  public override ValueTask ExecuteAsync(CollectClrEventsContext context) => 
+  public override void Execute(CollectClrEventsContext context) => 
     ExecuteSimpleSplitCommand(context, SplitEventsHelper.EventClassKeyExtractor, CollectAndSplitContext.DoNothing);
 
   protected override Command CreateCommandInternal() => 

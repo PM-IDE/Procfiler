@@ -10,7 +10,7 @@ namespace Procfiler.Core.Serialization.XES;
 
 public interface IXesEventsSerializer
 {
-  Task SerializeEventsAsync(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
+  void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
 }
 
 [AppComponent]
@@ -28,112 +28,111 @@ public partial class XesEventsSerializer : IXesEventsSerializer
   }
 
 
-  public async Task SerializeEventsAsync(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
+  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
   {
-    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEventsAsync)}", myLogger);
+    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", myLogger);
 
-    await using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+    using var writer = XmlWriter.Create(stream, new XmlWriterSettings
     {
       Indent = true,
-      Async = true
     });
 
-    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, LogTagName, null);
-    await WriteHeaderAsync(writer);
+    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, LogTagName, null);
+    WriteHeader(writer);
 
     var traceNum = 0;
     foreach (var sessionInfo in eventsTraces)
     {
-      await WriteTrace(traceNum++, sessionInfo, writer);
+      WriteTrace(traceNum++, sessionInfo, writer);
     }
   }
 
-  private static async Task WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
+  private static void WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
   {
-    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, TraceTagName, null);
-    await WriteStringValueTagAsync(writer, ConceptName, traceNum.ToString());
+    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, TraceTagName, null);
+    WriteStringValueTag(writer, ConceptName, traceNum.ToString());
 
     foreach (var (_, currentEvent) in new OrderedEventsEnumerator(sessionInfo.Events))
     {
-      await WriteEventNodeAsync(writer, currentEvent);
+      WriteEventNode(writer, currentEvent);
     }
   }
 
-  private static async Task WriteEventNodeAsync(XmlWriter writer, EventRecordWithMetadata currentEvent)
+  private static void WriteEventNode(XmlWriter writer, EventRecordWithMetadata currentEvent)
   {
-    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, EventTag, null);
+    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, EventTag, null);
     
-    await WriteDateTagAsync(writer, currentEvent.Stamp);
-    await WriteStringValueTagAsync(writer, ConceptName, currentEvent.EventName);
-    await WriteStringValueTagAsync(writer, EventId, (ourNextEventId++).ToString());
-    await WriteStringValueTagAsync(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
+    WriteDateTag(writer, currentEvent.Stamp);
+    WriteStringValueTag(writer, ConceptName, currentEvent.EventName);
+    WriteStringValueTag(writer, EventId, (ourNextEventId++).ToString());
+    WriteStringValueTag(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
     
-    await AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
+    AddMetadataValueIfPresentAndRemoveFromMetadata(
       writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
     
-    await AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
+    AddMetadataValueIfPresentAndRemoveFromMetadata(
       writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
   }
 
-  private static async Task AddMetadataValueIfPresentAndRemoveFromMetadataAsync(
+  private static void AddMetadataValueIfPresentAndRemoveFromMetadata(
     XmlWriter writer, EventRecordWithMetadata eventRecord, string metadataKey, string attributeName)
   {
     if (eventRecord.Metadata.TryGetValue(metadataKey, out var value))
     {
-      await WriteStringValueTagAsync(writer, attributeName, value);
+      WriteStringValueTag(writer, attributeName, value);
       eventRecord.Metadata.Remove(metadataKey);
     }
   }
 
-  private static async Task WriteHeaderAsync(XmlWriter writer)
+  private static void WriteHeader(XmlWriter writer)
   {
-    await writer.WriteAttributeStringAsync(null, XesVersion, null, "1849.2016");
-    await writer.WriteAttributeStringAsync(null, XesFeatures, null, string.Empty);
+    writer.WriteAttributeString(null, XesVersion, null, "1849.2016");
+    writer.WriteAttributeString(null, XesFeatures, null, string.Empty);
 
-    await WriteExtensionTagAsync(writer, "MetaData_Time", "meta_time", "http://www.xes-standard.org/meta_time.xesext");
-    await WriteExtensionTagAsync(writer, "Lifecycle", "lifecycle", "http://www.xes-standard.org/lifecycle.xesext");
-    await WriteExtensionTagAsync(writer, "MetaData_LifeCycle", "meta_life", "http://www.xes-standard.org/meta_life.xesext");
-    await WriteExtensionTagAsync(writer, "Organizational", "org", "http://www.xes-standard.org/org.xesext");
-    await WriteExtensionTagAsync(writer, "MetaData_Organization", "meta_org", "http://www.xes-standard.org/meta_org.xesext");
-    await WriteExtensionTagAsync(writer, "Time", "time", "http://www.xes-standard.org/time.xesext");
-    await WriteExtensionTagAsync(writer, "MetaData_Concept", "meta_concept", "http://www.xes-standard.org/meta_concept.xesext");
-    await WriteExtensionTagAsync(writer, "MetaData_Completeness", "meta_completeness", "http://www.xes-standard.org/meta_completeness.xesext");
-    await WriteExtensionTagAsync(writer, "MetaData_3TU", "meta_3TU", "http://www.xes-standard.org/meta_3TU.xesext");
-    await WriteExtensionTagAsync(writer, "Concept", "concept", "http://www.xes-standard.org/concept.xesext");
-    await WriteExtensionTagAsync(writer, "MetaData_General", "meta_general", "http://www.xes-standard.org/meta_general.xesext");
+    WriteExtensionTag(writer, "MetaData_Time", "meta_time", "http://www.xes-standard.org/meta_time.xesext");
+    WriteExtensionTag(writer, "Lifecycle", "lifecycle", "http://www.xes-standard.org/lifecycle.xesext");
+    WriteExtensionTag(writer, "MetaData_LifeCycle", "meta_life", "http://www.xes-standard.org/meta_life.xesext");
+    WriteExtensionTag(writer, "Organizational", "org", "http://www.xes-standard.org/org.xesext");
+    WriteExtensionTag(writer, "MetaData_Organization", "meta_org", "http://www.xes-standard.org/meta_org.xesext");
+    WriteExtensionTag(writer, "Time", "time", "http://www.xes-standard.org/time.xesext");
+    WriteExtensionTag(writer, "MetaData_Concept", "meta_concept", "http://www.xes-standard.org/meta_concept.xesext");
+    WriteExtensionTag(writer, "MetaData_Completeness", "meta_completeness", "http://www.xes-standard.org/meta_completeness.xesext");
+    WriteExtensionTag(writer, "MetaData_3TU", "meta_3TU", "http://www.xes-standard.org/meta_3TU.xesext");
+    WriteExtensionTag(writer, "Concept", "concept", "http://www.xes-standard.org/concept.xesext");
+    WriteExtensionTag(writer, "MetaData_General", "meta_general", "http://www.xes-standard.org/meta_general.xesext");
   }
 
-  private static async Task WriteExtensionTagAsync(XmlWriter writer, string name, string prefix, string uri)
+  private static void WriteExtensionTag(XmlWriter writer, string name, string prefix, string uri)
   {
-    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, Extension, null);
-    await writer.WriteAttributeStringAsync(null, Name, null, name);
-    await writer.WriteAttributeStringAsync(null, Prefix, null, prefix);
-    await writer.WriteAttributeStringAsync(null, Uri, null, uri);
+    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, Extension, null);
+    writer.WriteAttributeString(null, Name, null, name);
+    writer.WriteAttributeString(null, Prefix, null, prefix);
+    writer.WriteAttributeString(null, Uri, null, uri);
   }
 
-  private static async Task WriteStringValueTagAsync(XmlWriter writer, string key, string value)
+  private static void WriteStringValueTag(XmlWriter writer, string key, string value)
   {
-    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, StringTagName, null);
-    await WriteKeyAttributeAsync(writer, key);
-    await WriteAttributeAsync(writer, ValueAttr, value);
+    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, StringTagName, null);
+    WriteKeyAttribute(writer, key);
+    WriteAttribute(writer, ValueAttr, value);
   }
 
-  private static async Task WriteDateTagAsync(XmlWriter writer, long stamp)
+  private static void WriteDateTag(XmlWriter writer, long stamp)
   {
-    await using var _ = await StartEndElementCookie.CreateStartElementAsync(writer, null, DateTag, null);
-    await WriteKeyAttributeAsync(writer, DateTimeKey);
+    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, DateTag, null);
+    WriteKeyAttribute(writer, DateTimeKey);
     
     var dateString = new DateTime(stamp).ToUniversalTime().ToString("O");
-    await WriteAttributeAsync(writer, ValueAttr, dateString);
+    WriteAttribute(writer, ValueAttr, dateString);
   }
 
-  private static Task WriteAttributeAsync(XmlWriter writer, string name, string value)
+  private static void WriteAttribute(XmlWriter writer, string name, string value)
   {
-    return writer.WriteAttributeStringAsync(null, name, null, value);
+    writer.WriteAttributeString(null, name, null, value);
   }
 
-  private static Task WriteKeyAttributeAsync(XmlWriter writer, string value)
+  private static void WriteKeyAttribute(XmlWriter writer, string value)
   {
-    return writer.WriteAttributeStringAsync(null, Key, null, value);
+    writer.WriteAttributeString(null, Key, null, value);
   }
 }

@@ -35,10 +35,9 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
   private readonly IByMethodsSplitter mySplitter;
   private readonly IFullMethodNameBeautifier myMethodNameBeautifier;
 
+  
   private Option<bool> GroupAsyncMethods { get; } =
     new("--group-async-methods", static () => true, "Group events from async methods");
-
-  private Option<string> FilterOption { get; } = new("--filter", static () => string.Empty, "Regex to filter");
 
   private Option<InlineMode> InlineInnerMethodsCalls { get; } = 
     new("--inline", static () => InlineMode.NotInline, "Should we inline inner methods calls to all previous traces");
@@ -63,7 +62,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
   }
 
 
-  public override async ValueTask ExecuteAsync(CollectClrEventsContext context)
+  public override void Execute(CollectClrEventsContext context)
   {
     using var _ = new PerformanceCookie("SplittingEventsByMethods", Logger);
 
@@ -72,7 +71,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThread);
 
-    await ExecuteCommandAsync(context, (events, lifetime) =>
+    ExecuteCommand(context, events =>
     {
       var (allEvents, globalData) = events;
       var processingContext = EventsProcessingContext.DoEverything(allEvents, globalData);
@@ -83,7 +82,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
       
       var tracesByMethods = mySplitter.Split(
-        events, lifetime, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
+        events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
 
       foreach (var (methodName, traces) in tracesByMethods)
       {
@@ -96,11 +95,9 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
           xesSerializer.AddTrace(filePath, sessionInfo);
         }
       }
-
-      return ValueTask.CompletedTask;
     });
     
-    await xesSerializer.SerializeAll();
+    xesSerializer.SerializeAll();
   }
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)
@@ -138,7 +135,6 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     var splitByMethodsCommand = new Command(CommandName, CommandDescription);
     
     splitByMethodsCommand.AddOption(RepeatOption);
-    splitByMethodsCommand.AddOption(FilterOption);
     splitByMethodsCommand.AddOption(InlineInnerMethodsCalls);
     splitByMethodsCommand.AddOption(GroupAsyncMethods);
     

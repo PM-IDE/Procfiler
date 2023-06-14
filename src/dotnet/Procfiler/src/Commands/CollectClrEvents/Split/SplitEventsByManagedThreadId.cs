@@ -36,7 +36,7 @@ public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<long>, IS
   }
 
 
-  public override ValueTask ExecuteAsync(CollectClrEventsContext context)
+  public override void Execute(CollectClrEventsContext context)
   {
     var parseResult = context.CommonContext.CommandParseResult;
     var collectAndSplitContext = CollectAndSplitContext.DoEverything with
@@ -44,7 +44,7 @@ public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<long>, IS
       MergeFromUndefinedThread = parseResult.TryGetOptionValue(MergeFromUndefinedThread)
     };
     
-    return ExecuteSimpleSplitCommand(context, SplitEventsHelper.ManagedThreadIdExtractor, collectAndSplitContext);
+    ExecuteSimpleSplitCommand(context, SplitEventsHelper.ManagedThreadIdExtractor, collectAndSplitContext);
   }
 
   protected override KeyValuePair<long, IEventsCollection?>? FindEventsForUndefinedThread(

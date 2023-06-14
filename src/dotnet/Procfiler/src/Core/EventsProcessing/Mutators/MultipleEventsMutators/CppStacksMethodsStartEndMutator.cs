@@ -43,6 +43,12 @@ public class CppStacksMethodsStartEndMutator : IMethodsStartEndProcessor
       return;
     }
 
+    if (foundShadowStack.FramesCount == 0)
+    {
+      myLogger.LogWarning("Skipping shadow stack for {Id} because it does not contain frames", managedThreadId);
+      return;
+    }
+    
     var modificationSource = new MethodStartEndModificationSource(myLogger, myFactory, context, foundShadowStack);
     events.InjectModificationSource(modificationSource);
   }

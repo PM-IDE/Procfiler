@@ -1,4 +1,3 @@
-using JetBrains.Lifetimes;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventRecord;
@@ -14,7 +13,6 @@ public interface IByMethodsSplitter
 {
   Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
-    Lifetime lifetime,
     string filterPattern,
     InlineMode inlineMode,
     bool mergeUndefinedThreadEvents,
@@ -51,7 +49,6 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
   
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
-    Lifetime lifetime,
     string filterPattern,
     InlineMode inlineMode,
     bool mergeUndefinedThreadEvents,

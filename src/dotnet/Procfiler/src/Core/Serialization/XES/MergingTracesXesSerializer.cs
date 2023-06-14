@@ -23,13 +23,13 @@ public class MergingTracesXesSerializer
     myDocuments.GetOrCreate(path, static () => new List<EventSessionInfo>()).Add(sessionInfo);
   }
 
-  public async ValueTask SerializeAll()
+  public void SerializeAll()
   {
     using var _ = new PerformanceCookie($"{GetType()}::{nameof(SerializeAll)}", myLogger);
     foreach (var (path, sessions) in myDocuments)
     {
-      await using var fs = File.OpenWrite(path);
-      await mySerializer.SerializeEventsAsync(sessions, fs);
+      using var fs = File.OpenWrite(path);
+      mySerializer.SerializeEvents(sessions, fs);
     }
   }
 }

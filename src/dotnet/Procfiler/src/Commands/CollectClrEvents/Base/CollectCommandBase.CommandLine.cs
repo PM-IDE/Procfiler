@@ -7,7 +7,9 @@ namespace Procfiler.Commands.CollectClrEvents.Base;
 
 public abstract partial class CollectCommandBase
 {
-  public async Task<int> InvokeAsync(InvocationContext context)
+  public Task<int> InvokeAsync(InvocationContext context) => Task.Run(() => Invoke(context));
+
+  public int Invoke(InvocationContext context)
   {
     var parseResult = context.ParseResult;
     if (CheckForParserErrors(parseResult)) return -1;
@@ -16,7 +18,7 @@ public abstract partial class CollectCommandBase
     
     try
     {
-      await ExecuteAsync(CreateCollectClrContextFrom(parseResult));
+      Execute(CreateCollectClrContextFrom(parseResult));
     }
     catch (Exception ex)
     {
@@ -26,8 +28,6 @@ public abstract partial class CollectCommandBase
 
     return 0;
   }
-
-  public int Invoke(InvocationContext context) => InvokeAsync(context).GetAwaiter().GetResult();
 
   public Command CreateCommand()
   {
@@ -53,13 +53,14 @@ public abstract partial class CollectCommandBase
     var category = parseResult.GetValueForOption(ProvidersCategory);
     var arguments = parseResult.GetValueForOption(ArgumentsOption) ?? string.Empty;
     var printOutput = parseResult.GetValueForOption(PrintProcessOutputOption);
+    var methodsFilterRegex = parseResult.GetValueForOption(FilterOption);
     
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
       outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout, 
-      printOutput);
+      printOutput, methodsFilterRegex);
   }
   
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
@@ -115,7 +116,7 @@ public abstract partial class CollectCommandBase
         var repeatCount = parseResult.GetValueForOption(RepeatOption);
         if (repeatCount < 1)
         {
-          throw new ArgumentOutOfRangeException(nameof(RepeatOption), "The -repeat must be greater or equal than 1");
+          throw new ArgumentOutOfRangeException(nameof(RepeatOption), "The --repeat must be greater or equal than 1");
         }
 
         return new CollectClrEventsFromExeWithRepeatContext(projectBuildInfo, repeatCount, commonContext);

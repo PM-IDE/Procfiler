@@ -78,7 +78,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 
     InitializeShadowStack();
 
-    DWORD eventMask = COR_PRF_MONITOR_ALL;
+    DWORD eventMask = COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_MONITOR_EXCEPTIONS;
     result = myProfilerInfo->SetEventMask(eventMask);
     if (FAILED(result)) {
         myLogger->LogInformation("Failed to set event mask: " + std::to_string(result));

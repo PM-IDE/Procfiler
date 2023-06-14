@@ -1,6 +1,6 @@
 using Autofac;
-using JetBrains.Lifetimes;
 using Procfiler.Commands.CollectClrEvents;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventsCollection;
@@ -10,27 +10,25 @@ namespace ProcfilerTests.Core;
 
 public abstract class ProcessTestBase : TestWithContainerBase
 {
-  protected static IEnumerable<KnownSolution> Source() => KnownSolution.AllSolutions;
-  
-
-  protected void StartProcessAndDoTest(
-    KnownSolution solution, Func<CollectedEvents, Lifetime, ValueTask> testFunc)
+  protected void StartProcessAndDoTestWithDefaultContext(
+    KnownSolution solution, Action<CollectedEvents> testAction)
   {
-    var pathToSolutionSource = TestPaths.CreatePathToSolutionsSource();
-    var context = solution.CreateContext(pathToSolutionSource);
+    StartProcessAndDoTest(solution.CreateContext(), testAction);
+  }
 
-    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testFunc).AsTask().Wait();
+  protected void StartProcessAndDoTest(CollectClrEventsContext context, Action<CollectedEvents> testAction)
+  {
+    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(
     KnownSolution solution, Action<Dictionary<long, IEventsCollection>, SessionGlobalData> testFunc)
   {
-    StartProcessAndDoTest(solution, (events, _) =>
+    StartProcessAndDoTestWithDefaultContext(solution, events =>
     {
       var eventsByThreads = SplitEventsHelper.SplitByKey(
         TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
       testFunc(eventsByThreads, events.GlobalData);
-      return ValueTask.CompletedTask;
     });
   }
 }

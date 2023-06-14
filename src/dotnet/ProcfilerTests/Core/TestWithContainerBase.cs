@@ -3,11 +3,14 @@ using Microsoft.Extensions.Logging;
 using Procfiler.Core.Collector;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
+using TestsUtil;
 
 namespace ProcfilerTests.Core;
 
 public abstract class TestWithContainerBase
 {
+  protected static IEnumerable<KnownSolution> Source() => KnownSolution.AllSolutions;
+  
   protected readonly IContainer Container;
   
   

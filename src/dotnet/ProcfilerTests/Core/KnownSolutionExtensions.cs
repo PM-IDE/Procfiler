@@ -1,3 +1,4 @@
+using System.CommandLine;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
 using Procfiler.Core.InstrumentalProfiler;
@@ -8,8 +9,21 @@ namespace ProcfilerTests.Core;
 
 public static class KnownSolutionExtensions
 {
-  public static CollectClrEventsFromExeContext CreateContext(this KnownSolution knownSolution, string solutionsDir)
+  public static CollectClrEventsFromExeContext CreateContextWithMethodsFilter(this KnownSolution solution)
   {
+    var defaultContext = solution.CreateContext();
+    return defaultContext with
+    {
+      CommonContext = defaultContext.CommonContext with
+      {
+        CppProcfilerMethodsFilterRegex = solution.Name
+      }
+    };
+  }
+  
+  public static CollectClrEventsFromExeContext CreateContext(this KnownSolution knownSolution)
+  {
+    var solutionsDir = TestPaths.CreatePathToSolutionsSource();
     var csprojPath = Path.Combine(solutionsDir, knownSolution.Name, knownSolution.Name + ".csproj");
     var projectBuildInfo = new ProjectBuildInfo(
       csprojPath, knownSolution.Tfm, BuildConfiguration.Debug, InstrumentationKind.None, 
@@ -22,6 +36,15 @@ public static class KnownSolutionExtensions
   {
     var serializationContext = new SerializationContext(FileFormat.Csv);
     return new CollectingClrEventsCommonContext(
-      string.Empty, serializationContext, null, string.Empty, ProvidersCategoryKind.All, false, 10_000, 10_000, false);
+      string.Empty, serializationContext, new TestParseResultsProvider(), string.Empty, ProvidersCategoryKind.All,
+      false, 10_000, 10_000, false, null);
+  }
+}
+
+internal class TestParseResultsProvider : IParseResultInfoProvider
+{
+  public T? TryGetOptionValue<T>(Option<T> option)
+  {
+    return default;
   }
 }

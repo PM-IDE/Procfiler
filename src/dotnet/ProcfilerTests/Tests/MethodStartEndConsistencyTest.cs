@@ -15,7 +15,7 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
   
   private void DoTest(KnownSolution knownSolution)
   {
-    StartProcessAndDoTest(knownSolution, (events, _) =>
+    StartProcessAndDoTestWithDefaultContext(knownSolution, events =>
     {
       var globalData = events.GlobalData;
       var eventsByThreads = SplitEventsHelper.SplitByKey(
@@ -28,8 +28,6 @@ public class MethodStartEndConsistencyTest : ProcessTestBase
         processor.ApplyMultipleMutators(eventsForThread, globalData, EmptyCollections<Type>.EmptySet);
         TestUtil.CheckMethodConsistencyOrThrow(threadId, eventsForThread, globalData, Container);
       }
-
-      return ValueTask.CompletedTask;
     });
   }
 }

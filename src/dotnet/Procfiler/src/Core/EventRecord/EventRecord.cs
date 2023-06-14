@@ -9,7 +9,7 @@ public class EventRecord
   public long Stamp { get; private set; }
   public string EventClass { get; set; }
   public long ManagedThreadId { get; private set; }
-  public Guid ActivityId { get; private set; }
+  public Guid ActivityId { get; }
   public string EventName { get; set; }
   public int StackTraceId { get; }
 
@@ -21,6 +21,7 @@ public class EventRecord
     EventClass = eventClass;
     ManagedThreadId = managedThreadId;
     EventName = EventClass;
+    StackTraceId = stackTraceId;
   }
 
   public EventRecord(TraceEvent @event, long managedThreadId, int stackTraceId)

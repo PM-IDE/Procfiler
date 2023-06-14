@@ -41,12 +41,12 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
   }
 
 
-  protected ValueTask ExecuteSimpleSplitCommand(
+  protected void ExecuteSimpleSplitCommand(
     CollectClrEventsContext context,
     Func<EventRecordWithMetadata, TKey> keyExtractor,
     CollectAndSplitContext collectAndSplitContext)
   {
-    return ExecuteCommandAsync(context, async (collectedEvents, lifetime) =>
+    ExecuteCommand(context, collectedEvents =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       
@@ -72,14 +72,14 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
 
       foreach (var (key, managedEvents) in eventsByKey)
       {
-        await ProcessEventsAsync(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
+        ProcessEvents(managedEvents, undefinedEvents, context, key, globalData, collectAndSplitContext);
       }
 
       SerializeStacks(context, globalData);
     });
   }
 
-  private async ValueTask ProcessEventsAsync(
+  private void ProcessEvents(
     IEventsCollection correspondingEvents,
     IEventsCollection? undefinedThreadEvents,
     CollectClrEventsContext context,

@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <UsingTask TaskName="ProcfilerBuildTasks.BuildCppProcfiler" 
-               AssemblyFile="$(SolutionDir)/ProcfilerBuildTasks/bin/$(Configuration)/$(TargetFramework)/ProcfilerBuildTasks.dll" />
+    <UsingTask TaskName="ProcfilerBuildTasks.BuildCppProcfiler" AssemblyFile="$(SolutionDir)/ProcfilerBuildTasks/bin/$(Configuration)/$(TargetFramework)/ProcfilerBuildTasks.dll" />
     
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -15,7 +14,6 @@
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.4.0" />
       <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-      <PackageReference Include="JetBrains.Lifetimes" Version="2023.2.1" />
       <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.351802" />
       <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.0.7" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0-preview.7.22375.6" />

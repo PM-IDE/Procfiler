@@ -7,5 +7,5 @@ public interface IVisibleToUserCommand : ICommandHandler
 
 public interface ICommandWithContext<in TContext> : IVisibleToUserCommand
 {
-  ValueTask ExecuteAsync(TContext context);
+  void Execute(TContext context);
 }
