@@ -9,16 +9,10 @@ namespace ProcfilerTests.Core;
 
 public abstract class ProcessTestBase : TestWithContainerBase
 {
-  protected static IEnumerable<KnownSolution> Source() => KnownSolution.AllSolutions;
-  
-
   protected void StartProcessAndDoTest(
     KnownSolution solution, Action<CollectedEvents> testAction)
   {
-    var pathToSolutionSource = TestPaths.CreatePathToSolutionsSource();
-    var context = solution.CreateContext(pathToSolutionSource);
-
-    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
+    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(solution.CreateContext(), testAction);
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(

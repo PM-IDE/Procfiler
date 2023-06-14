@@ -125,15 +125,8 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
 
     try
     {
-      var launcherDto = new DotnetProcessLauncherDto
-      {
-        Arguments = context.CommonContext.Arguments,
-        RedirectOutput = context.CommonContext.PrintProcessOutput,
-        PathToDotnetExecutable = buildResult.BuiltDllPath,
-        CppProcfilerPath = myCppProcfilerLocator.FindCppProcfilerPath(),
-        BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(buildResult),
-        MethodsFilterRegex = context.CommonContext.CppProcfilerMethodsFilterRegex
-      };
+      var launcherDto = DotnetProcessLauncherDto.CreateFrom(
+        context.CommonContext, buildResult, myCppProcfilerLocator, myBinaryStackSavePathCreator);
       
       if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
       {

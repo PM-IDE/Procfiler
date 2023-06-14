@@ -9,8 +9,21 @@ namespace ProcfilerTests.Core;
 
 public static class KnownSolutionExtensions
 {
-  public static CollectClrEventsFromExeContext CreateContext(this KnownSolution knownSolution, string solutionsDir)
+  public static CollectClrEventsFromExeContext CreateContextWithMethodsFilter(this KnownSolution solution)
   {
+    var defaultContext = solution.CreateContext();
+    return defaultContext with
+    {
+      CommonContext = defaultContext.CommonContext with
+      {
+        CppProcfilerMethodsFilterRegex = solution.Name
+      }
+    };
+  }
+  
+  public static CollectClrEventsFromExeContext CreateContext(this KnownSolution knownSolution)
+  {
+    var solutionsDir = TestPaths.CreatePathToSolutionsSource();
     var csprojPath = Path.Combine(solutionsDir, knownSolution.Name, knownSolution.Name + ".csproj");
     var projectBuildInfo = new ProjectBuildInfo(
       csprojPath, knownSolution.Tfm, BuildConfiguration.Debug, InstrumentationKind.None, 
