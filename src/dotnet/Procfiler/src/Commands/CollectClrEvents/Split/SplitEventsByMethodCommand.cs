@@ -135,7 +135,6 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     var splitByMethodsCommand = new Command(CommandName, CommandDescription);
     
     splitByMethodsCommand.AddOption(RepeatOption);
-    splitByMethodsCommand.AddOption(FilterOption);
     splitByMethodsCommand.AddOption(InlineInnerMethodsCalls);
     splitByMethodsCommand.AddOption(GroupAsyncMethods);
     
