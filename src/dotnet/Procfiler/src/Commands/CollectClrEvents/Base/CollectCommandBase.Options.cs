@@ -26,6 +26,7 @@ public partial class CollectCommandBase
     command.AddOption(ArgumentsOption);
     command.AddOption(ArgumentsFileOption);
     command.AddOption(PrintProcessOutputOption);
+    command.AddOption(FilterOption);
   }
 
   private Option<bool> SelfContainedOption { get; } =
@@ -82,6 +83,9 @@ public partial class CollectCommandBase
 
   private Option<bool> ClearPathBefore { get; } = 
     new("--clear-before", static () => true, "Clear (delete) output folder (file) before profiling session");
+
+  protected Option<string> FilterOption { get; } = 
+    new("--filter", static () => string.Empty, "Regex to filter methods");
   
   protected Option<bool> MergeFromUndefinedThread { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");

@@ -15,7 +15,8 @@ public record struct CollectingClrEventsCommonContext(
   bool ClearPathBefore,
   int DurationMs,
   int MaxWaitForLogWriteTimeoutMs,
-  bool PrintProcessOutput
+  bool PrintProcessOutput,
+  string? CppProcfilerMethodsFilterRegex
 );
 
 public record struct ProjectBuildInfo(

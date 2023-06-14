@@ -102,7 +102,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
   private CollectedEvents CollectEventsFromProcess(
     CollectClrEventsContext context, int processId, string? binaryStacksPath)
   {
-    var (_, _, _, _, category, _, duration, timeout, _) = context.CommonContext;
+    var (_, _, _, _, category, _, duration, timeout, _, _) = context.CommonContext;
     var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
       processId, duration, timeout, category, binaryStacksPath);
 
@@ -132,7 +132,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
         PathToDotnetExecutable = buildResult.BuiltDllPath,
         CppProcfilerPath = myCppProcfilerLocator.FindCppProcfilerPath(),
         BinaryStacksSavePath = myBinaryStackSavePathCreator.CreateSavePath(buildResult),
-        MethodsFilterRegex = context.CommonContext.CommandParseResult.TryGetOptionValue(SplitEventsByMethodCommand.FilterOption)
+        MethodsFilterRegex = context.CommonContext.CppProcfilerMethodsFilterRegex
       };
       
       if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)

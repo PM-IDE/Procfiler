@@ -30,9 +30,6 @@ public enum InlineMode
 [CommandLineCommand]
 public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMethodCommand
 {
-  public static Option<string> FilterOption { get; } = new("--filter", static () => string.Empty, "Regex to filter");
-
-  
   private readonly IUnitedEventsProcessor myUnitedEventsProcessor;
   private readonly IXesEventsSerializer myXesEventsSerializer;
   private readonly IByMethodsSplitter mySplitter;

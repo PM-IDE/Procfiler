@@ -53,13 +53,14 @@ public abstract partial class CollectCommandBase
     var category = parseResult.GetValueForOption(ProvidersCategory);
     var arguments = parseResult.GetValueForOption(ArgumentsOption) ?? string.Empty;
     var printOutput = parseResult.GetValueForOption(PrintProcessOutputOption);
+    var methodsFilterRegex = parseResult.GetValueForOption(FilterOption);
     
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
       outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout, 
-      printOutput);
+      printOutput, methodsFilterRegex);
   }
   
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
@@ -115,7 +116,7 @@ public abstract partial class CollectCommandBase
         var repeatCount = parseResult.GetValueForOption(RepeatOption);
         if (repeatCount < 1)
         {
-          throw new ArgumentOutOfRangeException(nameof(RepeatOption), "The -repeat must be greater or equal than 1");
+          throw new ArgumentOutOfRangeException(nameof(RepeatOption), "The --repeat must be greater or equal than 1");
         }
 
         return new CollectClrEventsFromExeWithRepeatContext(projectBuildInfo, repeatCount, commonContext);
