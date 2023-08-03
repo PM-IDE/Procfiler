@@ -12,9 +12,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Commands.CollectClrEvents.Split;
 
-public interface ISplitEventsByManagedThreadIdCommand : ICommandWithContext<CollectClrEventsContext>
-{
-}
+public interface ISplitEventsByManagedThreadIdCommand : ICommandWithContext<CollectClrEventsContext>;
 
 [CommandLineCommand]
 public class SplitEventsByManagedThreadId(

@@ -9,9 +9,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Commands.CollectClrEvents.Split;
 
-public interface ISplitEventsByCategoriesCommand : ICommandWithContext<CollectClrEventsContext>
-{
-}
+public interface ISplitEventsByCategoriesCommand : ICommandWithContext<CollectClrEventsContext>;
 
 [CommandLineCommand]
 public class SplitEventsByCategoriesCommand(

@@ -10,9 +10,7 @@ public interface IFreezableCollection
   void UnFreeze();
 }
 
-public class CollectionIsFrozenException : ProcfilerException
-{
-}
+public class CollectionIsFrozenException : ProcfilerException;
 
 public interface IInsertableEventsCollection
 {
@@ -25,9 +23,7 @@ public interface IRemovableEventsCollection
   bool Remove(EventPointer pointer);
 }
 
-public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection
-{
-}
+public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection;
 
 public interface IEventsOwner : IMutableEventsCollection, IFreezableCollection, IEnumerable<EventRecordWithPointer>
 {

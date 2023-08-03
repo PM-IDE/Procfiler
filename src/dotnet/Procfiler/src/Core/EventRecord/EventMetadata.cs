@@ -1,8 +1,6 @@
 namespace Procfiler.Core.EventRecord;
 
-public interface IEventMetadata : IDictionary<string, string>
-{
-}
+public interface IEventMetadata : IDictionary<string, string>;
 
 public class EventMetadata : IEventMetadata
 {

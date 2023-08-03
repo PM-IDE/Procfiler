@@ -10,9 +10,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Commands.CollectClrEvents;
 
-public interface ICollectEventsFromSeveralLaunchesCommand : ICommandWithContext<CollectClrEventsContext>
-{
-}
+public interface ICollectEventsFromSeveralLaunchesCommand : ICommandWithContext<CollectClrEventsContext>;
 
 [CommandLineCommand]
 public class CollectEventsFromSeveralLaunchesCommand(

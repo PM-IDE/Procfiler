@@ -22,9 +22,7 @@ public interface ISingleEventMutatorWithState : IEventsLogMutator
   void Process(EventRecordWithMetadata eventRecord, SessionGlobalData context, object mutatorState);
 }
 
-public interface ISingleEventsLifecycleMutator : ISingleEventMutatorWithState
-{
-}
+public interface ISingleEventsLifecycleMutator : ISingleEventMutatorWithState;
 
 public interface IMultipleEventsMutator : IEventsLogMutator
 {

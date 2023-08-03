@@ -5,9 +5,7 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.Serialization;
 
 
-public interface ICsvEventsSerializer : IEventsSerializer
-{
-}
+public interface ICsvEventsSerializer : IEventsSerializer;
 
 [AppComponent]
 public class CsvEventsSerializer : ICsvEventsSerializer

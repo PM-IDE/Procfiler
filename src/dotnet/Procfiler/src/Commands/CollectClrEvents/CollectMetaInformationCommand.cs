@@ -7,9 +7,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Commands.CollectClrEvents;
 
-public interface ICollectMetaInformationCommand : ICommandWithContext<CollectClrEventsContext>
-{
-}
+public interface ICollectMetaInformationCommand : ICommandWithContext<CollectClrEventsContext>;
 
 [CommandLineCommand]
 public class CollectMetaInformationCommand(

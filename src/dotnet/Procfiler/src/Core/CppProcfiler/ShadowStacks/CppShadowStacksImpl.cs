@@ -5,7 +5,7 @@ namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 public class CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinaryStacksFile) : ICppShadowStacks
 {
   private readonly object mySync = new();
-  private readonly IDictionary<long, long> myManagedThreadsToOffsets = new Dictionary<long, long>();
+  private readonly Dictionary<long, long> myManagedThreadsToOffsets = new();
   
   private bool myIsInitialized;
 

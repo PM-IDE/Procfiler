@@ -10,9 +10,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.MultipleEventsMutators;
 
-public interface IMethodStartEndEventsLogMutator : IMultipleEventsMutator
-{
-}
+public interface IMethodStartEndEventsLogMutator : IMultipleEventsMutator;
 
 public interface IMethodsStartEndProcessor
 {

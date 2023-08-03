@@ -4,9 +4,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Serialization;
 
-public interface IMethodTreeEventSerializer : IEventsSerializer
-{
-}
+public interface IMethodTreeEventSerializer : IEventsSerializer;
 
 [AppComponent]
 public class MethodTreeSerializer : IMethodTreeEventSerializer

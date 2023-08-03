@@ -1,8 +1,6 @@
 namespace Procfiler.Core.Collector;
 
-public interface IShadowStacks
-{
-}
+public interface IShadowStacks;
 
 public class EmptyShadowStacks : IShadowStacks
 {

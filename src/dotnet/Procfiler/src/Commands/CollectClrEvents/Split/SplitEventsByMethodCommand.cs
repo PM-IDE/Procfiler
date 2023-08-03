@@ -14,9 +14,7 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Commands.CollectClrEvents.Split;
 
-public interface ISplitEventsByMethodCommand : ICommandWithContext<CollectClrEventsContext>
-{
-}
+public interface ISplitEventsByMethodCommand : ICommandWithContext<CollectClrEventsContext>;
 
 public enum InlineMode
 {

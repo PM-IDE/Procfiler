@@ -1,5 +1,4 @@
 ﻿using Procfiler.Commands.CollectClrEvents.Context;
-using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.Processes;

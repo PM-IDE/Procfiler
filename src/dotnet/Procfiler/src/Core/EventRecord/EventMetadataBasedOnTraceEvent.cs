@@ -2,9 +2,7 @@ using Procfiler.Core.Exceptions;
 
 namespace Procfiler.Core.EventRecord;
 
-public class TooMuchMetadataValuesException : ProcfilerException
-{
-}
+public class TooMuchMetadataValuesException : ProcfilerException;
 
 //For better times, TraceEvent.Clone() consumes too much memory
 public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetadata
