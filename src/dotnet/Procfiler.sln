@@ -6,6 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MISC", "MISC", "{84772E20-E
 	ProjectSection(SolutionItems) = preProject
 		..\..\.gitignore = ..\..\.gitignore
 		..\..\Readme.md = ..\..\Readme.md
+		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcfilerTests", "ProcfilerTests\ProcfilerTests.csproj", "{F80AEE0A-F3EA-4D5F-90BC-5BB02F375D3B}"
