@@ -6,39 +6,22 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Loader;
 
-public abstract class LoaderAppDomainLoadUnloadNameMutatorBase : MetadataValueToNameAppenderBase
+public abstract class LoaderAppDomainLoadUnloadNameMutatorBase(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
-  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-  
-  protected LoaderAppDomainLoadUnloadNameMutatorBase(IProcfilerLogger logger) : base(logger)
+  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForCamelCaseName(TraceEventsConstants.LoaderAppDomainName, EventClassKind.Zero),
-    };
-  }
+    MetadataKeysWithTransform.CreateForCamelCaseName(TraceEventsConstants.LoaderAppDomainName, EventClassKind.Zero),
+  };
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class LoaderAppDomainLoadNameMutator : LoaderAppDomainLoadUnloadNameMutatorBase
+public class LoaderAppDomainLoadNameMutator(IProcfilerLogger logger) : LoaderAppDomainLoadUnloadNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.LoaderAppDomainLoad;
-
-  
-  public LoaderAppDomainLoadNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class LoaderAppDomainUnloadNameMutator : LoaderAppDomainLoadUnloadNameMutatorBase
+public class LoaderAppDomainUnloadNameMutator(IProcfilerLogger logger) : LoaderAppDomainLoadUnloadNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.LoaderAppDomainUnload;
-
-  
-  public LoaderAppDomainUnloadNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
-

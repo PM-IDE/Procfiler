@@ -15,33 +15,15 @@ public interface ICommandExecutorDependantOnContext
 }
 
 [AppComponent]
-public class CommandExecutorImpl : ICommandExecutorDependantOnContext
+public class CommandExecutorImpl(
+  IDotnetProcessLauncher dotnetProcessLauncher,
+  IClrEventsCollector clrEventsCollector,
+  IDotnetProjectBuilder projectBuilder,
+  IProcfilerLogger logger,
+  ICppProcfilerLocator cppProcfilerLocator,
+  IBinaryStackSavePathCreator binaryStackSavePathCreator
+) : ICommandExecutorDependantOnContext
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly IClrEventsCollector myClrEventsCollector;
-  private readonly IDotnetProjectBuilder myProjectBuilder;
-  private readonly IDotnetProcessLauncher myDotnetProcessLauncher;
-  private readonly ICppProcfilerLocator myCppProcfilerLocator;
-  private readonly IBinaryStackSavePathCreator myBinaryStackSavePathCreator;
-
-
-  public CommandExecutorImpl(
-    IDotnetProcessLauncher dotnetProcessLauncher, 
-    IClrEventsCollector clrEventsCollector,
-    IDotnetProjectBuilder projectBuilder,
-    IProcfilerLogger logger, 
-    ICppProcfilerLocator cppProcfilerLocator, 
-    IBinaryStackSavePathCreator binaryStackSavePathCreator)
-  {
-    myDotnetProcessLauncher = dotnetProcessLauncher;
-    myClrEventsCollector = clrEventsCollector;
-    myProjectBuilder = projectBuilder;
-    myLogger = logger;
-    myCppProcfilerLocator = cppProcfilerLocator;
-    myBinaryStackSavePathCreator = binaryStackSavePathCreator;
-  }
-
-
   public void Execute(CollectClrEventsContext context, Action<CollectedEvents> commandAction)
   {
     switch (context)
@@ -106,7 +88,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
       processId, duration, timeout, category, binaryStacksPath);
 
-    return myClrEventsCollector.CollectEvents(collectionContext);
+    return clrEventsCollector.CollectEvents(collectionContext);
   }
 
   private void ExecuteCommandWithLaunchingProcess(
@@ -114,10 +96,10 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     Action<CollectedEvents> commandAction)
   {
     var (pathToCsproj, tfm, _, _, clearTemp, _, _) = context.ProjectBuildInfo;
-    var buildResultNullable = myProjectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
+    var buildResultNullable = projectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
     if (!buildResultNullable.HasValue)
     {
-      myLogger.LogError("Failed to build dotnet project {Tfm}, {Path}", tfm, pathToCsproj);
+      logger.LogError("Failed to build dotnet project {Tfm}, {Path}", tfm, pathToCsproj);
       return;
     }
 
@@ -126,15 +108,15 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
     try
     {
       var launcherDto = DotnetProcessLauncherDto.CreateFrom(
-        context.CommonContext, buildResult, myCppProcfilerLocator, myBinaryStackSavePathCreator);
+        context.CommonContext, buildResult, cppProcfilerLocator, binaryStackSavePathCreator);
       
-      if (myDotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
+      if (dotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
       {
-        myLogger.LogError("Failed to start or to find process");
+        logger.LogError("Failed to start or to find process");
         return;
       }
 
-      myLogger.LogInformation("Started process: {Id} {Path}", process.Id, buildResult.BuiltDllPath);
+      logger.LogInformation("Started process: {Id} {Path}", process.Id, buildResult.BuiltDllPath);
 
       CollectedEvents? events = null;
       try
@@ -143,7 +125,7 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       }
       catch (Exception ex)
       {
-        myLogger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
+        logger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
       }
       finally
       {
@@ -154,18 +136,18 @@ public class CommandExecutorImpl : ICommandExecutorDependantOnContext
       if (context.CommonContext.PrintProcessOutput)
       {
         var output = process.StandardOutput.ReadToEnd();
-        myLogger.LogInformation("Process output:");
-        myLogger.LogInformation(output);
+        logger.LogInformation("Process output:");
+        logger.LogInformation(output);
       }
 
       if (!process.HasExited)
       {
-        myLogger.LogError("The process {Id} somehow didn't exit", process.Id);
+        logger.LogError("The process {Id} somehow didn't exit", process.Id);
       }
       else
       {
         const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
-        myLogger.LogInformation(Message, process.Id, pathToCsproj); 
+        logger.LogInformation(Message, process.Id, pathToCsproj); 
       }
       
       if (events.HasValue)

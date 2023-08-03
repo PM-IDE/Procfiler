@@ -18,17 +18,8 @@ public interface IManagedEventsFromUndefinedThreadExtractor
 }
 
 [AppComponent]
-public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndefinedThreadExtractor
+public class ManagedEventsFromUndefinedThreadExtractor(IProcfilerLogger logger) : IManagedEventsFromUndefinedThreadExtractor
 {
-  private readonly IProcfilerLogger myLogger;
-
-
-  public ManagedEventsFromUndefinedThreadExtractor(IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
-
-  
   public IEventsCollection Extract(
     IDictionary<long, IEventsCollection> managedThreadEventsById, IEventsCollection undefinedEvents)
   {
@@ -42,7 +33,7 @@ public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndef
       managedThreadEventsById[key] = value;
     }
 
-    return new EventsCollectionImpl(newUndefinedEvents.Select(pair => pair.Event).ToArray(), myLogger);
+    return new EventsCollectionImpl(newUndefinedEvents.Select(pair => pair.Event).ToArray(), logger);
   }
   
   private ManagedEventsExtractionResult ExtractFrom(IEventsCollection undefinedEvents)
@@ -93,9 +84,9 @@ public class ManagedEventsFromUndefinedThreadExtractor : IManagedEventsFromUndef
       }
     }
 
-    var newUndefinedEventsCollection = new EventsCollectionImpl(newUndefinedEvents.ToArray(), myLogger);
+    var newUndefinedEventsCollection = new EventsCollectionImpl(newUndefinedEvents.ToArray(), logger);
     var newManagedEvents = managedThreadsTraces.Select(
-      pair => new KeyValuePair<int, IEventsCollection>(pair.Key, new EventsCollectionImpl(pair.Value.ToArray(), myLogger)));
+      pair => new KeyValuePair<int, IEventsCollection>(pair.Key, new EventsCollectionImpl(pair.Value.ToArray(), logger)));
     
     return new ManagedEventsExtractionResult(newManagedEvents, newUndefinedEventsCollection);
   }

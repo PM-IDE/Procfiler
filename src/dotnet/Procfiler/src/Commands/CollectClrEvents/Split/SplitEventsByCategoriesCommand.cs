@@ -14,20 +14,16 @@ public interface ISplitEventsByCategoriesCommand : ICommandWithContext<CollectCl
 }
 
 [CommandLineCommand]
-public class SplitEventsByCategoriesCommand : CollectAndSplitCommandBase<string>, ISplitEventsByCategoriesCommand
+public class SplitEventsByCategoriesCommand(
+  ICommandExecutorDependantOnContext commandExecutor,
+  IUnitedEventsProcessor processor,
+  IUndefinedThreadsEventsMerger eventsMerger,
+  IStackTraceSerializer stackTraceSerializer,
+  IDelegatingEventsSerializer serializer,
+  IProcfilerLogger logger
+) : CollectAndSplitCommandBase<string>(logger, commandExecutor, eventsMerger, processor, serializer, stackTraceSerializer), 
+    ISplitEventsByCategoriesCommand
 {
-  public SplitEventsByCategoriesCommand(
-    ICommandExecutorDependantOnContext commandExecutor,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    IUndefinedThreadsEventsMerger eventsMerger,
-    IStackTraceSerializer stackTraceSerializer,
-    IDelegatingEventsSerializer delegatingEventsSerializer, 
-    IProcfilerLogger logger) 
-    : base(logger, commandExecutor, eventsMerger, unitedEventsProcessor, delegatingEventsSerializer, stackTraceSerializer)
-  {
-  }
-
-
   public override void Execute(CollectClrEventsContext context) => 
     ExecuteSimpleSplitCommand(context, SplitEventsHelper.EventClassKeyExtractor, CollectAndSplitContext.DoNothing);
 

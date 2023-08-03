@@ -7,17 +7,11 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Exceptions;
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class ExceptionStartNameMutator : MetadataValueToNameAppenderBase
+public class ExceptionStartNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.ExceptionStart;
-  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-  
-  
-  public ExceptionStartNameMutator(IProcfilerLogger logger) : base(logger)
+  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.ExceptionType, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.ExceptionType, EventClassKind.Zero)
+  };
 }

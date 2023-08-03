@@ -20,25 +20,14 @@ public interface IMethodsStartEndProcessor
 }
 
 [EventMutator(MultipleEventMutatorsPasses.MethodStartEndInserter)]
-public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
+public class MethodStartEndEventsLogMutator(
+  IProcfilerEventsFactory factory, IProcfilerLogger logger) : IMethodStartEndEventsLogMutator
 {
-  private readonly IProcfilerEventsFactory myFactory;
-  private readonly IProcfilerLogger myLogger;
-
-
-  public IEnumerable<EventLogMutation> Mutations { get; }
-
-  
-  public MethodStartEndEventsLogMutator(IProcfilerEventsFactory factory, IProcfilerLogger logger)
+  public IEnumerable<EventLogMutation> Mutations { get; } = new[]
   {
-    myFactory = factory;
-    myLogger = logger;
-    Mutations = new[]
-    {
-      new AddEventMutation(TraceEventsConstants.ProcfilerMethodStart),
-      new AddEventMutation(TraceEventsConstants.ProcfilerMethodEnd),
-    };
-  }
+    new AddEventMutation(TraceEventsConstants.ProcfilerMethodStart),
+    new AddEventMutation(TraceEventsConstants.ProcfilerMethodEnd),
+  };
 
 
   public void Process(IEventsCollection events, SessionGlobalData context)
@@ -47,8 +36,8 @@ public class MethodStartEndEventsLogMutator : IMethodStartEndEventsLogMutator
 
     IMethodsStartEndProcessor processor = context.Stacks switch
     {
-      IFromEventsShadowStacks => new FromEventsMethodsStartEndMutator(myFactory, myLogger),
-      ICppShadowStacks => new CppStacksMethodsStartEndMutator(myFactory, myLogger),
+      IFromEventsShadowStacks => new FromEventsMethodsStartEndMutator(factory, logger),
+      ICppShadowStacks => new CppStacksMethodsStartEndMutator(factory, logger),
       _ => throw new ArgumentOutOfRangeException(context.Stacks.GetType().Name)
     };
     

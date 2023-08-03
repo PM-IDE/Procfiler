@@ -1,5 +1,3 @@
 namespace Procfiler.Core.Exceptions;
 
-public class MethodStartEndConsistencyBrokenException : Exception
-{
-}
+public class MethodStartEndConsistencyBrokenException : Exception;

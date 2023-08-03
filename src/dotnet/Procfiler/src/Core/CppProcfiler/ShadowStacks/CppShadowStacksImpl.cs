@@ -2,32 +2,22 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 
-public class CppShadowStacksImpl : ICppShadowStacks
+public class CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinaryStacksFile) : ICppShadowStacks
 {
   private readonly object mySync = new();
-  private readonly IProcfilerLogger myLogger;
-  private readonly string myPathToBinaryStacksFile;
-  private readonly IDictionary<long, long> myManagedThreadsToOffsets;
+  private readonly IDictionary<long, long> myManagedThreadsToOffsets = new Dictionary<long, long>();
   
   private bool myIsInitialized;
-  
-  
-  public CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinaryStacksFile)
-  {
-    myLogger = logger;
-    myPathToBinaryStacksFile = pathToBinaryStacksFile;
-    myManagedThreadsToOffsets = new Dictionary<long, long>();
-  }
 
-  
+
   public IEnumerable<ICppShadowStack> EnumerateStacks()
   {
-    using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
+    using var fs = PathUtils.OpenReadWithRetryOrThrow(logger, pathToBinaryStacksFile);
     using var br = new BinaryReader(fs);
 
     foreach (var (_, position) in EnumerateShadowStacksInternal(br))
     {
-      yield return new CppShadowStackImpl(myLogger, myPathToBinaryStacksFile, position);
+      yield return new CppShadowStackImpl(logger, pathToBinaryStacksFile, position);
     }
   }
 
@@ -51,11 +41,11 @@ public class CppShadowStacksImpl : ICppShadowStacks
     
     if (!myManagedThreadsToOffsets.TryGetValue(managedThreadId, out var offset))
     {
-      myLogger.LogWarning("The shadow stack for {ManagedThreadId}", managedThreadId);
+      logger.LogWarning("The shadow stack for {ManagedThreadId}", managedThreadId);
       return null;
     }
 
-    var foundShadowStack = new CppShadowStackImpl(myLogger, myPathToBinaryStacksFile, offset);
+    var foundShadowStack = new CppShadowStackImpl(logger, pathToBinaryStacksFile, offset);
     Debug.Assert(foundShadowStack.ManagedThreadId == managedThreadId);
 
     return foundShadowStack;
@@ -71,7 +61,7 @@ public class CppShadowStacksImpl : ICppShadowStacks
 
       try
       {
-        using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myPathToBinaryStacksFile);
+        using var fs = PathUtils.OpenReadWithRetryOrThrow(logger, pathToBinaryStacksFile);
         using var br = new BinaryReader(fs);
 
         foreach (var shadowStack in EnumerateShadowStacksInternal(br))
@@ -83,7 +73,7 @@ public class CppShadowStacksImpl : ICppShadowStacks
       }
       catch (Exception ex)
       {
-        myLogger.LogError(ex, "Failed to initialize shadow-stacks position");
+        logger.LogError(ex, "Failed to initialize shadow-stacks position");
       }
     }
   }

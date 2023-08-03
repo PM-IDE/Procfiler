@@ -7,7 +7,7 @@ public class TooMuchMetadataValuesException : ProcfilerException
 }
 
 //For better times, TraceEvent.Clone() consumes too much memory
-public class EventMetadataBasedOnTraceEvent : IEventMetadata
+public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetadata
 {
   private enum KeyOrValue
   {
@@ -18,22 +18,15 @@ public class EventMetadataBasedOnTraceEvent : IEventMetadata
   
   private EventMetadata? myInsertedMetadata;
   private int myDeletedProperties;
-  private int myTraceEventMetadataCount;
+  private int myTraceEventMetadataCount = traceEvent.PayloadNames.Length;
   
-  public TraceEvent TraceEvent { get; }
+  public TraceEvent TraceEvent { get; } = traceEvent;
   public bool IsReadOnly => false;
   public int MaxMetadataValuesCount => sizeof(int) * 8;
   public int Count => myTraceEventMetadataCount + (myInsertedMetadata?.Count ?? 0);
   public ICollection<string> Keys => CreateArrayOfNotDeletedElements(KeyOrValue.Key);
   public ICollection<string> Values => CreateArrayOfNotDeletedElements(KeyOrValue.Value);
 
-  
-  public EventMetadataBasedOnTraceEvent(TraceEvent traceEvent)
-  {
-    TraceEvent = traceEvent;
-    myTraceEventMetadataCount = traceEvent.PayloadNames.Length;
-  }
-  
 
   private string[] CreateArrayOfNotDeletedElements(KeyOrValue keyOrValue)
   {

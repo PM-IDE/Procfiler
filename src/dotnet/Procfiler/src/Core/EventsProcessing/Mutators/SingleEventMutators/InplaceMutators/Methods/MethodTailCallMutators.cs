@@ -6,39 +6,23 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Methods;
 
-public abstract class MethodTailCallNameMutatorBase : MetadataValueToNameAppenderBase
+public abstract class MethodTailCallNameMutatorBase(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
-  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-
-  protected MethodTailCallNameMutatorBase(IProcfilerLogger logger) : base(logger)
+  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodBeingCompiledNamespace, EventClassKind.Zero),
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodBeingCompiledName, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodBeingCompiledNamespace, EventClassKind.Zero),
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodBeingCompiledName, EventClassKind.Zero)
+  };
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodTailCallSucceededNameMutator : MethodTailCallNameMutatorBase
+public class MethodTailCallSucceededNameMutator(IProcfilerLogger logger) : MethodTailCallNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodTailCallSucceeded;
-
-
-  public MethodTailCallSucceededNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodTailCallFailedNameMutator : MethodTailCallNameMutatorBase
+public class MethodTailCallFailedNameMutator(IProcfilerLogger logger) : MethodTailCallNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodTailCallFailed;
-
-
-  public MethodTailCallFailedNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }

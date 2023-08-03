@@ -2,36 +2,23 @@
 
 namespace Procfiler.Core.EventsCollection;
 
-public class EventPointersManager
+public class EventPointersManager(long initialCount, InsertedEvents insertedEvents, IEventsOwner owner)
 {
-  private readonly InsertedEvents myInsertedEvents;
-  private readonly IEventsOwner myOwner;
-  private readonly long myInitialCount;
-  private readonly HashSet<int> myRemovedIndexesInInitialArray;
+  private readonly HashSet<int> myRemovedIndexesInInitialArray = new();
 
-  private long myCurrentInitialEventsCount;
+  private long myCurrentInitialEventsCount = initialCount;
 
-  public long Count => myCurrentInitialEventsCount + myInsertedEvents.Count;
+  public long Count => myCurrentInitialEventsCount + insertedEvents.Count;
 
-  
-  public EventPointersManager(long initialCount, InsertedEvents insertedEvents, IEventsOwner owner)
-  {
-    myRemovedIndexesInInitialArray = new HashSet<int>();
-    myInsertedEvents = insertedEvents;
-    myOwner = owner;
-    myInitialCount = initialCount;
-    myCurrentInitialEventsCount = initialCount;
-  }
 
-  
   public EventPointer? First
   {
     get
     {
-      EventPointer? startPointer = myInsertedEvents.FirstEvents switch
+      EventPointer? startPointer = insertedEvents.FirstEvents switch
       {
-        { } => EventPointer.ForFirstEvent(0, myOwner),
-        _ => EventPointer.ForInitialArray(0, myOwner)
+        { } => EventPointer.ForFirstEvent(0, owner),
+        _ => EventPointer.ForInitialArray(0, owner)
       };
 
       return startPointer;
@@ -41,7 +28,7 @@ public class EventPointersManager
   public EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
     AssertStateOrThrow(pointer);
-    myInsertedEvents.InsertAfter(pointer, eventToInsert);
+    insertedEvents.InsertAfter(pointer, eventToInsert);
     
     var insertedEventPointer = Next(pointer);
     Debug.Assert(insertedEventPointer is { });
@@ -51,7 +38,7 @@ public class EventPointersManager
   public EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
     AssertStateOrThrow(pointer);
-    myInsertedEvents.InsertBefore(pointer, eventToInsert);
+    insertedEvents.InsertBefore(pointer, eventToInsert);
     
     var insertedEventPointer = PrevInternal(pointer);
     Debug.Assert(insertedEventPointer is { });
@@ -71,13 +58,13 @@ public class EventPointersManager
       return true;
     }
 
-    return myInsertedEvents.Remove(pointer);
+    return insertedEvents.Remove(pointer);
   }
 
   public bool IsRemoved(EventPointer pointer) => pointer.IsInInitialArray switch
   {
     true => myRemovedIndexesInInitialArray.Contains(pointer.IndexInArray),
-    false => myInsertedEvents.IsRemoved(pointer)
+    false => insertedEvents.IsRemoved(pointer)
   };
 
   public EventRecordWithMetadata? TryGetInsertedEvent(EventPointer pointer)
@@ -87,8 +74,8 @@ public class EventPointersManager
     {
       true => pointer.IsInFirstEvents switch
       {
-        true => myInsertedEvents.FirstEvents![pointer.IndexInInsertionMap],
-        false => myInsertedEvents.GetOrThrow(pointer)
+        true => insertedEvents.FirstEvents![pointer.IndexInInsertionMap],
+        false => insertedEvents.GetOrThrow(pointer)
       },
       _ => null
     };
@@ -106,36 +93,36 @@ public class EventPointersManager
     {
       if (current.IsInFirstEvents)
       {
-        Debug.Assert(myInsertedEvents.FirstEvents is { });
-        if (current.IndexInInsertionMap == myInsertedEvents.FirstEvents.Count - 1)
+        Debug.Assert(insertedEvents.FirstEvents is { });
+        if (current.IndexInInsertionMap == insertedEvents.FirstEvents.Count - 1)
         {
-          if (myInitialCount == 0) return null;
-          return EventPointer.ForInitialArray(0, myOwner);
+          if (initialCount == 0) return null;
+          return EventPointer.ForInitialArray(0, owner);
         }
 
-        return EventPointer.ForFirstEvent(current.IndexInInsertionMap + 1, myOwner);
+        return EventPointer.ForFirstEvent(current.IndexInInsertionMap + 1, owner);
       }
 
       var insertedEventsList = GetInsertedEventsListOrThrow(current);
       if (current.IndexInInsertionMap == insertedEventsList.Count - 1)
       {
         var nextInitialArrayIndex = current.IndexInArray + 1;
-        if (nextInitialArrayIndex >= myInitialCount) return null;
+        if (nextInitialArrayIndex >= initialCount) return null;
 
-        return EventPointer.ForInitialArray(nextInitialArrayIndex, myOwner);
+        return EventPointer.ForInitialArray(nextInitialArrayIndex, owner);
       }
 
-      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap + 1, myOwner);
+      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap + 1, owner);
     }
     
-    if (myInsertedEvents.ContainsKey(current.IndexInArray))
+    if (insertedEvents.ContainsKey(current.IndexInArray))
     {
-      return EventPointer.ForInsertionMap(current.IndexInArray, 0, myOwner);
+      return EventPointer.ForInsertionMap(current.IndexInArray, 0, owner);
     }
 
     var nextArrayIndex = current.IndexInArray + 1;
-    if (nextArrayIndex >= myInitialCount) return null;
-    return EventPointer.ForInitialArray(nextArrayIndex, myOwner);
+    if (nextArrayIndex >= initialCount) return null;
+    return EventPointer.ForInitialArray(nextArrayIndex, owner);
   }
 
   public EventPointer? PrevInternal(in EventPointer current)
@@ -144,31 +131,31 @@ public class EventPointersManager
     {
       if (current.IsInFirstEvents)
       {
-        Debug.Assert(myInsertedEvents.FirstEvents is { });
+        Debug.Assert(insertedEvents.FirstEvents is { });
         if (current.IndexInInsertionMap == 0) return null;
-        return EventPointer.ForFirstEvent(current.IndexInInsertionMap - 1, myOwner);
+        return EventPointer.ForFirstEvent(current.IndexInInsertionMap - 1, owner);
       }
 
       if (current.IndexInInsertionMap == 0)
       {
-        return EventPointer.ForInitialArray(current.IndexInArray, myOwner);
+        return EventPointer.ForInitialArray(current.IndexInArray, owner);
       }
 
-      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap - 1, myOwner);
+      return EventPointer.ForInsertionMap(current.IndexInArray, current.IndexInInsertionMap - 1, owner);
     }
 
     if (current.IndexInArray == 0)
     {
-      if (myInsertedEvents.FirstEvents is null || myInsertedEvents.FirstEvents.Count == 0) return null;
-      return EventPointer.ForFirstEvent(myInsertedEvents.FirstEvents.Count - 1, myOwner);
+      if (insertedEvents.FirstEvents is null || insertedEvents.FirstEvents.Count == 0) return null;
+      return EventPointer.ForFirstEvent(insertedEvents.FirstEvents.Count - 1, owner);
     }
     
-    if (myInsertedEvents[current.IndexInArray - 1] is { } insertionList)
+    if (insertedEvents[current.IndexInArray - 1] is { } insertionList)
     {
-      return EventPointer.ForInsertionMap(current.IndexInArray - 1, insertionList.Count - 1, myOwner);
+      return EventPointer.ForInsertionMap(current.IndexInArray - 1, insertionList.Count - 1, owner);
     }
     
-    return EventPointer.ForInitialArray(current.IndexInArray - 1, myOwner);
+    return EventPointer.ForInitialArray(current.IndexInArray - 1, owner);
   }
 
   private List<EventRecordWithMetadata> GetInsertedEventsListOrThrow(EventPointer pointer)
@@ -176,16 +163,16 @@ public class EventPointersManager
     Debug.Assert(pointer.IsInInsertedMap);
     if (pointer.IsInFirstEvents)
     {
-      Debug.Assert(myInsertedEvents.FirstEvents is { });
+      Debug.Assert(insertedEvents.FirstEvents is { });
       Debug.Assert(pointer.IndexInInsertionMap >= 0 && 
-                   pointer.IndexInInsertionMap < myInsertedEvents.FirstEvents.Count);
+                   pointer.IndexInInsertionMap < insertedEvents.FirstEvents.Count);
       
-      return myInsertedEvents.FirstEvents;
+      return insertedEvents.FirstEvents;
     }
 
-    Debug.Assert(pointer.IndexInArray >= 0 && pointer.IndexInArray < myInitialCount);
-    Debug.Assert(myInsertedEvents.ContainsKey(pointer.IndexInArray));
-    return myInsertedEvents[pointer.IndexInArray]!;
+    Debug.Assert(pointer.IndexInArray >= 0 && pointer.IndexInArray < initialCount);
+    Debug.Assert(insertedEvents.ContainsKey(pointer.IndexInArray));
+    return insertedEvents[pointer.IndexInArray]!;
   }
   
   [Conditional("DEBUG")]
@@ -200,14 +187,14 @@ public class EventPointersManager
       }
       else
       {
-        Debug.Assert(pointer.IndexInArray >= 0 && pointer.IndexInArray < myInitialCount);
+        Debug.Assert(pointer.IndexInArray >= 0 && pointer.IndexInArray < initialCount);
         Debug.Assert(pointer.IndexInInsertionMap >= 0);
       }
     }
     else
     {
       Debug.Assert(pointer.IsInInitialArray);
-      Debug.Assert(pointer.IndexInArray >= 0 && pointer.IndexInArray < myInitialCount);
+      Debug.Assert(pointer.IndexInArray >= 0 && pointer.IndexInArray < initialCount);
       Debug.Assert(pointer.IndexInInsertionMap == -1);
     }
   }

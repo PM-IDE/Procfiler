@@ -6,19 +6,9 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.Processes.Build;
 
 [AppComponent]
-public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
+public class DotnetProjectBuilderImpl(
+  IProcfilerLogger logger, IDllMethodsPatcher dllMethodsPatcher) : IDotnetProjectBuilder
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly IDllMethodsPatcher myDllMethodsPatcher;
-
-
-  public DotnetProjectBuilderImpl(IProcfilerLogger logger, IDllMethodsPatcher dllMethodsPatcher)
-  {
-    myLogger = logger;
-    myDllMethodsPatcher = dllMethodsPatcher;
-  }
-
-
   public BuildResult? TryBuildDotnetProject(ProjectBuildInfo projectBuildInfo)
   {
     var resultNullable = TryBuildDotnetProjectInternal(projectBuildInfo);
@@ -45,7 +35,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
       var to = Path.Combine(buildResultDirName, ProcfilerEventSourceDllName);
       File.Copy(from, to, true);
       
-      myDllMethodsPatcher.PatchMethodStartEndAsync(result.BuiltDllPath, projectBuildInfo.InstrumentationKind);
+      dllMethodsPatcher.PatchMethodStartEndAsync(result.BuiltDllPath, projectBuildInfo.InstrumentationKind);
     }
 
     return result;
@@ -55,7 +45,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
   {
     var (pathToCsproj, tfm, configuration, _, removeTempPath, tempPath, selfContained) = projectBuildInfo;
     var projectName = Path.GetFileNameWithoutExtension(pathToCsproj);
-    using var _ = new PerformanceCookie($"Building::{projectName}", myLogger);
+    using var _ = new PerformanceCookie($"Building::{projectName}", logger);
     
     var projectDirectory = Path.GetDirectoryName(pathToCsproj);
     Debug.Assert(projectDirectory is { });
@@ -63,7 +53,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
     var artifactsFolderCookie = tempPath switch
     {
       null => CreateTempArtifactsPath(),
-      { } => new TempFolderCookie(myLogger, tempPath)
+      { } => new TempFolderCookie(logger, tempPath)
     };
     
     var buildConfig = BuildConfigurationExtensions.ToString(configuration);
@@ -98,7 +88,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
     {
       if (!process.Start())
       {
-        myLogger.LogError("Failed to start build process for {PathToCsproj}", pathToCsproj);
+        logger.LogError("Failed to start build process for {PathToCsproj}", pathToCsproj);
         RemoveArtifactsFolderIfNeeded();
         return null;
       }
@@ -108,7 +98,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
       if (process.ExitCode != 0)
       {
         var output = process.StandardOutput.ReadToEnd();
-        myLogger.LogError("Failed to build project {Path}, {Output}", pathToCsproj, output);
+        logger.LogError("Failed to build project {Path}, {Output}", pathToCsproj, output);
         RemoveArtifactsFolderIfNeeded();
         return null;
       }
@@ -117,7 +107,7 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
     {
       RemoveArtifactsFolderIfNeeded();
       var output = process.StandardOutput.ReadToEnd();
-      myLogger.LogError(ex, "Failed to build project {Path}, {Output}", pathToCsproj, output);
+      logger.LogError(ex, "Failed to build project {Path}, {Output}", pathToCsproj, output);
       return null;
     }
     
@@ -128,5 +118,5 @@ public class DotnetProjectBuilderImpl : IDotnetProjectBuilder
     };
   }
 
-  private TempFolderCookie CreateTempArtifactsPath() => new(myLogger);
+  private TempFolderCookie CreateTempArtifactsPath() => new(logger);
 }

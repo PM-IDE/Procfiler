@@ -2,7 +2,8 @@ using Procfiler.Core.Constants.TraceEvents;
 
 namespace Procfiler.Core.Collector.CustomTraceEvents;
 
-public class GcLohCompactTraceData : CustomTraceEventBase
+public class GcLohCompactTraceData(TraceEvent traceEvent) 
+  : CustomTraceEventBase(traceEvent, TraceEventsConstants.GcLohCompact, ourPayloadEvents)
 {
   private static readonly string[] ourPayloadEvents =
   {
@@ -23,12 +24,6 @@ public class GcLohCompactTraceData : CustomTraceEventBase
   public int TimeRelocate => GetInt32At(12);
   public ulong TotalRefs => GetAddressAt(16);
   public ulong ZeroRefs => GetAddressAt(16 + PointerSize);
-
-
-  public GcLohCompactTraceData(TraceEvent traceEvent) 
-    : base(traceEvent, TraceEventsConstants.GcLohCompact, ourPayloadEvents)
-  {
-  }
 
 
   public override object PayloadValue(int index) => index switch

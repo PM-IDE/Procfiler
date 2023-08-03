@@ -39,17 +39,8 @@ public interface IDotnetProcessLauncher
 }
 
 [AppComponent]
-public class DotnetProcessLauncher : IDotnetProcessLauncher
+public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLauncher
 {
-  private readonly IProcfilerLogger myLogger;
-
-  
-  public DotnetProcessLauncher(IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
-  
-
   public Process? TryStartDotnetProcess(DotnetProcessLauncherDto launcherDto)
   {
     var startInfo = new ProcessStartInfo
@@ -81,7 +72,7 @@ public class DotnetProcessLauncher : IDotnetProcessLauncher
 
     if (!process.Start())
     {
-      myLogger.LogError("Failed to start process {Path}", launcherDto.PathToDotnetExecutable);
+      logger.LogError("Failed to start process {Path}", launcherDto.PathToDotnetExecutable);
       return null;
     }
 

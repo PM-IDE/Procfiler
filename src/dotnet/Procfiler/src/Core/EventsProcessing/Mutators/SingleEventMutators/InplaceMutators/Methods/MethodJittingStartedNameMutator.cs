@@ -7,18 +7,12 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Methods;
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodJittingStartedNameMutator : MetadataValueToNameAppenderBase
+public class MethodJittingStartedNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodJittingStarted;
-  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-
-  public MethodJittingStartedNameMutator(IProcfilerLogger logger) : base(logger)
+  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodNamespace, EventClassKind.Zero),
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodName, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodNamespace, EventClassKind.Zero),
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodName, EventClassKind.Zero)
+  };
 }

@@ -11,24 +11,15 @@ public interface IAssembliesProvider
   void Initialize();
 }
 
-public class FolderBasedAssemblyResolver : IAssemblyResolver, IAssembliesProvider
+public class FolderBasedAssemblyResolver(
+  IProcfilerLogger logger, string contextFolder) : IAssemblyResolver, IAssembliesProvider
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly string myContextFolder;
-  private readonly Dictionary<string, AssemblyDefWithPath> myContextAssembliesToPaths;
+  private readonly Dictionary<string, AssemblyDefWithPath> myContextAssembliesToPaths = new();
 
   private bool myContextAssembliesInitialized;
 
 
   public IReadOnlyDictionary<string, AssemblyDefWithPath> Assemblies => myContextAssembliesToPaths;
-
-
-  public FolderBasedAssemblyResolver(IProcfilerLogger logger, string contextFolder)
-  {
-    myLogger = logger;
-    myContextFolder = contextFolder;
-    myContextAssembliesToPaths = new Dictionary<string, AssemblyDefWithPath>();
-  }
 
 
   public AssemblyDefWithPath ResolveWithPath(AssemblyNameReference reference, ReaderParameters parameters)
@@ -61,7 +52,7 @@ public class FolderBasedAssemblyResolver : IAssemblyResolver, IAssembliesProvide
   {
     if (myContextAssembliesInitialized) return;
 
-    foreach (var filePath in Directory.GetFiles(myContextFolder))
+    foreach (var filePath in Directory.GetFiles(contextFolder))
     {
       if (!filePath.EndsWith(DotNetConstants.DllExtension)) continue;
       
@@ -70,7 +61,7 @@ public class FolderBasedAssemblyResolver : IAssemblyResolver, IAssembliesProvide
         var assembly = AssemblyDefinition.ReadAssembly(filePath, readerParameters);
         if (assembly.FullName is null)
         {
-          myLogger.LogWarning("Full name for assembly {Path} was null, skipping it", filePath);
+          logger.LogWarning("Full name for assembly {Path} was null, skipping it", filePath);
           continue;
         }
 
@@ -78,7 +69,7 @@ public class FolderBasedAssemblyResolver : IAssemblyResolver, IAssembliesProvide
       }
       catch (Exception)
       {
-        myLogger.LogWarning("Failed to read assembly {Path}", filePath);
+        logger.LogWarning("Failed to read assembly {Path}", filePath);
       }
     }
     

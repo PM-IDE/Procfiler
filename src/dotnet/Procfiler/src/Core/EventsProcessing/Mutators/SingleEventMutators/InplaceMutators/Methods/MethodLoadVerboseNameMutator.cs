@@ -6,39 +6,23 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Methods;
 
-public abstract class MethodLoadUnloadNameMutatorBase : MetadataValueToNameAppenderBase
+public abstract class MethodLoadUnloadNameMutatorBase(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
-  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-
-  protected MethodLoadUnloadNameMutatorBase(IProcfilerLogger logger) : base(logger)
+  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodNamespace, EventClassKind.Zero),
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodName, EventClassKind.Zero),
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodNamespace, EventClassKind.Zero),
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodName, EventClassKind.Zero),
+  };
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodLoadVerboseNameMutator : MethodLoadUnloadNameMutatorBase
+public class MethodLoadVerboseNameMutator(IProcfilerLogger logger) : MethodLoadUnloadNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodLoadVerbose;
-
-
-  public MethodLoadVerboseNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodUnloadVerboseNameMutator : MethodLoadUnloadNameMutatorBase
+public class MethodUnloadVerboseNameMutator(IProcfilerLogger logger) : MethodLoadUnloadNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodUnloadVerbose;
-
-  
-  public MethodUnloadVerboseNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }

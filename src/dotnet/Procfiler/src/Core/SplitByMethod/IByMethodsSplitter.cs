@@ -20,33 +20,15 @@ public interface IByMethodsSplitter
 }
 
 [AppComponent]
-public class ByMethodsSplitterImpl : IByMethodsSplitter
-{
-  private readonly IManagedEventsFromUndefinedThreadExtractor myManagedEventsExtractor;
-  private readonly IEventsCollectionByMethodsSplitter mySplitter;
-  private readonly IProcfilerLogger myLogger;
-  private readonly IAsyncMethodsGrouper myAsyncMethodsGrouper;
-  private readonly IUnitedEventsProcessor myUnitedEventsProcessor;
-  private readonly IUndefinedThreadsEventsMerger myUndefinedThreadsEventsMerger;
-
-  
-  public ByMethodsSplitterImpl(
+public class ByMethodsSplitterImpl(
     IProcfilerLogger logger,
-    IEventsCollectionByMethodsSplitter splitter, 
-    IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor, 
-    IAsyncMethodsGrouper asyncMethodsGrouper, 
-    IUnitedEventsProcessor unitedEventsProcessor, 
-    IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger)
-  {
-    mySplitter = splitter;
-    myManagedEventsExtractor = managedEventsExtractor;
-    myAsyncMethodsGrouper = asyncMethodsGrouper;
-    myUnitedEventsProcessor = unitedEventsProcessor;
-    myUndefinedThreadsEventsMerger = undefinedThreadsEventsMerger;
-    myLogger = logger;
-  }
-
-  
+    IEventsCollectionByMethodsSplitter splitter,
+    IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
+    IAsyncMethodsGrouper asyncMethodsGrouper,
+    IUnitedEventsProcessor unitedEventsProcessor,
+    IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger
+) : IByMethodsSplitter
+{
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
     string filterPattern,
@@ -55,17 +37,17 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
     bool addAsyncMethods)
   {
     SplitEventsByThreads(events, out var eventsByManagedThreads, out var undefinedThreadEvents);
-    undefinedThreadEvents = myManagedEventsExtractor.Extract(eventsByManagedThreads, undefinedThreadEvents);
+    undefinedThreadEvents = managedEventsExtractor.Extract(eventsByManagedThreads, undefinedThreadEvents);
 
     var tracesByMethods = new Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>();
     foreach (var (key, threadEvents) in eventsByManagedThreads)
     {
-      using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(Split)}::PreparingTrace_{key}", myLogger);
+      using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(Split)}::PreparingTrace_{key}", logger);
 
       ProcessManagedThreadEvents(threadEvents, events.GlobalData);
       
       var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
-      var eventsTracesByMethods = mySplitter.Split(mergedEvents, filterPattern, inlineMode);
+      var eventsTracesByMethods = splitter.Split(mergedEvents, filterPattern, inlineMode);
 
       foreach (var (methodName, traces) in eventsTracesByMethods)
       {
@@ -87,7 +69,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
     IDictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> tracesByMethods,
     IDictionary<long, IEventsCollection> eventsByManagedThreads)
   {
-    var asyncMethodsTraces = myAsyncMethodsGrouper.GroupAsyncMethods(tracesByMethods.Keys, eventsByManagedThreads);
+    var asyncMethodsTraces = asyncMethodsGrouper.GroupAsyncMethods(tracesByMethods.Keys, eventsByManagedThreads);
     foreach (var (asyncMethodName, collection) in asyncMethodsTraces)
     {
       var traces = new List<IReadOnlyList<EventRecordWithMetadata>>();
@@ -102,15 +84,15 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
     out Dictionary<long, IEventsCollection> eventsByThreads,
     out IEventsCollection undefinedThreadEvents)
   {
-    eventsByThreads = SplitEventsHelper.SplitByKey(myLogger, events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
+    eventsByThreads = SplitEventsHelper.SplitByKey(logger, events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
     undefinedThreadEvents = eventsByThreads[-1];
     eventsByThreads.Remove(-1);
   }
 
   private void ProcessManagedThreadEvents(IEventsCollection threadEvents, SessionGlobalData globalData)
   {
-    using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(ProcessManagedThreadEvents)}", myLogger);
-    myUnitedEventsProcessor.ApplyMultipleMutators(threadEvents, globalData, EmptyCollections<Type>.EmptySet);
+    using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(ProcessManagedThreadEvents)}", logger);
+    unitedEventsProcessor.ApplyMultipleMutators(threadEvents, globalData, EmptyCollections<Type>.EmptySet);
   }
 
   private IEventsCollection MergeUndefinedThreadEvents(
@@ -120,7 +102,7 @@ public class ByMethodsSplitterImpl : IByMethodsSplitter
   {
     if (!mergeUndefinedThreadEvents) return managedThreadEvents;
 
-    using var __ = new PerformanceCookie($"{GetType().Name}::{nameof(MergeUndefinedThreadEvents)}", myLogger);
-    return myUndefinedThreadsEventsMerger.Merge(managedThreadEvents, undefinedThreadEvents);
+    using var __ = new PerformanceCookie($"{GetType().Name}::{nameof(MergeUndefinedThreadEvents)}", logger);
+    return undefinedThreadsEventsMerger.Merge(managedThreadEvents, undefinedThreadEvents);
   }
 }

@@ -1,9 +1,4 @@
 namespace Procfiler.Core.Documentation.Markdown;
 
-public class IncorrectRowsCountException : Exception
-{
-  public IncorrectRowsCountException(int actualRowsCount, int expectedRowsCount)
-    : base($"Expected {expectedRowsCount}, but got {actualRowsCount}")
-  {
-  }
-}
+public class IncorrectRowsCountException(int actualRowsCount, int expectedRowsCount) 
+  : Exception($"Expected {expectedRowsCount}, but got {actualRowsCount}");

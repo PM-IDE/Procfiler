@@ -9,22 +9,13 @@ public interface IEventsFilterer
 }
 
 [AppComponent]
-public class EventsFilterer : IEventsFilterer
+public class EventsFilterer(IEnumerable<IEventsFilter> filters) : IEventsFilterer
 {
-  private readonly IEnumerable<IEventsFilter> myFilters;
-
-
-  public EventsFilterer(IEnumerable<IEventsFilter> filters)
-  {
-    myFilters = filters;
-  }
-
-
   public void Filter(IEventsCollection eventsToFilter)
   {
     if (eventsToFilter.Count == 0) return;
     
-    foreach (var eventsFilter in myFilters)
+    foreach (var eventsFilter in filters)
     {
       eventsFilter.Filter(eventsToFilter);
     }

@@ -6,44 +6,39 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.StatefulMutators.Activities.Tasks;
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class TaskActivitySingleEventMutator : EventsLifecycleMutatorBase
+public class TaskActivitySingleEventMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(
+      logger, 
+      ActivityId, 
+      new [] { TraceEventsConstants.TaskExecuteStart }, 
+      new [] { TraceEventsConstants.TaskExecuteStop }, 
+      TraceEventsConstants.TaskScheduledSend
+    )
 {
   private const string ActivityId = "TaskExecute";
   
   
-  protected override IIdCreationStrategy IdCreationStrategy { get; }
-  
-
-  public TaskActivitySingleEventMutator(IProcfilerLogger logger) 
-    : base(logger, ActivityId, new [] { TraceEventsConstants.TaskExecuteStart }, new [] { TraceEventsConstants.TaskExecuteStop }, TraceEventsConstants.TaskScheduledSend)
+  protected override IIdCreationStrategy IdCreationStrategy { get; } = new FromAttributesIdCreationStrategy(ActivityId, new[]
   {
-    IdCreationStrategy = new FromAttributesIdCreationStrategy(ActivityId, new[]
-    {
-      TraceEventsConstants.TaskId
-    });
-  }
+    TraceEventsConstants.TaskId
+  });
 }
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class TaskWaitBeginLifecycleMutator : EventsLifecycleMutatorBase
+public class TaskWaitBeginLifecycleMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(logger, ActivityId, new [] { TraceEventsConstants.TaskWaitSend }, new [] { TraceEventsConstants.TaskWaitStop })
 {
   private const string ActivityId = "TaskWaitBeginEnd";
   
-  protected override IIdCreationStrategy IdCreationStrategy { get; }
-
-  
-  public TaskWaitBeginLifecycleMutator(IProcfilerLogger logger) 
-    : base(logger, ActivityId, new [] { TraceEventsConstants.TaskWaitSend }, new [] { TraceEventsConstants.TaskWaitStop })
+  protected override IIdCreationStrategy IdCreationStrategy { get; } = new FromAttributesIdCreationStrategy(ActivityId, new[]
   {
-    IdCreationStrategy = new FromAttributesIdCreationStrategy(ActivityId, new[]
-    {
-      TraceEventsConstants.TaskId
-    });
-  }
+    TraceEventsConstants.TaskId
+  });
 }
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class TaskContinuationWaitLifecycleMutator : EventsLifecycleMutatorBase
+public class TaskContinuationWaitLifecycleMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(logger, ActivityId, ourStartEventClasses, new [] { TraceEventsConstants.TaskWaitContinuationComplete })
 {
   private static readonly HashSet<string> ourStartEventClasses = new()
   {
@@ -54,15 +49,8 @@ public class TaskContinuationWaitLifecycleMutator : EventsLifecycleMutatorBase
   private const string ActivityId = "TaskContinuationWait";
   
   
-  protected override IIdCreationStrategy IdCreationStrategy { get; }
-
-  
-  public TaskContinuationWaitLifecycleMutator(IProcfilerLogger logger) 
-    : base(logger, ActivityId, ourStartEventClasses, new [] { TraceEventsConstants.TaskWaitContinuationComplete })
+  protected override IIdCreationStrategy IdCreationStrategy { get; } = new FromAttributesIdCreationStrategy(ActivityId, new[]
   {
-    IdCreationStrategy = new FromAttributesIdCreationStrategy(ActivityId, new[]
-    {
-      TraceEventsConstants.TaskId
-    });
-  }
+    TraceEventsConstants.TaskId
+  });
 }

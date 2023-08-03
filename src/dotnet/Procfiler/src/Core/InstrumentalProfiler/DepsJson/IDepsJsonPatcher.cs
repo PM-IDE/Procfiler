@@ -11,23 +11,12 @@ public interface IDepsJsonPatcher
 }
 
 [AppComponent]
-public class DepsJsonPatcherImpl : IDepsJsonPatcher
+public class DepsJsonPatcherImpl(IDepsJsonReader depsJsonReader, IDepsJsonWriter depsJsonWriter) : IDepsJsonPatcher
 {
-  private readonly IDepsJsonReader myDepsJsonReader;
-  private readonly IDepsJsonWriter myDepsJsonWriter;
-
-  
-  public DepsJsonPatcherImpl(IDepsJsonReader depsJsonReader, IDepsJsonWriter depsJsonWriter)
-  {
-    myDepsJsonReader = depsJsonReader;
-    myDepsJsonWriter = depsJsonWriter;
-  }
-
-  
   public async Task AddAssemblyReferenceAsync(
     AssemblyDefinition originalAssembly, string depsJsonPath, string assemblyToAddName, Version assemblyToAddVersion)
   {
-    var depsJsonFile = await myDepsJsonReader.ReadOrThrowAsync(depsJsonPath);
+    var depsJsonFile = await depsJsonReader.ReadOrThrowAsync(depsJsonPath);
     var originalAssemblyVersion = originalAssembly.Name.Version.ToString(3);
     var asmToAddNameWithVersion = $"{assemblyToAddName}/{assemblyToAddVersion.ToString(3)}";
     
@@ -69,6 +58,6 @@ public class DepsJsonPatcherImpl : IDepsJsonPatcher
       Type = "project"
     });
 
-    await myDepsJsonWriter.WriteAsync(depsJsonPath, depsJsonFile);
+    await depsJsonWriter.WriteAsync(depsJsonPath, depsJsonFile);
   }
 }

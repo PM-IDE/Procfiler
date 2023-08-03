@@ -2,25 +2,18 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.Documentation.Markdown;
 
-public class MdTable : IMdDocumentPart, IEnumerable
+public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
 {
   private const char CellsDelimiter = '|';
   private const char Space = ' ';
   private const char SeparatorPath = '-';
   
   
-  private readonly List<MdTableCell[]> myRows;
+  private readonly List<MdTableCell[]> myRows = new();
   
   
   public MdTableCell[]? Header { get; set; }
-  public int ColumnsCount { get; }
-
-  
-  public MdTable(int columnsCount)
-  {
-    ColumnsCount = columnsCount;
-    myRows = new List<MdTableCell[]>();
-  }
+  public int ColumnsCount { get; } = columnsCount;
 
 
   public void Add(IEnumerable<string[]> rows)

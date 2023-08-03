@@ -5,19 +5,10 @@ public interface IParseResultInfoProvider
   T? TryGetOptionValue<T>(Option<T> option);
 }
 
-public class ParseResultInfoProviderImpl : IParseResultInfoProvider
+public class ParseResultInfoProviderImpl(ParseResult parseResult) : IParseResultInfoProvider
 {
-  private readonly ParseResult myParseResult;
-
-  
-  public ParseResultInfoProviderImpl(ParseResult parseResult)
-  {
-    myParseResult = parseResult;
-  }
-
-  
   public T? TryGetOptionValue<T>(Option<T> option)
   {
-    return myParseResult.GetValueForOption(option);
+    return parseResult.GetValueForOption(option);
   }
 }

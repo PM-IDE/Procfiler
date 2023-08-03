@@ -30,35 +30,19 @@ public interface IClrEventsCollector
 }
 
 [AppComponent]
-public class ClrEventsCollector : IClrEventsCollector
+public class ClrEventsCollector(
+  IProcfilerLogger logger,
+  IEventPipeProvidersProvider eventPipeProvidersProvider,
+  ITransportCreationWaiter transportCreationWaiter,
+  ICustomClrEventsFactory customClrEventsFactory,
+  IBinaryShadowStacksReader binaryShadowStacksReader
+) : IClrEventsCollector
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly IEventPipeProvidersProvider myEventPipeProvidersProvider;
-  private readonly ITransportCreationWaiter myTransportCreationWaiter;
-  private readonly ICustomClrEventsFactory myCustomClrEventsFactory;
-  private readonly IBinaryShadowStacksReader myBinaryShadowStacksReader;
-
-
-  public ClrEventsCollector(
-    IProcfilerLogger logger,
-    IEventPipeProvidersProvider eventPipeProvidersProvider,
-    ITransportCreationWaiter transportCreationWaiter,
-    ICustomClrEventsFactory customClrEventsFactory, 
-    IBinaryShadowStacksReader binaryShadowStacksReader)
-  {
-    myLogger = logger;
-    myEventPipeProvidersProvider = eventPipeProvidersProvider;
-    myTransportCreationWaiter = transportCreationWaiter;
-    myCustomClrEventsFactory = customClrEventsFactory;
-    myBinaryShadowStacksReader = binaryShadowStacksReader;
-  }
-
-
   public CollectedEvents CollectEvents(ClrEventsCollectionContext context)
   {
     try
     {
-      using var tempPathCookie = new TempFileCookie(myLogger);
+      using var tempPathCookie = new TempFileCookie(logger);
       var (pid, duration, timeout, category) = context;
       ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
       var binaryStacksPath = context switch
@@ -71,7 +55,7 @@ public class ClrEventsCollector : IClrEventsCollector
     }
     catch (Exception ex)
     {
-      myLogger.LogError("{Method}: {Message}", nameof(CollectEvents), ex.Message);
+      logger.LogError("{Method}: {Message}", nameof(CollectEvents), ex.Message);
       throw;
     }
   }
@@ -83,11 +67,11 @@ public class ClrEventsCollector : IClrEventsCollector
     ProvidersCategoryKind category,
     TempFileCookie tempPathCookie)
   {
-    using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFile), myLogger);
+    using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFile), logger);
     
     var client = new DiagnosticsClient(processId);
-    myTransportCreationWaiter.WaitUntilTransportIsCreatedOrThrow(processId);
-    var providers = myEventPipeProvidersProvider.GetProvidersFor(category);
+    transportCreationWaiter.WaitUntilTransportIsCreatedOrThrow(processId);
+    var providers = eventPipeProvidersProvider.GetProvidersFor(category);
     using var session = client.StartEventPipeSession(providers, circularBufferMB: 2048);
     client.ResumeRuntime();
 
@@ -101,11 +85,11 @@ public class ClrEventsCollector : IClrEventsCollector
     {
       try
       {
-        session.StopAsync(CancellationToken.None).Wait();
+        session.Stop();
       }
       catch (ServerNotAvailableException)
       {
-        myLogger.LogInformation("The server is already stopped, so no need to terminate session");
+        logger.LogInformation("The server is already stopped, so no need to terminate session");
       }
     }
 
@@ -116,8 +100,8 @@ public class ClrEventsCollector : IClrEventsCollector
 
     if (firstFinishedTask == delayTask)
     {
-      myLogger.LogInformation("The timeout for waiting for ending of write event pipe logs has expired");
-      myLogger.LogInformation("Now we will wait until the writing of events to temp file will be finished");
+      logger.LogInformation("The timeout for waiting for ending of write event pipe logs has expired");
+      logger.LogInformation("Now we will wait until the writing of events to temp file will be finished");
       copyTask.Wait();
     }
   }
@@ -130,18 +114,18 @@ public class ClrEventsCollector : IClrEventsCollector
     };
     
     var etlxFilePath = TraceLog.CreateFromEventPipeDataFile(tempPathCookie.FullFilePath, options: options);
-    using var etlxCookie = new TempFileCookie(etlxFilePath, myLogger);
+    using var etlxCookie = new TempFileCookie(etlxFilePath, logger);
 
     return ReadEventsFromFileInternal(etlxFilePath, binaryStacks);
   }
 
   private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, string? binaryStacksPath)
   {
-    using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFile), myLogger);
+    using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFile), logger);
     using var traceLog = new TraceLog(etlxFilePath);
     var stackSource = InitializeStackSource(traceLog);
 
-    myLogger.LogInformation(
+    logger.LogInformation(
       "We GOT {EventCount} events, We LOST {EventsLost} events", traceLog.EventCount, traceLog.EventsLost);
     
     var statistics = new Statistics();
@@ -149,13 +133,13 @@ public class ClrEventsCollector : IClrEventsCollector
     var context = new CreatingEventContext(stackSource, traceLog);
     var shadowStacks = binaryStacksPath switch
     {
-      { } => myBinaryShadowStacksReader.ReadStackEvents(binaryStacksPath),
+      { } => binaryShadowStacksReader.ReadStackEvents(binaryStacksPath),
       null => new FromEventsShadowStacks(stackSource)
     };
     
     var globalData = new SessionGlobalData(shadowStacks);
 
-    using (var _ = new PerformanceCookie("ProcessingEvents", myLogger))
+    using (var _ = new PerformanceCookie("ProcessingEvents", logger))
     {
       var index = 0;
       // ReSharper disable once LoopCanBeConvertedToQuery
@@ -168,14 +152,14 @@ public class ClrEventsCollector : IClrEventsCollector
       }
     }
 
-    statistics.LogMyself(myLogger);
+    statistics.LogMyself(logger);
 
     return new CollectedEvents(CreateEventCollection(events), globalData);
   }
 
   private IEventsCollection CreateEventCollection(EventRecordWithMetadata[] events)
   {
-    using (new PerformanceCookie($"{GetType()}::SortingEvents", myLogger))
+    using (new PerformanceCookie($"{GetType()}::SortingEvents", logger))
     {
       Array.Sort(events, static (first, second) =>
       {
@@ -185,7 +169,7 @@ public class ClrEventsCollector : IClrEventsCollector
       });
     }
     
-    return new EventsCollectionImpl(events, myLogger);
+    return new EventsCollectionImpl(events, logger);
   }
   
   private EventWithGlobalDataUpdate CreateEventWithMetadataFromClrEvent(
@@ -195,13 +179,13 @@ public class ClrEventsCollector : IClrEventsCollector
     {
       var processedCount = statistics.EventsCount;
       var allEvents = context.Log.EventCount;
-      myLogger.LogTrace("Processed {Processed} out of {OverallCount}", processedCount, allEvents);
+      logger.LogTrace("Processed {Processed} out of {OverallCount}", processedCount, allEvents);
     }
 
     var eventId = (int)traceEvent.ID;
-    if (myCustomClrEventsFactory.NeedToCreateCustomWrapper(eventId))
+    if (customClrEventsFactory.NeedToCreateCustomWrapper(eventId))
     {
-      traceEvent = myCustomClrEventsFactory.CreateWrapperEvent(traceEvent);
+      traceEvent = customClrEventsFactory.CreateWrapperEvent(traceEvent);
     }
 
     UpdateStatisticsAfterEventProcession(traceEvent, ref statistics);

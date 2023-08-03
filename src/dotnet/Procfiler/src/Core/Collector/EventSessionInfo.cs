@@ -5,23 +5,15 @@ namespace Procfiler.Core.Collector;
 
 public record EventSessionInfo(IEnumerable<IEventsCollection> Events, SessionGlobalData GlobalData);
 
-public class SessionGlobalData
+public class SessionGlobalData(IShadowStacks shadowStacks)
 {
-  private readonly Dictionary<long, string> myMethodIdToFqn;
-  private readonly Dictionary<long, string> myTypeIdsToNames;
+  private readonly Dictionary<long, string> myMethodIdToFqn = new();
+  private readonly Dictionary<long, string> myTypeIdsToNames = new();
 
   
   public IReadOnlyDictionary<long, string> TypeIdToNames => myTypeIdsToNames;
   public IReadOnlyDictionary<long, string> MethodIdToFqn => myMethodIdToFqn;
-  public IShadowStacks Stacks { get; }
-
-
-  public SessionGlobalData(IShadowStacks shadowStacks)
-  {
-    Stacks = shadowStacks;
-    myMethodIdToFqn = new Dictionary<long, string>();
-    myTypeIdsToNames = new Dictionary<long, string>();
-  }
+  public IShadowStacks Stacks { get; } = shadowStacks;
 
 
   public void AddInfoFrom(EventWithGlobalDataUpdate update)

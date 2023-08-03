@@ -7,24 +7,15 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Commands.Documentation;
 
 [CommandLineCommand]
-public class CreateDocumentationCommand : IVisibleToUserCommand
+public class CreateDocumentationCommand(
+  IDocumentationCreator documentationCreator, IProcfilerLogger logger) : IVisibleToUserCommand
 {
-  private readonly Option<string> myOutputPathOption;
-  private readonly IDocumentationCreator myDocumentationCreator;
-  private readonly IProcfilerLogger myLogger;
-
-
-  public CreateDocumentationCommand(IDocumentationCreator documentationCreator, IProcfilerLogger logger)
+  private readonly Option<string> myOutputPathOption = new("-o", "The path to the directory into which the documentation will be generated")
   {
-    myDocumentationCreator = documentationCreator;
-    myLogger = logger;
-    myOutputPathOption = new Option<string>("-o", "The path to the directory into which the documentation will be generated")
-    {
-      IsRequired = true
-    };
-  }
-  
-  
+    IsRequired = true
+  };
+
+
   public int Invoke(InvocationContext context)
   {
     return InvokeAsync(context).GetAwaiter().GetResult();
@@ -37,12 +28,12 @@ public class CreateDocumentationCommand : IVisibleToUserCommand
       var outputPath = context.ParseResult.GetValueForOption(myOutputPathOption) ??
                        throw new MissingOptionException(myOutputPathOption);
     
-      await myDocumentationCreator.CreateDocumentationAsync(outputPath);
+      await documentationCreator.CreateDocumentationAsync(outputPath);
       return 0;
     }
     catch (Exception ex)
     {
-      myLogger.LogError(ex, "Error occured while creating documentation");
+      logger.LogError(ex, "Error occured while creating documentation");
       return 1;
     }
   }

@@ -31,17 +31,8 @@ public interface IProcfilerEventsFactory
 }
 
 [AppComponent]
-public class ProcfilerEventsFactory : IProcfilerEventsFactory
+public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsFactory
 {
-  private readonly IProcfilerLogger myLogger;
-
-
-  public ProcfilerEventsFactory(IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
-
-
   public EventRecordWithMetadata CreateMethodStartEvent(EventsCreationContext context, string methodName)
   {
     return CreateMethodStartOrEndEvent(context, TraceEventsConstants.ProcfilerMethodStart, methodName);
@@ -108,7 +99,7 @@ public class ProcfilerEventsFactory : IProcfilerEventsFactory
     var methodId = context.FrameInfo.FunctionId;
     if (!context.GlobalData.MethodIdToFqn.TryGetValue(methodId, out var fqn))
     {
-      myLogger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
+      logger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
       fqn = $"System.Undefined.{methodId}[instance.void..()]";
     }
 

@@ -8,16 +8,11 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.ArrayPools;
 
-public abstract class BufferEventTypeNameMutator : SingleEventMutatorBase
+public abstract class BufferEventTypeNameMutator(IProcfilerLogger logger) : SingleEventMutatorBase(logger)
 {
   private const string Buffer = TraceEventsConstants.BufferEventType;
 
 
-  protected BufferEventTypeNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
-
-  
   public override IEnumerable<EventLogMutation> Mutations =>
     new[] { new EventTypeNameMutation(EventType, $"{Buffer}/{EventType[Buffer.Length..]}") };
 
@@ -34,56 +29,31 @@ public abstract class BufferEventTypeNameMutator : SingleEventMutatorBase
 
 //todo: seems very bad, need to refactor
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class BufferAllocatedEventTypeMutator : BufferEventTypeNameMutator
+public class BufferAllocatedEventTypeMutator(IProcfilerLogger logger) : BufferEventTypeNameMutator(logger)
 {
   public override string EventType => TraceEventsConstants.BufferAllocated;
-
-  
-  public BufferAllocatedEventTypeMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class BufferRentedEventTypeMutator : BufferEventTypeNameMutator
+public class BufferRentedEventTypeMutator(IProcfilerLogger logger) : BufferEventTypeNameMutator(logger)
 {
   public override string EventType => TraceEventsConstants.BufferRented;
-
-  
-  public BufferRentedEventTypeMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class BufferReturnedEventTypeMutator : BufferEventTypeNameMutator
+public class BufferReturnedEventTypeMutator(IProcfilerLogger logger) : BufferEventTypeNameMutator(logger)
 {
   public override string EventType => TraceEventsConstants.BufferReturned;
-
-  
-  public BufferReturnedEventTypeMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class BufferTrimmedEventTypeMutator : BufferEventTypeNameMutator
+public class BufferTrimmedEventTypeMutator(IProcfilerLogger logger) : BufferEventTypeNameMutator(logger)
 {
   public override string EventType => TraceEventsConstants.BufferTrimmed;
-
-  
-  public BufferTrimmedEventTypeMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class BufferTrimPollTypeMutator : BufferEventTypeNameMutator
+public class BufferTrimPollTypeMutator(IProcfilerLogger logger) : BufferEventTypeNameMutator(logger)
 {
   public override string EventType => TraceEventsConstants.BufferTrimPoll;
-
-  
-  public BufferTrimPollTypeMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }

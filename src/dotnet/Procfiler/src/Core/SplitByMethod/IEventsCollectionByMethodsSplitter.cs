@@ -14,22 +14,13 @@ public interface IEventsCollectionByMethodsSplitter
 }
 
 [AppComponent]
-public class EventsCollectionByMethodsSplitterImpl : IEventsCollectionByMethodsSplitter
+public class EventsCollectionByMethodsSplitterImpl(IProcfilerEventsFactory eventsFactory) : IEventsCollectionByMethodsSplitter
 {
-  private readonly IProcfilerEventsFactory myEventsFactory;
-
-  
-  public EventsCollectionByMethodsSplitterImpl(IProcfilerEventsFactory eventsFactory)
-  {
-    myEventsFactory = eventsFactory;
-  }
-
-
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split(
     IEventsCollection events,
     string filterPattern,
     InlineMode inlineEventsFromInnerMethods)
   {
-    return new SplitterImplementation(myEventsFactory, events, filterPattern, inlineEventsFromInnerMethods).Split();
+    return new SplitterImplementation(eventsFactory, events, filterPattern, inlineEventsFromInnerMethods).Split();
   }
 }

@@ -7,20 +7,13 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.GC;
 
 [EventMutator(MultipleEventMutatorsPasses.LastMultipleMutators)]
-public class GcSampledObjectAllocationMutator : MetadataValueToNameAppenderBase
+public class GcSampledObjectAllocationMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
-  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-  
-  public override string EventType => TraceEventsConstants.GcSampledObjectAllocation;
-
-  
-  public GcSampledObjectAllocationMutator(IProcfilerLogger logger) : base(logger)
+  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(
-        TraceEventsConstants.GcSampledObjectAllocationTypeName, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.GcSampledObjectAllocationTypeName, EventClassKind.Zero)
+  };
+
+
+  public override string EventType => TraceEventsConstants.GcSampledObjectAllocation;
 }

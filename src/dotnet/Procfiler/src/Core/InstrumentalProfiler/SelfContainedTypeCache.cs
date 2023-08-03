@@ -6,25 +6,15 @@ namespace Procfiler.Core.InstrumentalProfiler;
 
 public record AssemblyDefWithPath(AssemblyDefinition Assembly, string PhysicalPath);
 
-public class SelfContainedTypeCache
+public class SelfContainedTypeCache(IProcfilerLogger logger, string contextFolder)
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly Dictionary<string, TypeDefinition> myCache;
-  private readonly Dictionary<string, AssemblyDefWithPath> myAssemblies;
-  private readonly FolderBasedAssemblyResolver myResolver;
+  private readonly Dictionary<string, TypeDefinition> myCache = new();
+  private readonly Dictionary<string, AssemblyDefWithPath> myAssemblies = new();
+  private readonly FolderBasedAssemblyResolver myResolver = new(logger, contextFolder);
 
 
   public IReadOnlyDictionary<string, AssemblyDefWithPath> Assemblies => myAssemblies;
   public IReadOnlyDictionary<string, TypeDefinition> Types => myCache;
-
-
-  public SelfContainedTypeCache(IProcfilerLogger logger, string contextFolder)
-  {
-    myLogger = logger;
-    myCache = new Dictionary<string, TypeDefinition>();
-    myResolver = new FolderBasedAssemblyResolver(logger, contextFolder);
-    myAssemblies = new Dictionary<string, AssemblyDefWithPath>();
-  }
 
 
   public void Initialize()
@@ -40,7 +30,7 @@ public class SelfContainedTypeCache
         {
           if (myCache.TryGetValue(type.FullName, out var existingType))
           {
-            myLogger.LogWarning("Already have type def for {FullName}: {TypeDef}", type.FullName, existingType);
+            logger.LogWarning("Already have type def for {FullName}: {TypeDef}", type.FullName, existingType);
             continue;
           }
 
@@ -51,10 +41,5 @@ public class SelfContainedTypeCache
   }
 }
 
-public class FailedToResolveAssemblyException : ProcfilerException
-{
-  public FailedToResolveAssemblyException(IAssemblyResolver resolver, AssemblyNameReference reference)
-    :base($"Failed to resolve {reference.FullName} from resolver: {resolver.GetType().Name}")
-  {
-  }
-}
+public class FailedToResolveAssemblyException(IAssemblyResolver resolver, AssemblyNameReference reference)
+  : ProcfilerException($"Failed to resolve {reference.FullName} from resolver: {resolver.GetType().Name}");

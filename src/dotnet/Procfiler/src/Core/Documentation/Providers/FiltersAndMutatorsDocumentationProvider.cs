@@ -7,21 +7,11 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.Documentation.Providers;
 
 [AppComponent]
-public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationProvider
+public class FiltersAndMutatorsDocumentationProvider(
+  IEnumerable<IEventsFilter> filters,
+  IEnumerable<IEventsLogMutator> mutators
+) : IMarkdownDocumentationProvider
 {
-  private readonly IEnumerable<IEventsFilter> myFilters;
-  private readonly IEnumerable<IEventsLogMutator> myMutators;
-
-
-  public FiltersAndMutatorsDocumentationProvider(
-    IEnumerable<IEventsFilter> filters,
-    IEnumerable<IEventsLogMutator> mutators)
-  {
-    myFilters = filters;
-    myMutators = mutators;
-  }
-
-  
   public MdDocument CreateDocumentationFile()
   {
     var allMutations = GetAllMutations();
@@ -63,13 +53,13 @@ public class FiltersAndMutatorsDocumentationProvider : IMarkdownDocumentationPro
     new("Attributes which will be added")
   };
   
-  private IReadOnlyList<EventLogMutation> GetAllMutations() => myMutators.SelectMany(mutator => mutator.Mutations).ToList();
+  private IReadOnlyList<EventLogMutation> GetAllMutations() => mutators.SelectMany(mutator => mutator.Mutations).ToList();
 
   private IEnumerable<string> GetEventsNames(IReadOnlyList<EventLogMutation> allMutations)
   {
     return allMutations
       .Select(m => m.EventType)
-      .Concat(myFilters.SelectMany(filter => filter.AllowedEventsNames))
+      .Concat(filters.SelectMany(filter => filter.AllowedEventsNames))
       .ToHashSet();
   }
 

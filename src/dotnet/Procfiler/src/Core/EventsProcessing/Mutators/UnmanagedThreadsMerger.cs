@@ -16,17 +16,8 @@ public interface IUndefinedThreadsEventsMerger
 }
 
 [AppComponent]
-public class UndefinedThreadsEventsMerger : IUndefinedThreadsEventsMerger
+public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedThreadsEventsMerger
 {
-  private readonly IProcfilerLogger myLogger;
-
-
-  public UndefinedThreadsEventsMerger(IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
-  
-  
   [Pure]
   public IEventsCollection Merge(
     IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
@@ -41,7 +32,7 @@ public class UndefinedThreadsEventsMerger : IUndefinedThreadsEventsMerger
     }
 
     Array.Resize(ref mergedArray, index);
-    return new EventsCollectionImpl(mergedArray, myLogger);
+    return new EventsCollectionImpl(mergedArray, logger);
   }
 
   public IEnumerable<EventRecordWithMetadata> MergeLazy(

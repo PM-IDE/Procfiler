@@ -6,7 +6,14 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.StatefulMutators.Activities.Requests;
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class RequestStartStopLifecycleMutator : EventsLifecycleMutatorBase
+public class RequestStartStopLifecycleMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(
+      logger, 
+      "Request", 
+      new [] { TraceEventsConstants.RequestStart }, 
+      ourCompleteEvents, 
+      TraceEventsConstants.RequestLeftQueue
+    )
 {
   private static readonly string[] ourCompleteEvents =
   {
@@ -16,36 +23,31 @@ public class RequestStartStopLifecycleMutator : EventsLifecycleMutatorBase
 
   protected override IIdCreationStrategy IdCreationStrategy => 
     new FromEventActivityIdIdCreationStrategy(TraceEventsConstants.HttpRequestActivityBasePart);
-
-
-  public RequestStartStopLifecycleMutator(IProcfilerLogger logger)
-    : base(logger, "Request", new [] { TraceEventsConstants.RequestStart }, ourCompleteEvents, TraceEventsConstants.RequestLeftQueue)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class RequestContentLifecycleMutator : EventsLifecycleMutatorBase
+public class RequestContentLifecycleMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(
+      logger, 
+      "RequestContent", 
+      new [] { TraceEventsConstants.RequestContentStart }, 
+      new [] { TraceEventsConstants.RequestContentStop }
+    )
 {
   protected override IIdCreationStrategy IdCreationStrategy => 
     new FromEventActivityIdIdCreationStrategy(TraceEventsConstants.HttpRequestActivityBasePart);
-
-
-  public RequestContentLifecycleMutator(IProcfilerLogger logger) 
-    : base(logger, "RequestContent", new [] { TraceEventsConstants.RequestContentStart }, new [] { TraceEventsConstants.RequestContentStop })
-  {
-  }
 }
 
+
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class RequestHeaderLifecycleMutator : EventsLifecycleMutatorBase
+public class RequestHeaderLifecycleMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(
+      logger,
+      "RequestHeaders",
+      new [] { TraceEventsConstants.RequestHeadersStart },
+      new [] { TraceEventsConstants.RequestHeadersStop }
+    )
 {
   protected override IIdCreationStrategy IdCreationStrategy =>
     new FromEventActivityIdIdCreationStrategy(TraceEventsConstants.HttpRequestActivityBasePart);
-
-
-  public RequestHeaderLifecycleMutator(IProcfilerLogger logger) 
-    : base(logger, "RequestHeaders", new [] { TraceEventsConstants.RequestHeadersStart }, new [] { TraceEventsConstants.RequestHeadersStop })
-  {
-  }
 }

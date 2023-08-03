@@ -6,19 +6,12 @@ public interface IProcfilerLogger : ILogger
   void DecreaseIndent();
 }
 
-public class ProcfilerLogger : IProcfilerLogger
+public class ProcfilerLogger(ILogger logger) : IProcfilerLogger
 {
   private const string Space = "--";
   
   private int myIndent;
-  private readonly ILogger myLogger;
 
-
-  public ProcfilerLogger(ILogger logger)
-  {
-    myLogger = logger;
-  }
-  
 
   public void Log<TState>(
     LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -28,7 +21,7 @@ public class ProcfilerLogger : IProcfilerLogger
       return Format(formatter(localState, localException));
     }
 
-    myLogger.Log(logLevel, eventId, state, exception, FormatWithIndent);
+    logger.Log(logLevel, eventId, state, exception, FormatWithIndent);
   }
 
   private string Format(string message)
@@ -48,12 +41,12 @@ public class ProcfilerLogger : IProcfilerLogger
 
   public bool IsEnabled(LogLevel logLevel)
   {
-    return myLogger.IsEnabled(logLevel);
+    return logger.IsEnabled(logLevel);
   }
 
   public IDisposable? BeginScope<TState>(TState state) where TState : notnull
   {
-    return myLogger.BeginScope(state);
+    return logger.BeginScope(state);
   }
 
   public void IncreaseIndent()

@@ -2,19 +2,12 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.Documentation.Markdown;
 
-public class MdDocument : IEnumerable, IMdDocumentPart
+public class MdDocument(string name) : IEnumerable, IMdDocumentPart
 {
-  private readonly List<IMdDocumentPart> myParts;
+  private readonly List<IMdDocumentPart> myParts = new();
 
   
-  public string Name { get; }
-
-  
-  public MdDocument(string name)
-  {
-    Name = name;
-    myParts = new List<IMdDocumentPart>();
-  }
+  public string Name { get; } = name;
 
 
   public void Add(IMdDocumentPart documentPart)

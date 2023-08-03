@@ -1,12 +1,6 @@
 ﻿namespace Procfiler.Utils.Container;
 
-public class EventMutatorAttribute : AppComponentAttribute
+public class EventMutatorAttribute(int pass) : AppComponentAttribute
 {
-  public int Pass { get; }
-
-  
-  public EventMutatorAttribute(int pass)
-  {
-    Pass = pass;
-  }
+  public int Pass { get; } = pass;
 }

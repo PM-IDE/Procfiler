@@ -6,41 +6,25 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Methods;
 
-public abstract class MethodInliningNameMutatorBase : MetadataValueToNameAppenderBase
+public abstract class MethodInliningNameMutatorBase(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
-  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-
-  protected MethodInliningNameMutatorBase(IProcfilerLogger logger) : base(logger)
+  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(
-        TraceEventsConstants.MethodInliningSucceededInlineeNamespace, EventClassKind.Zero),
-      MetadataKeysWithTransform.CreateForTypeLikeName(
-        TraceEventsConstants.MethodInliningSucceededInlineeName, EventClassKind.Zero),
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(
+      TraceEventsConstants.MethodInliningSucceededInlineeNamespace, EventClassKind.Zero),
+    MetadataKeysWithTransform.CreateForTypeLikeName(
+      TraceEventsConstants.MethodInliningSucceededInlineeName, EventClassKind.Zero),
+  };
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodInliningFailedNameMutator : MethodInliningNameMutatorBase
+public class MethodInliningFailedNameMutator(IProcfilerLogger logger) : MethodInliningNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodInliningFailed;
-
-
-  public MethodInliningFailedNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class MethodInliningSucceededNameMutator : MethodInliningNameMutatorBase
+public class MethodInliningSucceededNameMutator(IProcfilerLogger logger) : MethodInliningNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodInliningSucceeded;
-
-
-  public MethodInliningSucceededNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }

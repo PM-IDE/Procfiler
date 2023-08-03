@@ -12,14 +12,11 @@ public interface ICollectMetaInformationCommand : ICommandWithContext<CollectClr
 }
 
 [CommandLineCommand]
-public class CollectMetaInformationCommand : CollectCommandBase, ICollectMetaInformationCommand
+public class CollectMetaInformationCommand(
+  IProcfilerLogger logger, 
+  ICommandExecutorDependantOnContext commandExecutor
+) : CollectCommandBase(logger, commandExecutor), ICollectMetaInformationCommand
 {
-  public CollectMetaInformationCommand(IProcfilerLogger logger, ICommandExecutorDependantOnContext commandExecutor) 
-    : base(logger, commandExecutor)
-  {
-  }
-
-
   public override void Execute(CollectClrEventsContext context)
   {
     ExecuteCommand(context, events =>

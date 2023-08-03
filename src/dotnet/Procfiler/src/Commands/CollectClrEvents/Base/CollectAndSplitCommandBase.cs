@@ -11,34 +11,22 @@ using Procfiler.Utils;
 
 namespace Procfiler.Commands.CollectClrEvents.Base;
 
-public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase where TKey : notnull
+public abstract class CollectAndSplitCommandBase<TKey>(
+  IProcfilerLogger logger,
+  ICommandExecutorDependantOnContext commandExecutor,
+  IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger,
+  IUnitedEventsProcessor unitedEventsProcessor,
+  IDelegatingEventsSerializer delegatingEventsSerializer,
+  IStackTraceSerializer stackTraceSerializer
+) : CollectCommandBase(logger, commandExecutor) where TKey : notnull
 {
   protected record struct CollectAndSplitContext(bool UseFilters, bool UseMutators, bool MergeFromUndefinedThread)
   {
     public static CollectAndSplitContext DoNothing { get; } = new(false, false, false);
     public static CollectAndSplitContext DoEverything { get; } = new(true, true, true);
   }
-  
-  private readonly IDelegatingEventsSerializer myDelegatingEventsSerializer;
-  private readonly IStackTraceSerializer myStackTraceSerializer;
-  private readonly IUndefinedThreadsEventsMerger myUndefinedThreadsEventsMerger;
-  
-  protected readonly IUnitedEventsProcessor UnitedEventsProcessor;
 
-
-  protected CollectAndSplitCommandBase(
-    IProcfilerLogger logger,
-    ICommandExecutorDependantOnContext commandExecutor,
-    IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    IDelegatingEventsSerializer delegatingEventsSerializer, 
-    IStackTraceSerializer stackTraceSerializer) : base(logger, commandExecutor)
-  {
-    myUndefinedThreadsEventsMerger = undefinedThreadsEventsMerger;
-    UnitedEventsProcessor = unitedEventsProcessor;
-    myDelegatingEventsSerializer = delegatingEventsSerializer;
-    myStackTraceSerializer = stackTraceSerializer;
-  }
+  protected readonly IUnitedEventsProcessor UnitedEventsProcessor = unitedEventsProcessor;
 
 
   protected void ExecuteSimpleSplitCommand(
@@ -99,7 +87,7 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     {
       using (new PerformanceCookie($"{GetType().Name}::MergingEvents", Logger))
       {
-        mergedEvents = myUndefinedThreadsEventsMerger.MergeLazy(correspondingEvents, undefinedThreadEvents);
+        mergedEvents = undefinedThreadsEventsMerger.MergeLazy(correspondingEvents, undefinedThreadEvents);
       }
     }
 
@@ -107,12 +95,12 @@ public abstract class CollectAndSplitCommandBase<TKey> : CollectCommandBase wher
     var extension = outputFormat.GetExtension();
     var filePath = Path.Combine(context.CommonContext.OutputPath, $"{key.ToString()}.{extension}");
 
-    myDelegatingEventsSerializer.SerializeEvents(mergedEvents, filePath, outputFormat);
+    delegatingEventsSerializer.SerializeEvents(mergedEvents, filePath, outputFormat);
   }
 
   private void SerializeStacks(CollectClrEventsContext context, SessionGlobalData globalData)
   {
-    myStackTraceSerializer.SerializeStackTraces(globalData, context.CommonContext.OutputPath);
+    stackTraceSerializer.SerializeStackTraces(globalData, context.CommonContext.OutputPath);
   }
 
   private static EventsProcessingContext CreateContext(

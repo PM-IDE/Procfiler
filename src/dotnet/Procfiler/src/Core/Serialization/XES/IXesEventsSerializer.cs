@@ -14,23 +14,18 @@ public interface IXesEventsSerializer
 }
 
 [AppComponent]
-public partial class XesEventsSerializer : IXesEventsSerializer
+public partial class XesEventsSerializer(
+    IUnitedEventsProcessor unitedEventsProcessor, 
+    IProcfilerLogger logger
+) : IXesEventsSerializer
 {
   [ThreadStatic]
   private static int ourNextEventId;
 
-  private readonly IProcfilerLogger myLogger;
-
-
-  public XesEventsSerializer(IUnitedEventsProcessor unitedEventsProcessor, IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
-
 
   public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
   {
-    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", myLogger);
+    using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", logger);
 
     using var writer = XmlWriter.Create(stream, new XmlWriterSettings
     {

@@ -7,25 +7,15 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.MultipleEventsMutators;
 
-public class CppStacksMethodsStartEndMutator : IMethodsStartEndProcessor
+public class CppStacksMethodsStartEndMutator(
+  IProcfilerEventsFactory factory, IProcfilerLogger logger) : IMethodsStartEndProcessor
 {
-  private readonly IProcfilerEventsFactory myFactory;
-  private readonly IProcfilerLogger myLogger;
-  
-  
-  public CppStacksMethodsStartEndMutator(IProcfilerEventsFactory factory, IProcfilerLogger logger)
-  {
-    myFactory = factory;
-    myLogger = logger;
-  }
-  
-  
   public void Process(IEventsCollection events, SessionGlobalData context)
   {
     if (context.Stacks is not ICppShadowStacks cppShadowStacks)
     {
       var name = context.Stacks.GetType().Name;
-      myLogger.LogError("Not compatible shadow stacks, got {Type}, expected {Type}", name, nameof(ICppShadowStacks));
+      logger.LogError("Not compatible shadow stacks, got {Type}, expected {Type}", name, nameof(ICppShadowStacks));
       
       return;
     }
@@ -39,17 +29,17 @@ public class CppStacksMethodsStartEndMutator : IMethodsStartEndProcessor
     var managedThreadId = collectionEnumerator.Current.Event.ManagedThreadId;
     if (cppShadowStacks.FindShadowStack(managedThreadId) is not { } foundShadowStack)
     {
-      myLogger.LogWarning("Managed thread {Id} was not in shadow stacks", managedThreadId);
+      logger.LogWarning("Managed thread {Id} was not in shadow stacks", managedThreadId);
       return;
     }
 
     if (foundShadowStack.FramesCount == 0)
     {
-      myLogger.LogWarning("Skipping shadow stack for {Id} because it does not contain frames", managedThreadId);
+      logger.LogWarning("Skipping shadow stack for {Id} because it does not contain frames", managedThreadId);
       return;
     }
     
-    var modificationSource = new MethodStartEndModificationSource(myLogger, myFactory, context, foundShadowStack);
+    var modificationSource = new MethodStartEndModificationSource(logger, factory, context, foundShadowStack);
     events.InjectModificationSource(modificationSource);
   }
 }

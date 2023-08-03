@@ -8,18 +8,12 @@ public interface IFromEventsShadowStacks : IShadowStacks
   void AddStack(TraceEvent traceEvent);
 }
 
-public class FromEventsShadowStacks : IFromEventsShadowStacks
+public class FromEventsShadowStacks(MutableTraceEventStackSource source) : IFromEventsShadowStacks
 {
-  private readonly StackTracesStorage myStorage;
+  private readonly StackTracesStorage myStorage = new(source);
 
 
   public IReadOnlyDictionary<int, StackTraceInfo> StackTraceInfos => myStorage.StackTraces;
-  
-  
-  public FromEventsShadowStacks(MutableTraceEventStackSource source)
-  {
-    myStorage = new StackTracesStorage(source);
-  }
 
 
   public void AddStack(TraceEvent traceEvent)
@@ -28,24 +22,15 @@ public class FromEventsShadowStacks : IFromEventsShadowStacks
   }
 }
 
-public class StackTracesStorage
+public class StackTracesStorage(MutableTraceEventStackSource source)
 {
-  private readonly MutableTraceEventStackSource mySource;
-  private readonly Dictionary<int, int> myStacksHashCodesToIds;
-  private readonly Dictionary<int, StackTraceInfo> myIdsToStackTraces;
+  private readonly Dictionary<int, int> myStacksHashCodesToIds = new();
+  private readonly Dictionary<int, StackTraceInfo> myIdsToStackTraces = new();
 
   
   public IReadOnlyDictionary<int, StackTraceInfo> StackTraces => myIdsToStackTraces;
 
 
-  public StackTracesStorage(MutableTraceEventStackSource source)
-  {
-    mySource = source;
-    myStacksHashCodesToIds = new Dictionary<int, int>();
-    myIdsToStackTraces = new Dictionary<int, StackTraceInfo>();
-  }
-  
-  
   public void AddStackTraceInfoFrom(TraceEvent @event)
   {
     var id = @event.CallStackIndex();
@@ -54,7 +39,7 @@ public class StackTracesStorage
     var intId = (int) id;
     if (myIdsToStackTraces.TryGetValue(intId, out _)) return;
 
-    var info = @event.CreateEventStackTraceInfoOrThrow(mySource);
+    var info = @event.CreateEventStackTraceInfoOrThrow(source);
     var infoHash = info.GetHashCode();
     if (myStacksHashCodesToIds.TryGetValue(infoHash, out _))
     {

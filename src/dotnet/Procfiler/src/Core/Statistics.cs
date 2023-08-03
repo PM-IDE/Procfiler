@@ -2,27 +2,16 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core;
 
-internal struct Statistics
+internal struct Statistics()
 {
-  public int EventsCount { get; set; }
-  public int EventsWithStackTraces { get; set; }
-  public PercentValue EventsWithManagedThreadIs { get; }
-  public Dictionary<string, int> StackTracesPerEvents { get; }
-  public Dictionary<string, int> EventsCountMap { get; }
-  public Dictionary<string, List<string>> EventNamesToPayloadProperties { get; }
+  public int EventsCount { get; set; } = 0;
+  public int EventsWithStackTraces { get; set; } = 0;
+  public PercentValue EventsWithManagedThreadIs { get; } = new();
+  public Dictionary<string, int> StackTracesPerEvents { get; } = new();
+  public Dictionary<string, int> EventsCountMap { get; } = new();
+  public Dictionary<string, List<string>> EventNamesToPayloadProperties { get; } = new();
 
 
-  public Statistics()
-  {
-    EventsWithStackTraces = 0;
-    StackTracesPerEvents = new Dictionary<string, int>();
-    EventsWithManagedThreadIs = new PercentValue();
-    EventsCountMap = new Dictionary<string, int>();
-    EventNamesToPayloadProperties = new Dictionary<string, List<string>>();
-    EventsCount = 0;
-  }
-
-  
   public void LogMyself(IProcfilerLogger logger)
   {
     var sb = new StringBuilder();

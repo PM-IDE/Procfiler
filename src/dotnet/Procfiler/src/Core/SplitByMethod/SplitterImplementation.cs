@@ -5,7 +5,12 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.SplitByMethod;
 
-public class SplitterImplementation
+public class SplitterImplementation(
+  IProcfilerEventsFactory eventsFactory,
+  IEnumerable<EventRecordWithPointer> events,
+  string filterPattern,
+  InlineMode inlineMode
+)
 {
   private readonly record struct CurrentFrameInfo(
     string Frame,
@@ -16,32 +21,14 @@ public class SplitterImplementation
   );
 
 
-  private readonly IProcfilerEventsFactory myEventsFactory;
-  private readonly IEnumerable<EventRecordWithPointer> myEvents;
-  private readonly InlineMode myInlineMode;
-  private readonly Regex myFilterRegex;
-  private readonly Dictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> myResult;
-  private readonly Stack<CurrentFrameInfo> myFramesStack;
-
-
-  public SplitterImplementation(
-    IProcfilerEventsFactory eventsFactory,
-    IEnumerable<EventRecordWithPointer> events,
-    string filterPattern,
-    InlineMode inlineMode)
-  {
-    myEventsFactory = eventsFactory;
-    myEvents = events;
-    myInlineMode = inlineMode;
-    myFilterRegex = new Regex(filterPattern);
-    myResult = new Dictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>>();
-    myFramesStack = new Stack<CurrentFrameInfo>();
-  }
+  private readonly Regex myFilterRegex = new(filterPattern);
+  private readonly Dictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> myResult = new();
+  private readonly Stack<CurrentFrameInfo> myFramesStack = new();
 
 
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split()
   {
-    foreach (var (_, eventRecord) in myEvents)
+    foreach (var (_, eventRecord) in events)
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStartOfMethod))
       {
@@ -75,8 +62,8 @@ public class SplitterImplementation
   }
 
   private bool ShouldInline(string frame) => 
-    myInlineMode == InlineMode.EventsAndMethodsEvents ||
-    (myInlineMode == InlineMode.EventsAndMethodsEventsWithFilter && ShouldProcess(frame));
+    inlineMode == InlineMode.EventsAndMethodsEvents ||
+    (inlineMode == InlineMode.EventsAndMethodsEventsWithFilter && ShouldProcess(frame));
 
   private bool ShouldProcess(string frame) => myFilterRegex.IsMatch(frame);
   
@@ -115,7 +102,7 @@ public class SplitterImplementation
       _ => new EventsCreationContext(currentTopmost.OriginalEventStamp, currentTopmost.OriginalEventThreadId)
     };
     
-    currentTopmost.Events.Add(myEventsFactory.CreateMethodExecutionEvent(startEventCtx, topmostFrame));
+    currentTopmost.Events.Add(eventsFactory.CreateMethodExecutionEvent(startEventCtx, topmostFrame));
   }
 
   private void AddEventToAllFrames(EventRecordWithMetadata eventRecord)
@@ -133,7 +120,7 @@ public class SplitterImplementation
   {
     if (myFramesStack.Count <= 0) return;
     
-    if (myInlineMode != InlineMode.NotInline)
+    if (inlineMode != InlineMode.NotInline)
     {
       AddEventToAllFrames(eventRecord);
     }

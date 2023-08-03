@@ -6,38 +6,22 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.Loader;
 
-public abstract class LoaderModuleLoadUnloadNameMutatorBase : MetadataValueToNameAppenderBase
+public abstract class LoaderModuleLoadUnloadNameMutatorBase(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
-  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-
-
-  protected LoaderModuleLoadUnloadNameMutatorBase(IProcfilerLogger logger) : base(logger)
+  protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForModuleILFileName(TraceEventsConstants.LoaderILFileName, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForModuleILFileName(TraceEventsConstants.LoaderILFileName, EventClassKind.Zero)
+  };
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class LoaderModuleLoadNameMutator : LoaderModuleLoadUnloadNameMutatorBase
+public class LoaderModuleLoadNameMutator(IProcfilerLogger logger) : LoaderModuleLoadUnloadNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.LoaderModuleLoad;
-
-
-  public LoaderModuleLoadNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class LoaderModuleUnloadNameMutator : LoaderModuleLoadUnloadNameMutatorBase
+public class LoaderModuleUnloadNameMutator(IProcfilerLogger logger) : LoaderModuleLoadUnloadNameMutatorBase(logger)
 {
   public override string EventType => TraceEventsConstants.LoaderModuleUnload;
-
-
-  public LoaderModuleUnloadNameMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }

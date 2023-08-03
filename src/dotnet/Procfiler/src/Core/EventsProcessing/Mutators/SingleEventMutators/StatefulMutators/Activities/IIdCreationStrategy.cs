@@ -9,30 +9,21 @@ public interface IIdCreationStrategy
   public string CreateId(EventRecordWithMetadata eventRecord);
 }
 
-public class DefaultIdCreationStrategy : IIdCreationStrategy
+public class DefaultIdCreationStrategy(string basePart, IReadOnlySet<string> startEvents) : IIdCreationStrategy
 {
-  private readonly string myBasePart;
-  private readonly IReadOnlySet<string> myStartEvents;
   private int myNextId;
-  
-
-  public DefaultIdCreationStrategy(string basePart, IReadOnlySet<string> startEvents)
-  {
-    myBasePart = basePart;
-    myStartEvents = startEvents;
-  }
 
 
   public string CreateIdTemplate() => DoCreateId("{AUTOINCREMENT_ID}");
   
   private string DoCreateId(string nextId)
   {
-    return $"{myBasePart}_{nextId}";
+    return $"{basePart}_{nextId}";
   }
 
   public string CreateId(EventRecordWithMetadata eventRecord)
   {
-    if (myStartEvents.Contains(eventRecord.EventClass))
+    if (startEvents.Contains(eventRecord.EventClass))
     {
       myNextId++;
     }
@@ -41,20 +32,10 @@ public class DefaultIdCreationStrategy : IIdCreationStrategy
   }
 }
 
-public class FromAttributesIdCreationStrategy : IIdCreationStrategy
+public class FromAttributesIdCreationStrategy
+  (string basePart, ICollection<string> attributesToUse) : IIdCreationStrategy
 {
-  private readonly string myBasePart;
-  private readonly ICollection<string> myAttributesToUse;
-  
-  
-  public FromAttributesIdCreationStrategy(string basePart, ICollection<string> attributesToUse)
-  {
-    myBasePart = basePart;
-    myAttributesToUse = attributesToUse;
-  }
-
-
-  public string CreateIdTemplate() => DoCreateId(myBasePart, myAttributesToUse);
+  public string CreateIdTemplate() => DoCreateId(basePart, attributesToUse);
 
   private static string DoCreateId(string basePart, IEnumerable<string> attributes)
   {
@@ -71,7 +52,7 @@ public class FromAttributesIdCreationStrategy : IIdCreationStrategy
   public string CreateId(EventRecordWithMetadata eventRecord)
   {
     var attributeValues = new List<string>();
-    foreach (var attributeName in myAttributesToUse)
+    foreach (var attributeName in attributesToUse)
     {
       if (!eventRecord.Metadata.TryGetValue(attributeName, out var value))
       {
@@ -81,22 +62,13 @@ public class FromAttributesIdCreationStrategy : IIdCreationStrategy
       attributeValues.Add(value);
     }
 
-    return DoCreateId(myBasePart, attributeValues);
+    return DoCreateId(basePart, attributeValues);
   }
 }
 
-public class FromEventActivityIdIdCreationStrategy : IIdCreationStrategy
+public class FromEventActivityIdIdCreationStrategy(string basePart) : IIdCreationStrategy
 {
-  private readonly string myBasePart;
-
-
-  public FromEventActivityIdIdCreationStrategy(string basePart)
-  {
-    myBasePart = basePart;
-  }
-
-
-  public string CreateIdTemplate() => $"{myBasePart}_GUID";
+  public string CreateIdTemplate() => $"{basePart}_GUID";
 
   public string CreateId(EventRecordWithMetadata eventRecord) => eventRecord.ActivityId.ToString();
 }

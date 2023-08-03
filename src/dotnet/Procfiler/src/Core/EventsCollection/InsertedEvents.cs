@@ -5,21 +5,13 @@ namespace Procfiler.Core.EventsCollection;
 
 public class InsertedEvents
 {
-  private readonly Dictionary<int, List<EventRecordWithMetadata>> myInsertedEvents;
-  private readonly Dictionary<int, HashSet<int>> myRemovedInsertedEvents;
-  private readonly HashSet<int> myRemovedFromFirstEvents;
+  private readonly Dictionary<int, List<EventRecordWithMetadata>> myInsertedEvents = new();
+  private readonly Dictionary<int, HashSet<int>> myRemovedInsertedEvents = new();
+  private readonly HashSet<int> myRemovedFromFirstEvents = new();
 
   public List<EventRecordWithMetadata>? FirstEvents { get; private set; }
 
   public long Count { get; private set; }
-  
-
-  public InsertedEvents()
-  {
-    myRemovedInsertedEvents = new Dictionary<int, HashSet<int>>();
-    myRemovedFromFirstEvents = new HashSet<int>();
-    myInsertedEvents = new Dictionary<int, List<EventRecordWithMetadata>>();
-  }
 
 
   public EventRecordWithMetadata GetOrThrow(EventPointer pointer)

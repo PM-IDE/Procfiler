@@ -9,22 +9,12 @@ public interface IDocumentationCreator
 }
 
 [AppComponent]
-public class DocumentationCreatorImpl : IDocumentationCreator
+public class DocumentationCreatorImpl(
+    IEnumerable<IMarkdownDocumentationProvider> providers, IProcfilerLogger logger) : IDocumentationCreator
 {
-  private readonly IProcfilerLogger myLogger;
-  private readonly IEnumerable<IMarkdownDocumentationProvider> myProviders;
-
-  
-  public DocumentationCreatorImpl(IEnumerable<IMarkdownDocumentationProvider> providers, IProcfilerLogger logger)
-  {
-    myProviders = providers;
-    myLogger = logger;
-  }
-
-  
   public async ValueTask CreateDocumentationAsync(string documentationFolder)
   {
-    foreach (var mdDocument in myProviders.Select(provider => provider.CreateDocumentationFile()))
+    foreach (var mdDocument in providers.Select(provider => provider.CreateDocumentationFile()))
     {
       var path = Path.Combine(documentationFolder, mdDocument.Name);
       if (!path.EndsWith(".md"))

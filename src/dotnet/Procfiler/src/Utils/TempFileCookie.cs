@@ -1,23 +1,13 @@
 namespace Procfiler.Utils;
 
-public readonly struct TempFileCookie : IDisposable
+public readonly struct TempFileCookie(string alreadyCreatedTempFileFilePath, IProcfilerLogger logger) : IDisposable
 {
-  private readonly IProcfilerLogger myLogger;
-  
-  public string FullFilePath { get; }
+  public string FullFilePath { get; } = alreadyCreatedTempFileFilePath;
 
 
-  public TempFileCookie(IProcfilerLogger logger)
+  public TempFileCookie(IProcfilerLogger logger) : this(PathUtils.CreateTempFilePath(), logger)
   {
-    myLogger = logger;
-    FullFilePath = PathUtils.CreateTempFilePath();
   }
 
-  public TempFileCookie(string alreadyCreatedTempFileFilePath, IProcfilerLogger logger)
-  {
-    myLogger = logger;
-    FullFilePath = alreadyCreatedTempFileFilePath;
-  }
-
-  public void Dispose() => PathUtils.ClearPath(FullFilePath, myLogger);
+  public void Dispose() => PathUtils.ClearPath(FullFilePath, logger);
 }

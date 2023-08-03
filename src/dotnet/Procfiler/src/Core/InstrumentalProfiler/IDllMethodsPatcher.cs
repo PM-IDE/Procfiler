@@ -21,21 +21,11 @@ public interface IDllMethodsPatcher
 }
 
 [AppComponent]
-public class DllMethodsPatcher : IDllMethodsPatcher
+public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJsonPatcher) : IDllMethodsPatcher
 {
   private const string ProcfilerEventSources = "ProcfilerEventSources";
-  
-  private readonly IProcfilerLogger myLogger;
-  private readonly IDepsJsonPatcher myDepsJsonPatcher;
 
-  
-  public DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJsonPatcher)
-  {
-    myLogger = logger;
-    myDepsJsonPatcher = depsJsonPatcher;
-  }
 
-  
   public async Task PatchMethodStartEndAsync(string dllPath, InstrumentationKind instrumentationKind)
   {
     if (instrumentationKind == InstrumentationKind.None) return;
@@ -45,7 +35,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
       var directory = Path.GetDirectoryName(dllPath);
       Debug.Assert(directory is { });
       
-      var cache = new SelfContainedTypeCache(myLogger, directory);
+      var cache = new SelfContainedTypeCache(logger, directory);
       cache.Initialize();
       
       var assembly = AssemblyDefinition.ReadAssembly(dllPath, new ReaderParameters
@@ -78,7 +68,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     }
     catch (Exception ex) when (ex is not ArgumentOutOfRangeException)
     {
-      myLogger.LogError(ex, "Failed to instrument code of {DllPath} or one of it's dependencies", dllPath);
+      logger.LogError(ex, "Failed to instrument code of {DllPath} or one of it's dependencies", dllPath);
     }
   }
 
@@ -89,7 +79,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     
     var assemblyName = mainAssembly.Name.Name;
     var depsJsonPath = Path.Combine(directory, $"{assemblyName}.deps.json");
-    await myDepsJsonPatcher.AddAssemblyReferenceAsync(
+    await depsJsonPatcher.AddAssemblyReferenceAsync(
       mainAssembly, depsJsonPath, ProcfilerEventSources, new Version(1, 0, 0));
   }
   
@@ -132,13 +122,13 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     var (assembly, path) = assemblyDefWithPath;
     if ((assembly.MainModule.Attributes & ModuleAttributes.ILOnly) == 0)
     {
-      myLogger.LogWarning("Will not patch {Assembly} as it is not IL only", path);
+      logger.LogWarning("Will not patch {Assembly} as it is not IL only", path);
       return;
     }
     
     try
     {
-      myLogger.LogInformation("Patching assembly: {Name}", assembly.Name);
+      logger.LogInformation("Patching assembly: {Name}", assembly.Name);
       var loggerType = cache.Types[InstrumentalProfilerConstants.MethodStartEndEventSourceType];
       
       var methodStartedLogger = loggerType.Methods.FirstOrDefault(IsLogMethodStartedMethod);
@@ -165,7 +155,7 @@ public class DllMethodsPatcher : IDllMethodsPatcher
     }
     catch (Exception ex)
     {
-      myLogger.LogError(ex, "Failed to instrument code of {Name}", assembly.Name);
+      logger.LogError(ex, "Failed to instrument code of {Name}", assembly.Name);
     }
   }
 

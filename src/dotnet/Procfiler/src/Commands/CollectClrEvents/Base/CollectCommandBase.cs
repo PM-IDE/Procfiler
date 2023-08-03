@@ -5,20 +5,14 @@ using Procfiler.Utils;
 
 namespace Procfiler.Commands.CollectClrEvents.Base;
 
-public abstract partial class CollectCommandBase : ICommandWithContext<CollectClrEventsContext>
+public abstract partial class CollectCommandBase(
+  IProcfilerLogger logger, 
+  ICommandExecutorDependantOnContext commandExecutor
+) : ICommandWithContext<CollectClrEventsContext>
 {
-  private readonly ICommandExecutorDependantOnContext myCommandExecutor;
+  protected readonly IProcfilerLogger Logger = logger;
 
-  protected readonly IProcfilerLogger Logger;
-  
 
-  protected CollectCommandBase(IProcfilerLogger logger, ICommandExecutorDependantOnContext commandExecutor)
-  {
-    Logger = logger;
-    myCommandExecutor = commandExecutor;
-  }
-
-  
   public abstract void Execute(CollectClrEventsContext context);
 
   protected void ExecuteCommand(CollectClrEventsContext context, Action<CollectedEvents> commandAction)
@@ -26,7 +20,7 @@ public abstract partial class CollectCommandBase : ICommandWithContext<CollectCl
     using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(ExecuteCommand)}", Logger);
     ClearPathBeforeProfilingIfNeeded(context.CommonContext);
     
-    myCommandExecutor.Execute(context, commandAction);
+    commandExecutor.Execute(context, commandAction);
   }
 
   private void ClearPathBeforeProfilingIfNeeded(CollectingClrEventsCommonContext commonContext)

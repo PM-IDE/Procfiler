@@ -10,21 +10,12 @@ public interface ITransportCreationWaiter
 }
 
 [AppComponent]
-public class TransportCreationWaiterImpl : ITransportCreationWaiter
+public class TransportCreationWaiterImpl(IProcfilerLogger logger) : ITransportCreationWaiter
 {
-  private readonly IProcfilerLogger myLogger;
-
-
-  public TransportCreationWaiterImpl(IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
-
-
   public void WaitUntilTransportIsCreatedOrThrow(int processId)
   {
     var name = $"{GetType().Name}::{nameof(WaitUntilTransportIsCreatedOrThrow)}::{processId}";
-    using var _ = new PerformanceCookie(name, myLogger);
+    using var _ = new PerformanceCookie(name, logger);
     var rootPath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"\\.\pipe\" : Path.GetTempPath();
     var transportPath = OperatingSystem.IsWindows() switch
     {

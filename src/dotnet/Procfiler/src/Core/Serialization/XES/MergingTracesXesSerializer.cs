@@ -3,19 +3,9 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.Serialization.XES;
 
-public class MergingTracesXesSerializer
+public class MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger)
 {
-  private readonly IXesEventsSerializer mySerializer;
-  private readonly IProcfilerLogger myLogger;
-  private readonly Dictionary<string, List<EventSessionInfo>> myDocuments;
-
-  
-  public MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger)
-  {
-    mySerializer = serializer;
-    myLogger = logger;
-    myDocuments = new Dictionary<string, List<EventSessionInfo>>();
-  }
+  private readonly Dictionary<string, List<EventSessionInfo>> myDocuments = new();
 
 
   public void AddTrace(string path, EventSessionInfo sessionInfo)
@@ -25,11 +15,11 @@ public class MergingTracesXesSerializer
 
   public void SerializeAll()
   {
-    using var _ = new PerformanceCookie($"{GetType()}::{nameof(SerializeAll)}", myLogger);
+    using var _ = new PerformanceCookie($"{GetType()}::{nameof(SerializeAll)}", logger);
     foreach (var (path, sessions) in myDocuments)
     {
       using var fs = File.OpenWrite(path);
-      mySerializer.SerializeEvents(sessions, fs);
+      serializer.SerializeEvents(sessions, fs);
     }
   }
 }

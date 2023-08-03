@@ -15,24 +15,13 @@ public interface ICollectEventsFromSeveralLaunchesCommand : ICommandWithContext<
 }
 
 [CommandLineCommand]
-public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, ICollectEventsFromSeveralLaunchesCommand
+public class CollectEventsFromSeveralLaunchesCommand(
+  IProcfilerLogger logger,
+  ICommandExecutorDependantOnContext commandExecutor,
+  IUnitedEventsProcessor unitedEventsProcessor,
+  IXesEventsSerializer xesEventsSerializer
+) : CollectCommandBase(logger, commandExecutor), ICollectEventsFromSeveralLaunchesCommand
 {
-  private readonly IUnitedEventsProcessor myUnitedEventsProcessor;
-  private readonly IXesEventsSerializer myXesEventsSerializer;
-
-
-  public CollectEventsFromSeveralLaunchesCommand(
-    IProcfilerLogger logger,
-    ICommandExecutorDependantOnContext commandExecutor,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    IXesEventsSerializer xesEventsSerializer)
-    : base(logger, commandExecutor)
-  {
-    myUnitedEventsProcessor = unitedEventsProcessor;
-    myXesEventsSerializer = xesEventsSerializer;
-  }
-  
-  
   public override void Execute(CollectClrEventsContext context)
   {
     var sessionInfos = new List<EventSessionInfo>();
@@ -41,7 +30,7 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
     {
       var (events, globalData) = collectedEvents;
       var processingContext = EventsProcessingContext.DoEverythingWithoutMethodStartEnd(events, globalData);
-      myUnitedEventsProcessor.ProcessFullEventLog(processingContext);
+      unitedEventsProcessor.ProcessFullEventLog(processingContext);
       var eventsByThreadIds = SplitEventsHelper.SplitByKey(Logger, events, SplitEventsHelper.ManagedThreadIdExtractor);
       var sessionInfo = new EventSessionInfo(eventsByThreadIds.Values, globalData);
       sessionInfos.Add(sessionInfo);
@@ -49,7 +38,7 @@ public class CollectEventsFromSeveralLaunchesCommand : CollectCommandBase, IColl
     
     var path = context.CommonContext.OutputPath;
     using var fs = File.OpenWrite(path);
-    myXesEventsSerializer.SerializeEvents(sessionInfos, fs);
+    xesEventsSerializer.SerializeEvents(sessionInfos, fs);
   }
 
   protected override Command CreateCommandInternal()

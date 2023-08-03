@@ -6,13 +6,14 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.StatefulMutators.Activities.Sockets;
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class ConnectStartStopFailedLifecycleMutator : EventsLifecycleMutatorBase
+public class ConnectStartStopFailedLifecycleMutator(IProcfilerLogger logger) 
+  : EventsLifecycleMutatorBase(
+      logger, 
+      "SocketConnect", 
+      new [] { TraceEventsConstants.ConnectStart }, 
+      new[] { TraceEventsConstants.ConnectStop, TraceEventsConstants.ConnectFailed }
+    )
 {
   protected override IIdCreationStrategy IdCreationStrategy { get; } = 
     new FromEventActivityIdIdCreationStrategy(TraceEventsConstants.SocketActivityBasePart);
-
-  public ConnectStartStopFailedLifecycleMutator(IProcfilerLogger logger) 
-    : base(logger, "SocketConnect", new [] { TraceEventsConstants.ConnectStart }, new[] { TraceEventsConstants.ConnectStop, TraceEventsConstants.ConnectFailed })
-  {
-  }
 }

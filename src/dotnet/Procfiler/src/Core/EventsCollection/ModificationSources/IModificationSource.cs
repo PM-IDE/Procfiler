@@ -9,13 +9,9 @@ public interface IModificationSource : IEventsOwner
 {
 }
 
-public abstract class ModificationSourceBase : EventsOwnerBase, IModificationSource
+public abstract class ModificationSourceBase(long initialEventsCount) 
+  : EventsOwnerBase(initialEventsCount), IModificationSource
 {
-  protected ModificationSourceBase(long initialEventsCount) : base(initialEventsCount)
-  {
-  }
-  
-  
   public override bool Remove(EventPointer pointer)
   {
     AssertNotFrozen();

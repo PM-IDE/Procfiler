@@ -7,7 +7,7 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.GC;
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class GcPinObjectAtGcTimeMutator : MetadataValuesRemover
+public class GcPinObjectAtGcTimeMutator(IProcfilerLogger logger) : MetadataValuesRemover(logger)
 {
   public override string EventType => TraceEventsConstants.GcPinObjectAtGcTime;
   protected override string[] MetadataKeys { get; } =
@@ -15,25 +15,14 @@ public class GcPinObjectAtGcTimeMutator : MetadataValuesRemover
     TraceEventsConstants.CommonObjectId,
     TraceEventsConstants.CommonHandleId
   };
-
-
-  public GcPinObjectAtGcTimeMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class GcPinObjectAtGcTimeNameMutator : MetadataValueToNameAppenderBase
+public class GcPinObjectAtGcTimeNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.GcPinObjectAtGcTime;
-  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-  
-  
-  public GcPinObjectAtGcTimeNameMutator(IProcfilerLogger logger) : base(logger)
+  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.CommonTypeName, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.CommonTypeName, EventClassKind.Zero)
+  };
 }

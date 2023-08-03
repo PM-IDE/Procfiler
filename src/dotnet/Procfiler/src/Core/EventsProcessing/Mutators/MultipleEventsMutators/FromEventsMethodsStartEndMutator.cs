@@ -6,7 +6,8 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsProcessing.Mutators.MultipleEventsMutators;
 
-public class FromEventsMethodsStartEndMutator : IMethodsStartEndProcessor
+public class FromEventsMethodsStartEndMutator(
+  IProcfilerEventsFactory eventsFactory, IProcfilerLogger logger) : IMethodsStartEndProcessor
 {
   private record StackFrameInfo(string Frame, EventRecordWithMetadata StartNode)
   {
@@ -20,24 +21,13 @@ public class FromEventsMethodsStartEndMutator : IMethodsStartEndProcessor
     }
   }
 
-  
-  private readonly IProcfilerEventsFactory myEventsFactory;
-  private readonly IProcfilerLogger myLogger;
-
-
-  public FromEventsMethodsStartEndMutator(IProcfilerEventsFactory eventsFactory, IProcfilerLogger logger)
-  {
-    myEventsFactory = eventsFactory;
-    myLogger = logger;
-  }
-
 
   public void Process(IEventsCollection events, SessionGlobalData context)
   {
     if (context.Stacks is not IFromEventsShadowStacks fromEventsShadowStacks)
     {
       var name = context.Stacks.GetType().Name;
-      myLogger.LogError("Not compatible shadow stacks, got {Type}, expected {Type}", name, nameof(IFromEventsShadowStacks));
+      logger.LogError("Not compatible shadow stacks, got {Type}, expected {Type}", name, nameof(IFromEventsShadowStacks));
       
       return;
     }
@@ -164,7 +154,7 @@ public class FromEventsMethodsStartEndMutator : IMethodsStartEndProcessor
 
   private EventRecordWithMetadata CreateMethodEndEvent(EventRecordWithMetadata @event, string frame)
   {
-    return myEventsFactory.CreateMethodEndEvent(CreateContext(@event), frame);
+    return eventsFactory.CreateMethodEndEvent(CreateContext(@event), frame);
   }
   
   private static EventsCreationContext CreateContext(EventRecord.EventRecord @event) => 
@@ -172,7 +162,7 @@ public class FromEventsMethodsStartEndMutator : IMethodsStartEndProcessor
   
   private EventRecordWithMetadata CreateMethodStartEvent(EventRecordWithMetadata @event, string frame)
   {
-    return myEventsFactory.CreateMethodStartEvent(CreateContext(@event), frame);
+    return eventsFactory.CreateMethodStartEvent(CreateContext(@event), frame);
   }
 
   private void AddFramesFromEventToCurrentStack(

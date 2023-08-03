@@ -28,14 +28,18 @@ public enum InlineMode
 }
 
 [CommandLineCommand]
-public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMethodCommand
+public class SplitEventsByMethodCommand(
+  ICommandExecutorDependantOnContext commandExecutor,
+  IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger,
+  IUnitedEventsProcessor unitedEventsProcessor,
+  IXesEventsSerializer xesEventsSerializer,
+  IByMethodsSplitter splitter,
+  IFullMethodNameBeautifier methodNameBeautifier,
+  IProcfilerLogger logger,
+  IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
+  IAsyncMethodsGrouper asyncMethodsGrouper
+) : CollectCommandBase(logger, commandExecutor), ISplitEventsByMethodCommand
 {
-  private readonly IUnitedEventsProcessor myUnitedEventsProcessor;
-  private readonly IXesEventsSerializer myXesEventsSerializer;
-  private readonly IByMethodsSplitter mySplitter;
-  private readonly IFullMethodNameBeautifier myMethodNameBeautifier;
-
-  
   private Option<bool> GroupAsyncMethods { get; } =
     new("--group-async-methods", static () => true, "Group events from async methods");
 
@@ -43,31 +47,12 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     new("--inline", static () => InlineMode.NotInline, "Should we inline inner methods calls to all previous traces");
 
 
-  public SplitEventsByMethodCommand(
-    ICommandExecutorDependantOnContext commandExecutor,
-    IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    IXesEventsSerializer xesEventsSerializer,
-    IByMethodsSplitter splitter,
-    IFullMethodNameBeautifier methodNameBeautifier,
-    IProcfilerLogger logger, 
-    IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor, 
-    IAsyncMethodsGrouper asyncMethodsGrouper)
-    : base(logger, commandExecutor)
-  {
-    myUnitedEventsProcessor = unitedEventsProcessor;
-    myXesEventsSerializer = xesEventsSerializer;
-    mySplitter = splitter;
-    myMethodNameBeautifier = methodNameBeautifier;
-  }
-
-
   public override void Execute(CollectClrEventsContext context)
   {
     using var _ = new PerformanceCookie("SplittingEventsByMethods", Logger);
 
     var directory = context.CommonContext.OutputPath;
-    var xesSerializer = new MergingTracesXesSerializer(myXesEventsSerializer, Logger);
+    var xesSerializer = new MergingTracesXesSerializer(xesEventsSerializer, Logger);
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThread);
 
@@ -75,13 +60,13 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
     {
       var (allEvents, globalData) = events;
       var processingContext = EventsProcessingContext.DoEverything(allEvents, globalData);
-      myUnitedEventsProcessor.ProcessFullEventLog(processingContext);
+      unitedEventsProcessor.ProcessFullEventLog(processingContext);
       
       var filterPattern = GetFilterPattern(context.CommonContext);
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
       
-      var tracesByMethods = mySplitter.Split(
+      var tracesByMethods = splitter.Split(
         events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
 
       foreach (var (methodName, traces) in tracesByMethods)
@@ -109,7 +94,7 @@ public class SplitEventsByMethodCommand : CollectCommandBase, ISplitEventsByMeth
   
   private string GetFileNameForMethod(string directory, string methodName)
   {
-    var fileName = myMethodNameBeautifier.Beautify(methodName);
+    var fileName = methodNameBeautifier.Beautify(methodName);
     return Path.Combine(directory, $"{fileName}.xes");
   }
 

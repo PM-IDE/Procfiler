@@ -7,7 +7,7 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMutators.GC;
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class GcFinalizeObjectMutator : MetadataValuesRemover
+public class GcFinalizeObjectMutator(IProcfilerLogger logger) : MetadataValuesRemover(logger)
 {
   protected override string[] MetadataKeys { get; } =
   {
@@ -16,25 +16,14 @@ public class GcFinalizeObjectMutator : MetadataValuesRemover
   };
 
   public override string EventType => TraceEventsConstants.GcFinalizeObject;
-  
-
-  public GcFinalizeObjectMutator(IProcfilerLogger logger) : base(logger)
-  {
-  }
 }
 
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
-public class GcFinalizeObjectNameMutator : MetadataValueToNameAppenderBase
+public class GcFinalizeObjectNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.GcFinalizeObject;
-  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-  
-  
-  public GcFinalizeObjectNameMutator(IProcfilerLogger logger) : base(logger)
+  protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
-    Transformations = new[]
-    {
-      MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.CommonTypeName, EventClassKind.Zero)
-    };
-  }
+    MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.CommonTypeName, EventClassKind.Zero)
+  };
 }

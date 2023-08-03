@@ -17,25 +17,17 @@ public interface ISplitEventsByManagedThreadIdCommand : ICommandWithContext<Coll
 }
 
 [CommandLineCommand]
-public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<long>, ISplitEventsByManagedThreadIdCommand
+public class SplitEventsByManagedThreadId(
+  IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
+  ICommandExecutorDependantOnContext commandExecutor,
+  IUnitedEventsProcessor processor,
+  IUndefinedThreadsEventsMerger eventsMerger,
+  IStackTraceSerializer stackTraceSerializer,
+  IDelegatingEventsSerializer serializer,
+  IProcfilerLogger logger
+) : CollectAndSplitCommandBase<long>(logger, commandExecutor, eventsMerger, processor,serializer, stackTraceSerializer), 
+    ISplitEventsByManagedThreadIdCommand
 {
-  private readonly IManagedEventsFromUndefinedThreadExtractor myManagedEventsExtractor;
-
-  
-  public SplitEventsByManagedThreadId(
-    IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
-    ICommandExecutorDependantOnContext commandExecutor,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    IUndefinedThreadsEventsMerger eventsMerger,
-    IStackTraceSerializer stackTraceSerializer,
-    IDelegatingEventsSerializer delegatingEventsSerializer, 
-    IProcfilerLogger logger) 
-    : base(logger, commandExecutor, eventsMerger, unitedEventsProcessor, delegatingEventsSerializer, stackTraceSerializer)
-  {
-    myManagedEventsExtractor = managedEventsExtractor;
-  }
-
-
   public override void Execute(CollectClrEventsContext context)
   {
     var parseResult = context.CommonContext.CommandParseResult;
@@ -62,7 +54,7 @@ public class SplitEventsByManagedThreadId : CollectAndSplitCommandBase<long>, IS
     if (undefinedEvents is null) return undefinedEvents;
     
     UnitedEventsProcessor.ApplyMultipleMutators(undefinedEvents, globalData, EmptyCollections<Type>.EmptySet);
-    return myManagedEventsExtractor.Extract(events, undefinedEvents);
+    return managedEventsExtractor.Extract(events, undefinedEvents);
   }
 
   protected override Command CreateCommandInternal() => 

@@ -16,7 +16,7 @@ public interface IAsyncMethodsGrouper
 }
 
 [AppComponent]
-public class AsyncMethodsGrouper : IAsyncMethodsGrouper
+public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
 {
   private record AsyncMethodTrace(EventRecordWithMetadata? BeforeTaskEvent, IList<EventRecordWithMetadata> Events)
   {
@@ -26,18 +26,10 @@ public class AsyncMethodsGrouper : IAsyncMethodsGrouper
   private const string MoveNextMethod = "MoveNext";
   private const string MoveNextWithDot = $".{MoveNextMethod}";
 
-  private readonly IProcfilerLogger myLogger;
-
 
   public string AsyncMethodsPrefix => "ASYNC_";
-  
-  
-  public AsyncMethodsGrouper(IProcfilerLogger logger)
-  {
-    myLogger = logger;
-  }
 
-  
+
   public IDictionary<string, IList<IReadOnlyList<EventRecordWithMetadata>>> GroupAsyncMethods(
     IEnumerable<string> methodsNames,
     IDictionary<long, IEventsCollection> managedThreadsEvents)

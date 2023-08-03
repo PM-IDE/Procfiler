@@ -10,26 +10,16 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Commands.CollectClrEvents;
 
 [CommandLineCommand]
-public class SerializeUndefinedThreadEventsToXesCommand : CollectCommandBase
+public class SerializeUndefinedThreadEventsToXesCommand(
+  IProcfilerLogger logger,
+  IXesEventsSerializer serializer,
+  IUnitedEventsProcessor unitedEventsProcessor,
+  ICommandExecutorDependantOnContext commandExecutor
+) : CollectCommandBase(logger, commandExecutor)
 {
-  private readonly IXesEventsSerializer mySerializer;
-  private readonly IUnitedEventsProcessor myUnitedEventsProcessor;
-
-
-  public SerializeUndefinedThreadEventsToXesCommand(
-    IProcfilerLogger logger,
-    IXesEventsSerializer serializer,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    ICommandExecutorDependantOnContext commandExecutor) : base(logger, commandExecutor)
-  {
-    mySerializer = serializer;
-    myUnitedEventsProcessor = unitedEventsProcessor;
-  }
-
-
   public override void Execute(CollectClrEventsContext context)
   {
-    var serializer = new MergingTracesXesSerializer(mySerializer, Logger);
+    var mergingSerializer = new MergingTracesXesSerializer(serializer, Logger);
     var outputPath = Path.Combine(context.CommonContext.OutputPath, "UndefinedEvents.xes");
     
     ExecuteCommand(context, collectedEvents =>
@@ -40,13 +30,13 @@ public class SerializeUndefinedThreadEventsToXesCommand : CollectCommandBase
       var undefinedThreadEvents = eventsByThreads[-1];
       var processingContext = EventsProcessingContext.DoEverythingWithoutMethodStartEnd(undefinedThreadEvents, globalData);
       
-      myUnitedEventsProcessor.ProcessFullEventLog(processingContext);
+      unitedEventsProcessor.ProcessFullEventLog(processingContext);
       var sessionInfo = new EventSessionInfo(new [] { undefinedThreadEvents }, globalData);
       
-      serializer.AddTrace(outputPath, sessionInfo);
+      mergingSerializer.AddTrace(outputPath, sessionInfo);
     });
 
-    serializer.SerializeAll();
+    mergingSerializer.SerializeAll();
   }
 
   protected override Command CreateCommandInternal()

@@ -16,30 +16,21 @@ public interface IEventsSerializer
 
 
 [AppComponent]
-public class DelegatingEventsSerializer : IDelegatingEventsSerializer
+public class DelegatingEventsSerializer(
+    ICsvEventsSerializer csvEventsSerializer, 
+    IMethodTreeEventSerializer treeEventSerializer
+) : IDelegatingEventsSerializer
 {
-  private readonly ICsvEventsSerializer myCsvEventsSerializer;
-  private readonly IMethodTreeEventSerializer myTreeEventSerializer;
-
-
-  public DelegatingEventsSerializer(
-    ICsvEventsSerializer csvEventsSerializer, IMethodTreeEventSerializer treeEventSerializer)
-  {
-    myCsvEventsSerializer = csvEventsSerializer;
-    myTreeEventSerializer = treeEventSerializer;
-  }
-
-
   public void SerializeEvents(
     IEnumerable<EventRecordWithMetadata> events, string path, FileFormat fileFormat)
   {
     switch (fileFormat)
     {
       case FileFormat.Csv:
-        myCsvEventsSerializer.SerializeEvents(events, path);
+        csvEventsSerializer.SerializeEvents(events, path);
         return;
       case FileFormat.MethodCallTree:
-        myTreeEventSerializer.SerializeEvents(events, path);
+        treeEventSerializer.SerializeEvents(events, path);
         return;
       default:
         throw new ArgumentOutOfRangeException(nameof(fileFormat), fileFormat, null);
