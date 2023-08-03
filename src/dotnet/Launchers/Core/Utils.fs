@@ -39,7 +39,7 @@ module ProcfilerScriptsUtils =
         Repeat = 1
     }
 
-    let private createProcess fileName args workingDirectory =
+    let private createProcess fileName (args: String) workingDirectory =
         let startInfo = ProcessStartInfo(fileName, args)
         startInfo.WorkingDirectory <- workingDirectory
         new Process(StartInfo=startInfo)

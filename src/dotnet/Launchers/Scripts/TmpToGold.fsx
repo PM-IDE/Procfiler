@@ -6,7 +6,7 @@ let renameToGoldIfTmp (filePath: string) =
     | ".tmp" ->
         let name = Path.GetFileNameWithoutExtension(filePath)
         let directory = Path.GetDirectoryName(filePath)
-        let goldFilePath = Path.Combine(directory, $"{name}.gold")
+        let goldFilePath = Path.Combine(directory, $"{name}")
         File.Move(filePath, goldFilePath, true)
         printfn $"Renamed {filePath} to {goldFilePath}"
     | _ -> ()
