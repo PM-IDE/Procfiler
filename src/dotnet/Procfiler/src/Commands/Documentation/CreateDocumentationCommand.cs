@@ -18,17 +18,12 @@ public class CreateDocumentationCommand(
 
   public int Invoke(InvocationContext context)
   {
-    return InvokeAsync(context).GetAwaiter().GetResult();
-  }
-
-  public async Task<int> InvokeAsync(InvocationContext context)
-  {
     try
     {
       var outputPath = context.ParseResult.GetValueForOption(myOutputPathOption) ??
                        throw new MissingOptionException(myOutputPathOption);
     
-      await documentationCreator.CreateDocumentationAsync(outputPath);
+      documentationCreator.CreateDocumentation(outputPath);
       return 0;
     }
     catch (Exception ex)
@@ -37,6 +32,8 @@ public class CreateDocumentationCommand(
       return 1;
     }
   }
+
+  public Task<int> InvokeAsync(InvocationContext context) => Task.Run(() => Invoke(context));
 
   public Command CreateCommand()
   {

@@ -5,14 +5,14 @@ namespace Procfiler.Core.Documentation;
 
 public interface IDocumentationCreator
 {
-  ValueTask CreateDocumentationAsync(string documentationFolder);
+  void CreateDocumentation(string documentationFolder);
 }
 
 [AppComponent]
 public class DocumentationCreatorImpl(
     IEnumerable<IMarkdownDocumentationProvider> providers, IProcfilerLogger logger) : IDocumentationCreator
 {
-  public async ValueTask CreateDocumentationAsync(string documentationFolder)
+  public void CreateDocumentation(string documentationFolder)
   {
     foreach (var mdDocument in providers.Select(provider => provider.CreateDocumentationFile()))
     {
@@ -22,10 +22,10 @@ public class DocumentationCreatorImpl(
         path += ".md";
       }
 
-      await using var fs = File.OpenWrite(path);
+      using var fs = File.OpenWrite(path);
       fs.SetLength(0);
-      await using var sw = new StreamWriter(fs);
-      await sw.WriteAsync(mdDocument.Serialize(new StringBuilder()));
+      using var sw = new StreamWriter(fs);
+      sw.Write(mdDocument.Serialize(new StringBuilder()));
     }
   }
 }
