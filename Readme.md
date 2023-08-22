@@ -8,6 +8,13 @@ Process Mining tools, such as `ProM` or `pm4py`.
 
 Procfiler is a console application which supports following commands:
 
+## Sources
+
+- https://github.com/ABaboshin/DotNetCoreProfiler
+- https://github.com/dotnet/runtime/tree/main/src/tests/profiler
+- https://github.com/dotnet/runtime/tree/main/docs/design/coreclr/profiling
+- https://github.com/Microsoft/perfview
+
 ## Top level commands:
 
 Usage:
