@@ -81,13 +81,13 @@ public class UnitedEventsProcessorImpl : IUnitedEventsProcessor
   {
     using var __ = new PerformanceCookie($"{GetType().Name}::{nameof(ApplyMultipleMutators)}::Mutators", myLogger);
     var multipleMutators = myMultipleEventsMutators.Where(m => !disabledMutators.Contains(m.GetType())).ToList();
-    
+
     foreach (var multipleEventsMutator in multipleMutators)
     {
       multipleEventsMutator.Process(events, globalData);
     }
   }
-  
+
   public void ProcessFullEventLog(in EventsProcessingContext context)
   {
     var (events, globalData, (useFilters, useMutators, disabledMutators)) = context;
@@ -108,7 +108,7 @@ public class UnitedEventsProcessorImpl : IUnitedEventsProcessor
     var states = CreateMutatorsStates(myStatefulSingleEventsMutators);
     var singleMutators = mySingleEventMutators.Where(m => !disabledMutators.Contains(m.GetType())).ToList();
     var statefulMutators = myStatefulSingleEventsMutators.Where(m => !disabledMutators.Contains(m.GetType())).ToList();
-    
+
     foreach (var (_, eventRecord) in events)
     {
       foreach (var singleEventMutator in singleMutators)

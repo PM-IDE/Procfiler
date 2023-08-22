@@ -9,7 +9,7 @@ public static class PathUtils
       throw new FileNotFoundException(path);
     }
   }
-  
+
   public static void CheckIfDirectoryOrThrow(string path)
   {
     if (!File.GetAttributes(path).HasFlag(FileAttributes.Directory))
@@ -37,7 +37,7 @@ public static class PathUtils
 
     Directory.CreateDirectory(path);
   }
-  
+
   public static void ClearPath(string path, IProcfilerLogger logger)
   {
     try
@@ -78,7 +78,7 @@ public static class PathUtils
   {
     return Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
   }
-  
+
   public static string CreateTempFolderPath()
   {
     return Directory.CreateTempSubdirectory().FullName;

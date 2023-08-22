@@ -32,7 +32,7 @@ public partial class CollectCommandBase
   private Option<bool> SelfContainedOption { get; } =
     new("--self-contained", static () => false, "Whether to build application in a self-contained mode");
 
-  private Option<bool> PrintProcessOutputOption { get; } = 
+  private Option<bool> PrintProcessOutputOption { get; } =
     new("--print-process-output", static () => true, "Whether to print the output of a profiled application");
 
   private Option<string> ArgumentsFileOption { get; } =
@@ -56,7 +56,7 @@ public partial class CollectCommandBase
   protected Option<int> RepeatOption { get; } =
     new("--repeat", static () => 1, "The number of times launching of the program should be repeated");
 
-  private Option<string> PathToCsprojOption { get; } = 
+  private Option<string> PathToCsprojOption { get; } =
     new("-csproj", "The path to the .csproj file of the project to be executed");
 
   private Option<string> TfmOption { get; } =
@@ -72,21 +72,21 @@ public partial class CollectCommandBase
     IsRequired = true
   };
 
-  private Option<int> DurationOption { get; } = 
+  private Option<int> DurationOption { get; } =
     new("--duration", static () => 60_000, "The amount of time to spend collecting CLR events");
 
   private Option<int> TimeoutOption { get; } =
     new("--timeout", static () => 10_000, "The timeout which we want to wait until processing all events");
 
-  private Option<FileFormat> OutputFileFormat { get; } = 
+  private Option<FileFormat> OutputFileFormat { get; } =
     new("--format", static () => FileFormat.Csv, "The output file(s) format");
 
-  private Option<bool> ClearPathBefore { get; } = 
+  private Option<bool> ClearPathBefore { get; } =
     new("--clear-before", static () => true, "Clear (delete) output folder (file) before profiling session");
 
-  protected Option<string> FilterOption { get; } = 
+  protected Option<string> FilterOption { get; } =
     new("--filter", static () => string.Empty, "Regex to filter methods");
-  
+
   protected Option<bool> MergeFromUndefinedThread { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");
 }

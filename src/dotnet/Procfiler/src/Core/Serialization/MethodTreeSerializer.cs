@@ -13,14 +13,14 @@ public class MethodTreeSerializer : IMethodTreeEventSerializer
   {
     using var fs = File.OpenWrite(path);
     using var sw = new StreamWriter(fs);
-    
+
     var indent = 0;
     var sb = new StringBuilder();
-    
+
     foreach (var eventRecord in events)
     {
       sb.Clear();
-      
+
       void AddIndent()
       {
         for (var i = 0; i < indent; i++)
@@ -28,7 +28,7 @@ public class MethodTreeSerializer : IMethodTreeEventSerializer
           sb.Append("--");
         }
       }
-      
+
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (_, isStart))
       {
         if (isStart)

@@ -2,7 +2,7 @@ namespace Procfiler.Utils;
 
 public static class DictionaryExtensions
 {
-  public static void AddOrIncrement<TKey>(this IDictionary<TKey, int> map, TKey key) where TKey : notnull 
+  public static void AddOrIncrement<TKey>(this IDictionary<TKey, int> map, TKey key) where TKey : notnull
   {
     if (map.TryGetValue(key, out var count))
     {
@@ -45,7 +45,7 @@ public static class DictionaryExtensions
         {
           throw new Exception();
         }
-        
+
         continue;
       }
 

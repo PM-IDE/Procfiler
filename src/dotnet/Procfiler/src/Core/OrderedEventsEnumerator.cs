@@ -14,7 +14,7 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
   public EventRecordWithPointer Current { get; private set; }
   object IEnumerator.Current => Current;
 
-  
+
   /// <invariant name = "EventsMustBeOrderedByStamp">
   /// The Lists of events in eventsByManagedThreads should be sorted by "Stamp" property
   /// </invariant>
@@ -24,11 +24,11 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
     myCollections = eventsByTraces.ToArray();
     myEnumerators = new IEnumerator<EventRecordWithPointer>[myCollections.Length];
     myQueue = new PriorityQueue<int, long>();
-    
+
     Reset();
   }
 
-  
+
   public bool MoveNext()
   {
     if (myLastReturnedEnumerator != -1)
@@ -39,17 +39,17 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
         myQueue.Enqueue(myLastReturnedEnumerator, enumerator.Current.Event.Stamp);
       }
     }
-    
+
     while (true)
     {
       if (myQueue.Count == 0) return false;
-      
+
       var next = myQueue.Dequeue();
       ref var enumerator = ref myEnumerators[next];
 
       Current = enumerator.Current;
       myLastReturnedEnumerator = next;
-      
+
       return true;
     }
   }
@@ -61,7 +61,7 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
     {
       myEnumerators[i] = myCollections[i].GetEnumerator();
     }
-    
+
     for (var i = 0; i < myCollections.Length; i++)
     {
       ref var enumerator = ref myEnumerators[i];
@@ -71,7 +71,7 @@ public class OrderedEventsEnumerator : IEnumerable<EventRecordWithPointer>, IEnu
       }
     }
   }
-  
+
   public IEnumerator<EventRecordWithPointer> GetEnumerator() => this;
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

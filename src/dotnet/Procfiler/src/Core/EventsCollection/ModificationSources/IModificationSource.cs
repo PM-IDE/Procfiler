@@ -6,7 +6,7 @@ namespace Procfiler.Core.EventsCollection.ModificationSources;
 
 public interface IModificationSource : IEventsOwner;
 
-public abstract class ModificationSourceBase(long initialEventsCount) 
+public abstract class ModificationSourceBase(long initialEventsCount)
   : EventsOwnerBase(initialEventsCount), IModificationSource
 {
   public override bool Remove(EventPointer pointer)
@@ -38,7 +38,7 @@ public class MethodStartEndModificationSource : ModificationSourceBase
     myEventsFactory = eventsFactory;
   }
 
-  
-  protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() => 
+
+  protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() =>
     myShadowStack.EnumerateMethods(myEventsFactory, myGlobalData);
 }

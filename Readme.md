@@ -1,7 +1,8 @@
 # Procfiler
 
 Procfiler is a tool which aims to bridge the gap between .NET and Process Mining. The tool supports collecting CLR (ETW)
-events through EventPipe, supports various process instances (method invocation, whole program execution) and can serialize
+events through EventPipe, supports various process instances (method invocation, whole program execution) and can
+serialize
 obtained event logs into different formats, in particular into XES. XES event logs can be then analyzed with different
 Process Mining tools, such as `ProM` or `pm4py`.
 
@@ -19,8 +20,8 @@ Options:
 -?, -h, --help  Show help and usage information
 ```
 
-
 Commands:
+
 ```
 create-documentation     Generate documentation for filters, mutators and other application components
 collect-to-xes           Collect CLR events and serialize them to XES format
@@ -30,7 +31,6 @@ split-by-names           Split the events into different files based on managed 
 split-by-threads         Split the events into different files based on managed thread ID
 split-by-methods         Splits the events by methods, in which they occured, and serializes to XES
 ```
-    
 
 ## create-documentation
 
@@ -50,6 +50,7 @@ Options:
 ## collect-to-xes
 
 Usage:
+
 ```
 procfiler collect-to-xes [options]
 ```
@@ -148,7 +149,6 @@ Usage:
 ```
 procfiler split-by-threads [options]
 ```
-
 
 Options:
 

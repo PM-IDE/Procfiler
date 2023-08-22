@@ -21,11 +21,11 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
   [Test]
   public void TestSimpleAsyncAwait() => DoSimpleTest(KnownSolution.SimpleAsyncAwait);
 
-  
+
   private void DoSimpleTest(KnownSolution solution)
   {
     ExecuteTestWithGold(
-      solution, 
+      solution,
       events => ExecuteAsyncGroupingTest(events, solution, DumpsAllocationsWith));
   }
 
@@ -42,9 +42,9 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
 
     return sb.ToString();
   }
-  
+
   private string ExecuteAsyncGroupingTest(
-    CollectedEvents events, 
+    CollectedEvents events,
     KnownSolution knownSolution,
     Func<IReadOnlyList<EventRecordWithMetadata>, string> tracesDumber)
   {

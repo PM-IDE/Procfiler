@@ -103,7 +103,7 @@ public class EventPipeProvidersProviderImpl : IEventPipeProvidersProvider
   );
 
   private static long GcPrivateKeywords => (long)ClrPrivateTraceEventParser.Keywords.GC;
-  
+
 
   public IReadOnlyList<EventPipeProvider> GetProvidersFor(ProvidersCategoryKind category) =>
     ourProvidersForCategories[category];

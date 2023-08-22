@@ -6,7 +6,7 @@ public class CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinarySta
 {
   private readonly object mySync = new();
   private readonly Dictionary<long, long> myManagedThreadsToOffsets = new();
-  
+
   private bool myIsInitialized;
 
 
@@ -38,7 +38,7 @@ public class CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinarySta
   public ICppShadowStack? FindShadowStack(long managedThreadId)
   {
     InitializeThreadIdsToOffsetsIfNeeded();
-    
+
     if (!myManagedThreadsToOffsets.TryGetValue(managedThreadId, out var offset))
     {
       logger.LogWarning("The shadow stack for {ManagedThreadId}", managedThreadId);

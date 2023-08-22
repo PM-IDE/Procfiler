@@ -8,9 +8,9 @@ public record MethodInvocationTree(string NamePattern) : IEnumerable
 {
   public List<MethodInvocationTree> InnerCalls { get; } = new();
 
-  
+
   public void Add(MethodInvocationTree tree) => InnerCalls.Add(tree);
-  
+
   public IEnumerator GetEnumerator()
   {
     return InnerCalls.GetEnumerator();
@@ -20,8 +20,8 @@ public record MethodInvocationTree(string NamePattern) : IEnumerable
 public static class MethodSequencePatternChecker
 {
   public static bool ContainsSequence(
-    IEnumerable<EventRecordWithMetadata> events, 
-    MethodInvocationTree invocationTree, 
+    IEnumerable<EventRecordWithMetadata> events,
+    MethodInvocationTree invocationTree,
     string globalMethodFilterPattern)
   {
     var filterRegex = new Regex(globalMethodFilterPattern);
@@ -33,7 +33,7 @@ public static class MethodSequencePatternChecker
 
     var firstIndex = methodsStartOrEnd.FindIndex(e => AreFrameNamesEqual(e.Frame, invocationTree.NamePattern));
     if (firstIndex != 0) return false;
-    
+
     var lastIndex = methodsStartOrEnd.FindIndex(e => AreFrameNamesEqual(e.Frame, invocationTree.NamePattern));
     if (lastIndex != firstIndex) return false;
 

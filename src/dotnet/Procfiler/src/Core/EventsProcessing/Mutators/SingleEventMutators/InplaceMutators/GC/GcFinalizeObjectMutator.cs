@@ -22,6 +22,7 @@ public class GcFinalizeObjectMutator(IProcfilerLogger logger) : MetadataValuesRe
 public class GcFinalizeObjectNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.GcFinalizeObject;
+
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
     MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.CommonTypeName, EventClassKind.Zero)

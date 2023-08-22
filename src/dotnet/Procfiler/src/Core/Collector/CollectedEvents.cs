@@ -10,12 +10,13 @@ public readonly record struct CollectedEvents(
 );
 
 public readonly record struct TypeIdToName(long Id, string Name);
+
 public readonly record struct MethodIdToFqn(long Id, string Fqn);
 
 public readonly record struct EventWithGlobalDataUpdate(
   TraceEvent OriginalEvent,
   EventRecordWithMetadata Event,
-  TypeIdToName? TypeIdToName, 
+  TypeIdToName? TypeIdToName,
   MethodIdToFqn? MethodIdToFqn
 );
 

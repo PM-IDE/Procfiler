@@ -6,7 +6,7 @@ public class MdDocument(string name) : IEnumerable, IMdDocumentPart
 {
   private readonly List<IMdDocumentPart> myParts = new();
 
-  
+
   public string Name { get; } = name;
 
 
@@ -16,7 +16,7 @@ public class MdDocument(string name) : IEnumerable, IMdDocumentPart
   }
 
   public IEnumerator GetEnumerator() => myParts.GetEnumerator();
-  
+
   public StringBuilder Serialize(StringBuilder sb)
   {
     foreach (var part in myParts)

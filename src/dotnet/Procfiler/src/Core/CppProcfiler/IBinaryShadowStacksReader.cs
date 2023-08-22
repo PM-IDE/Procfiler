@@ -19,7 +19,7 @@ public class FrameInfo
       { } fqn => fqn,
       _ => FunctionId.ToString()
     };
-    
+
     var startOrEnd = IsStart ? "start" : " end ";
     return $"[{TimeStamp}] [{startOrEnd}] {fqnOrId}";
   }
@@ -35,4 +35,3 @@ public class BinaryShadowStacksReaderImpl(IProcfilerLogger logger) : IBinaryShad
 {
   public IShadowStacks ReadStackEvents(string path) => new CppShadowStacksImpl(logger, path);
 }
-

@@ -3,7 +3,7 @@
 public class KnownSolution
 {
   private const string TargetFramework = "net6.0";
-  
+
   public static KnownSolution ConsoleApp1 { get; } = new("ConsoleApp1", TargetFramework, 15_000);
   public static KnownSolution TaskTestProject1 { get; } = new("TaskTestProject1", TargetFramework, 15_000);
   public static KnownSolution ExceptionTryCatchFinally { get; } = new("ExceptionTryCatchFinally", TargetFramework, 15_000);
@@ -28,7 +28,7 @@ public class KnownSolution
     ConsoleApp1,
     TaskTestProject1,
     ExceptionTryCatchFinally,
-    
+
     //todo: for some reasons this test is not stable on mac
     //Sockets,
     //HttpRequests

@@ -50,7 +50,7 @@ public class ClrEventsCollector(
         ClrEventsCollectionContextWithBinaryStacks ctx => ctx.PathToBinaryStacks,
         _ => null
       };
-      
+
       return ReadEventsFromFile(tempPathCookie, binaryStacksPath);
     }
     catch (Exception ex)
@@ -68,7 +68,7 @@ public class ClrEventsCollector(
     TempFileCookie tempPathCookie)
   {
     using var performanceCookie = new PerformanceCookie(nameof(ListenToProcessAndWriteToFile), logger);
-    
+
     var client = new DiagnosticsClient(processId);
     transportCreationWaiter.WaitUntilTransportIsCreatedOrThrow(processId);
     var providers = eventPipeProvidersProvider.GetProvidersFor(category);
@@ -112,7 +112,7 @@ public class ClrEventsCollector(
     {
       ContinueOnError = true
     };
-    
+
     var etlxFilePath = TraceLog.CreateFromEventPipeDataFile(tempPathCookie.FullFilePath, options: options);
     using var etlxCookie = new TempFileCookie(etlxFilePath, logger);
 
@@ -127,7 +127,7 @@ public class ClrEventsCollector(
 
     logger.LogInformation(
       "We GOT {EventCount} events, We LOST {EventsLost} events", traceLog.EventCount, traceLog.EventsLost);
-    
+
     var statistics = new Statistics();
     var events = new EventRecordWithMetadata[traceLog.EventCount];
     var context = new CreatingEventContext(stackSource, traceLog);
@@ -136,7 +136,7 @@ public class ClrEventsCollector(
       { } => binaryShadowStacksReader.ReadStackEvents(binaryStacksPath),
       null => new FromEventsShadowStacks(stackSource)
     };
-    
+
     var globalData = new SessionGlobalData(shadowStacks);
 
     using (var _ = new PerformanceCookie("ProcessingEvents", logger))
@@ -168,10 +168,10 @@ public class ClrEventsCollector(
         return 0;
       });
     }
-    
+
     return new EventsCollectionImpl(events, logger);
   }
-  
+
   private EventWithGlobalDataUpdate CreateEventWithMetadataFromClrEvent(
     TraceEvent traceEvent, CreatingEventContext context, ref Statistics statistics)
   {
@@ -194,7 +194,7 @@ public class ClrEventsCollector(
 
     var typeIdToName = TryExtractTypeIdToName(traceEvent, record.Metadata);
     var methodIdToFqn = TryExtractMethodToId(traceEvent, record.Metadata);
-    
+
     return new EventWithGlobalDataUpdate(traceEvent, record, typeIdToName, methodIdToFqn);
   }
 
@@ -202,7 +202,7 @@ public class ClrEventsCollector(
     TraceEvent traceEvent, IDictionary<string, string> metadata)
   {
     if (traceEvent.EventName is not TraceEventsConstants.TypeBulkType) return null;
-    
+
     var id = metadata.GetValueOrDefault(TraceEventsConstants.TypeBulkTypeTypeId);
     var name = metadata.GetValueOrDefault(TraceEventsConstants.TypeBulkTypeTypeName);
 
@@ -218,7 +218,7 @@ public class ClrEventsCollector(
     TraceEvent traceEvent, IDictionary<string, string> metadata)
   {
     if (traceEvent.EventName is not TraceEventsConstants.MethodLoadVerbose) return null;
-    
+
     var methodId = metadata.GetValueOrDefault(TraceEventsConstants.MethodId);
     var name = metadata.GetValueOrDefault(TraceEventsConstants.MethodName);
     var methodNamespace = metadata.GetValueOrDefault(TraceEventsConstants.MethodNamespace);
@@ -229,10 +229,10 @@ public class ClrEventsCollector(
       var mergedName = MutatorsUtil.ConcatenateMethodDetails(name, methodNamespace, signature);
       return new MethodIdToFqn(methodId.ParseId(), mergedName);
     }
-    
+
     return null;
   }
-  
+
   private static MutableTraceEventStackSource InitializeStackSource(TraceLog traceLog)
   {
     using var symbolReader = new SymbolReader(TextWriter.Null) { SymbolPath = SymbolPath.MicrosoftSymbolServerPath };
@@ -247,7 +247,7 @@ public class ClrEventsCollector(
       GroupByStartStopActivity = true,
       UseTasks = true
     };
-    
+
     computer.GenerateThreadTimeStacks(stackSource);
     return stackSource;
   }

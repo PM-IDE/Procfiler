@@ -11,20 +11,20 @@ public abstract class CustomTraceEventBase : TraceEvent
 
   protected CustomTraceEventBase(TraceEvent traceEvent, string newName, string[] payloadNames)
     : base(
-      (ushort)traceEvent.ID, 
-      (int)traceEvent.Task, 
-      traceEvent.TaskName, 
-      traceEvent.TaskGuid, 
-      (int)traceEvent.Opcode, 
-      traceEvent.OpcodeName, 
-      traceEvent.ProviderGuid, 
+      (ushort)traceEvent.ID,
+      (int)traceEvent.Task,
+      traceEvent.TaskName,
+      traceEvent.TaskGuid,
+      (int)traceEvent.Opcode,
+      traceEvent.OpcodeName,
+      traceEvent.ProviderGuid,
       traceEvent.ProcessName
     )
   {
     this.payloadNames = payloadNames;
-    
+
     Debug.Assert((int)ID == UnknownEventsIds.GcLohCompactId);
-    
+
     var userDataField = GetFieldInfo("userData");
     userDataField.SetValue(this, traceEvent.DataStart);
 
@@ -41,7 +41,7 @@ public abstract class CustomTraceEventBase : TraceEvent
     var field = GetFieldInfo(fieldName);
     field.SetValue(this, field.GetValue(sourceEvent));
   }
-  
+
   private FieldInfo GetFieldInfo(string fieldName)
   {
     var fieldInfo = GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);

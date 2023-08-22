@@ -33,7 +33,7 @@ public class StackTraceSerializer : IStackTraceSerializer
     var sb = new StringBuilder();
     using var fs = File.OpenWrite(Path.Combine(directory, "stacks.txt"));
     using var sw = new StreamWriter(fs);
-    
+
     foreach (var (_, stack) in shadowStacks.StackTraceInfos)
     {
       sw.Write($"{stack.StackTraceId}\n");
@@ -45,11 +45,11 @@ public class StackTraceSerializer : IStackTraceSerializer
       }
 
       sb = sb.AppendNewLine();
-      
+
       sw.Write(sb.ToString());
     }
   }
-  
+
   private void SerializeCppStacks(ICppShadowStacks shadowStacks, SessionGlobalData globalData, string directory)
   {
     foreach (var shadowStack in shadowStacks.EnumerateStacks())
@@ -64,16 +64,16 @@ public class StackTraceSerializer : IStackTraceSerializer
   {
     using var fs = File.OpenWrite(savePath);
     using var sw = new StreamWriter(fs);
-    
+
     var indent = 0;
-      
+
     foreach (var frame in shadowStack)
     {
       if (!frame.IsStart)
       {
         --indent;
       }
-        
+
       for (var i = 0; i < indent; ++i)
       {
         sw.Write(' ');

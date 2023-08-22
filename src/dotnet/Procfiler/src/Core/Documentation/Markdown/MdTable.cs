@@ -7,11 +7,11 @@ public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
   private const char CellsDelimiter = '|';
   private const char Space = ' ';
   private const char SeparatorPath = '-';
-  
-  
+
+
   private readonly List<MdTableCell[]> myRows = new();
-  
-  
+
+
   public MdTableCell[]? Header { get; set; }
   public int ColumnsCount { get; } = columnsCount;
 
@@ -23,7 +23,7 @@ public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
       Add(row);
     }
   }
-  
+
   public void Add(string[] row) => Add(row.Select(rawCell => new MdTableCell(rawCell)).ToArray());
 
   public void Add(MdTableCell[] row)
@@ -32,14 +32,14 @@ public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
     {
       throw new IncorrectRowsCountException(row.Length, ColumnsCount);
     }
-    
+
     myRows.Add(row);
   }
-  
+
   public StringBuilder Serialize(StringBuilder sb)
   {
     var rowLengths = CalculateColumnsWidths();
-    
+
     if (Header is { } header)
     {
       AddRowToStringBuilder(header, rowLengths, sb);
@@ -50,7 +50,7 @@ public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
       Debug.Assert(emptyHeader.Length == ColumnsCount);
       AddRowToStringBuilder(emptyHeader, rowLengths, sb);
     }
-    
+
     AddSeparatorBetweenHeaderAndTableContents(rowLengths, sb);
     foreach (var row in myRows)
     {
@@ -61,7 +61,7 @@ public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
   }
 
   public IEnumerator GetEnumerator() => myRows.GetEnumerator();
-  
+
   private int[] CalculateColumnsWidths()
   {
     var columnsLengths = new int[ColumnsCount];
@@ -88,7 +88,7 @@ public class MdTable(int columnsCount) : IMdDocumentPart, IEnumerable
   private static void AddRowToStringBuilder(MdTableCell[] row, int[] rowsLengths, StringBuilder sb)
   {
     sb.Append(CellsDelimiter);
-    
+
     foreach (var (cell, length) in row.Zip(rowsLengths))
     {
       var spacesToAdd = length - cell.ContentLength;

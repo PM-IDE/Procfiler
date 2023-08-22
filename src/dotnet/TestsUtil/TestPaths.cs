@@ -11,7 +11,7 @@ public static class TestPaths
     Assert.That(Directory.Exists(path), Is.True);
     return path;
   }
-  
+
   public static string CreatePathToSolutionsSource()
   {
     var path = Path.Combine(CreatePathToTestData(), "source");

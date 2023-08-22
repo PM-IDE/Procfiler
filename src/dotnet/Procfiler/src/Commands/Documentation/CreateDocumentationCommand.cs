@@ -22,7 +22,7 @@ public class CreateDocumentationCommand(
     {
       var outputPath = context.ParseResult.GetValueForOption(myOutputPathOption) ??
                        throw new MissingOptionException(myOutputPathOption);
-    
+
       documentationCreator.CreateDocumentation(outputPath);
       return 0;
     }
@@ -39,7 +39,7 @@ public class CreateDocumentationCommand(
   {
     var command = new Command(
       "create-documentation", "Generate documentation for filters, mutators and other application components");
-    
+
     command.AddOption(myOutputPathOption);
     command.Handler = this;
     return command;

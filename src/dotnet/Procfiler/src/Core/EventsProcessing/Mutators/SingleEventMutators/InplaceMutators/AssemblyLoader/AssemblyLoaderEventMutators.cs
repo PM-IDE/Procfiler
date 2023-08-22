@@ -54,7 +54,7 @@ public class AssemblyLoaderResolutionAttemptedNameMutator(IProcfilerLogger logge
 [EventMutator(SingleEventMutatorsPasses.SingleEventsMutators)]
 public class AssemblyLoaderAppDomainAssemblyResolveHandlerInvokeNameMutator(
   IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
-{ 
+{
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
     MetadataKeysWithTransform.CreateForAssemblyName(TraceEventsConstants.AssemblyName, EventClassKind.Zero),

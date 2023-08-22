@@ -24,7 +24,7 @@ public class ManagedEventsFromUndefinedThreadExtractor(IProcfilerLogger logger) 
     IDictionary<long, IEventsCollection> managedThreadEventsById, IEventsCollection undefinedEvents)
   {
     var (newManagedEvents, newUndefinedEvents) = ExtractFrom(undefinedEvents);
-    
+
     foreach (var (key, value) in newManagedEvents)
     {
       if (managedThreadEventsById.ContainsKey(key))
@@ -35,13 +35,13 @@ public class ManagedEventsFromUndefinedThreadExtractor(IProcfilerLogger logger) 
 
     return new EventsCollectionImpl(newUndefinedEvents.Select(pair => pair.Event).ToArray(), logger);
   }
-  
+
   private ManagedEventsExtractionResult ExtractFrom(IEventsCollection undefinedEvents)
   {
     var newUndefinedEvents = new List<EventRecordWithMetadata>();
     var managedThreadsTraces = new Dictionary<int, List<EventRecordWithMetadata>>();
     var currentThreadId = -1;
-    
+
     foreach (var (_, eventRecord) in undefinedEvents)
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is not var (frame, isStart))
@@ -54,16 +54,16 @@ public class ManagedEventsFromUndefinedThreadExtractor(IProcfilerLogger logger) 
         {
           newUndefinedEvents.Add(eventRecord);
         }
-        
+
         continue;
       }
-      
+
       if (!TraceEventsExtensions.IsThreadStartMethod(frame, out var managedThreadId))
       {
         newUndefinedEvents.Add(eventRecord);
         continue;
       }
-      
+
       if (currentThreadId != -1)
         throw new MethodStartEndConsistencyBrokenException();
 
@@ -87,7 +87,7 @@ public class ManagedEventsFromUndefinedThreadExtractor(IProcfilerLogger logger) 
     var newUndefinedEventsCollection = new EventsCollectionImpl(newUndefinedEvents.ToArray(), logger);
     var newManagedEvents = managedThreadsTraces.Select(
       pair => new KeyValuePair<int, IEventsCollection>(pair.Key, new EventsCollectionImpl(pair.Value.ToArray(), logger)));
-    
+
     return new ManagedEventsExtractionResult(newManagedEvents, newUndefinedEventsCollection);
   }
 }

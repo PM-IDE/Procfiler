@@ -21,12 +21,12 @@ public interface IByMethodsSplitter
 
 [AppComponent]
 public class ByMethodsSplitterImpl(
-    IProcfilerLogger logger,
-    IEventsCollectionByMethodsSplitter splitter,
-    IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
-    IAsyncMethodsGrouper asyncMethodsGrouper,
-    IUnitedEventsProcessor unitedEventsProcessor,
-    IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger
+  IProcfilerLogger logger,
+  IEventsCollectionByMethodsSplitter splitter,
+  IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
+  IAsyncMethodsGrouper asyncMethodsGrouper,
+  IUnitedEventsProcessor unitedEventsProcessor,
+  IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger
 ) : IByMethodsSplitter
 {
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
@@ -45,7 +45,7 @@ public class ByMethodsSplitterImpl(
       using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(Split)}::PreparingTrace_{key}", logger);
 
       ProcessManagedThreadEvents(threadEvents, events.GlobalData);
-      
+
       var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
       var eventsTracesByMethods = splitter.Split(mergedEvents, filterPattern, inlineMode);
 

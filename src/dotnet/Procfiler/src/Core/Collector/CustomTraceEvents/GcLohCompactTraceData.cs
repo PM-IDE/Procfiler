@@ -2,7 +2,7 @@ using Procfiler.Core.Constants.TraceEvents;
 
 namespace Procfiler.Core.Collector.CustomTraceEvents;
 
-public class GcLohCompactTraceData(TraceEvent traceEvent) 
+public class GcLohCompactTraceData(TraceEvent traceEvent)
   : CustomTraceEventBase(traceEvent, TraceEventsConstants.GcLohCompact, ourPayloadEvents)
 {
   private static readonly string[] ourPayloadEvents =
@@ -15,8 +15,8 @@ public class GcLohCompactTraceData(TraceEvent traceEvent)
     "TotalRefs",
     "ZeroRefs"
   };
-  
-  
+
+
   public int ClrInstanceId => GetInt16At(0);
   public int Count => GetInt16At(2);
   public int TimePlan => GetInt32At(4);

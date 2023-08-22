@@ -21,7 +21,7 @@ internal static class TraceEventsExtensions
   {
     threadId = -1;
     if (!frame.Contains(TraceEventsConstants.ThreadFrameTemplate)) return false;
-    
+
     var from = TraceEventsConstants.ThreadFrameTemplate.Length;
     var to = frame.IndexOf(')');
     if (!int.TryParse(frame.AsSpan(from, to - from), out threadId))
@@ -31,7 +31,7 @@ internal static class TraceEventsExtensions
 
     return true;
   }
-  
+
   public static int GetManagedThreadIdThroughStack(
     this TraceEvent @event,
     MutableTraceEventStackSource stackSource)
@@ -49,13 +49,13 @@ internal static class TraceEventsExtensions
       {
         managedThreadId = threadId;
       }
-      
+
       currentIndex = stackSource.GetCallerIndex(currentIndex);
     }
 
     return managedThreadId;
   }
-  
+
   public static StackTraceInfo CreateEventStackTraceInfoOrThrow(
     this TraceEvent @event,
     MutableTraceEventStackSource stackSource)
@@ -74,11 +74,11 @@ internal static class TraceEventsExtensions
       {
         managedThreadId = threadId;
       }
-      
+
       currentStackTrace.Add(frame);
       currentIndex = stackSource.GetCallerIndex(currentIndex);
     }
 
-    return new StackTraceInfo((int) callStackIndex, managedThreadId, currentStackTrace.ToArray());
+    return new StackTraceInfo((int)callStackIndex, managedThreadId, currentStackTrace.ToArray());
   }
 }

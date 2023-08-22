@@ -11,8 +11,8 @@ public class GcStartEventMutator : MetadataValueToNameAppenderBase
 {
   public override string EventType => TraceEventsConstants.GcStart;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-  
-  
+
+
   public GcStartEventMutator(IProcfilerLogger logger) : base(logger)
   {
     string TransformReason(string reason) => GcMutatorsUtil.GenerateNewNameForGcReason(reason, Logger);
@@ -20,11 +20,11 @@ public class GcStartEventMutator : MetadataValueToNameAppenderBase
     Transformations = new[]
     {
       new MetadataKeysWithTransform(TraceEventsConstants.GcStartReason, TransformReason, EventClassKind.Zero),
-      new MetadataKeysWithTransform(TraceEventsConstants.GcStartType, GenerateNameForGcType, EventClassKind.Zero), 
+      new MetadataKeysWithTransform(TraceEventsConstants.GcStartType, GenerateNameForGcType, EventClassKind.Zero),
     };
   }
 
-  
+
   private string GenerateNameForGcType(string type) => type switch
   {
     "NonConcurrentGC" => "NC_GC",

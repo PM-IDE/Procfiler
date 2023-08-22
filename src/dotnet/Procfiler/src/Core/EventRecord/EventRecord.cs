@@ -39,7 +39,7 @@ public class EventRecord
     StackTraceId = other.StackTraceId;
   }
 
-  
+
   public void UpdateWith(FromFrameInfoCreationContext context)
   {
     Stamp = context.FrameInfo.TimeStamp;
@@ -56,8 +56,8 @@ public class EventRecordWithMetadata : EventRecord
 {
   public IEventMetadata Metadata { get; }
 
-  
-  public EventRecordWithMetadata(TraceEvent @event, long managedThreadId, int stackTraceId) 
+
+  public EventRecordWithMetadata(TraceEvent @event, long managedThreadId, int stackTraceId)
     : base(@event, managedThreadId, stackTraceId)
   {
     Metadata = new EventMetadata(@event);
@@ -87,7 +87,7 @@ public static class EventRecordExtensions
 
   public static MethodStartEndEventInfo GetMethodStartEndEventInfo(this EventRecordWithMetadata eventRecord)
     => eventRecord.TryGetMethodStartEndEventInfo() ?? throw new ArgumentOutOfRangeException();
-  
+
   public static MethodStartEndEventInfo? TryGetMethodStartEndEventInfo(this EventRecordWithMetadata eventRecord)
   {
     if (IsMethodStartOrEndEvent(eventRecord))
@@ -111,11 +111,11 @@ public static class EventRecordExtensions
   {
     return eventRecord.EventClass is TraceEventsConstants.TaskWaitSend or TraceEventsConstants.TaskWaitStop;
   }
-  
+
   public static bool IsTaskWaitStopEvent(this EventRecordWithMetadata eventRecord, out int waitedTaskId)
   {
     waitedTaskId = -1;
-    
+
     if (eventRecord.EventClass is not TraceEventsConstants.TaskWaitStop) return false;
 
     waitedTaskId = ExtractTaskId(eventRecord);
@@ -151,7 +151,7 @@ public static class EventRecordExtensions
   {
     typeName = null;
     if (eventRecord.EventClass is not TraceEventsConstants.GcSampledObjectAllocation) return false;
-    
+
     typeName = eventRecord.Metadata[TraceEventsConstants.CommonTypeName];
     return true;
   }

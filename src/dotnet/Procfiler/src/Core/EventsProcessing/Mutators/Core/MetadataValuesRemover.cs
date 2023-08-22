@@ -7,8 +7,8 @@ namespace Procfiler.Core.EventsProcessing.Mutators.Core;
 public abstract class MetadataValuesRemover(IProcfilerLogger logger) : SingleEventMutatorBase(logger), ISingleEventMutator
 {
   protected abstract string[] MetadataKeys { get; }
-  
-  
+
+
   public override IEnumerable<EventLogMutation> Mutations => MetadataKeys.Select(key => new AttributeRemovalMutation(EventType, key));
 
 

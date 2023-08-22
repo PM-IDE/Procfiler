@@ -12,12 +12,12 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
     Key,
     Value
   }
-  
-  
+
+
   private EventMetadata? myInsertedMetadata;
   private int myDeletedProperties;
   private int myTraceEventMetadataCount = traceEvent.PayloadNames.Length;
-  
+
   public TraceEvent TraceEvent { get; } = traceEvent;
   public bool IsReadOnly => false;
   public int MaxMetadataValuesCount => sizeof(int) * 8;
@@ -31,7 +31,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
     var result = new string[Count];
     var names = TraceEvent.PayloadNames;
     var index = 0;
-    
+
     for (var i = 0; i < names.Length; i++)
     {
       if (IsDeletedAt(i)) continue;
@@ -44,7 +44,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
     }
 
     if (myInsertedMetadata is not { } insertedMetadata) return result;
-    
+
     var insertedCollection = keyOrValue switch
     {
       KeyOrValue.Key => insertedMetadata.Keys,
@@ -74,7 +74,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
       throw new TooMuchMetadataValuesException();
     }
   }
-  
+
   public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
   {
     var names = TraceEvent.PayloadNames;
@@ -94,7 +94,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
       }
     }
   }
-  
+
   public void Add(KeyValuePair<string, string> item)
   {
     EnsureInsertedEventsCreated();
@@ -126,10 +126,10 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
   }
 
   public bool Contains(KeyValuePair<string, string> item) => ContainsKey(item.Key);
-  
+
   private bool ContainsInInsertedEvents(string key) =>
     myInsertedMetadata is { } insertedMetadata && insertedMetadata.ContainsKey(key);
-  
+
   private int? TryFindIndexFor(string key)
   {
     for (var i = 0; i < TraceEvent.PayloadNames.Length; i++)
@@ -161,7 +161,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
   public void Add(string key, string value)
   {
     if (ContainsKey(key)) throw new ArgumentException(key);
-    
+
     EnsureInsertedEventsCreated();
     Debug.Assert(myInsertedMetadata is { });
     myInsertedMetadata.Add(key, value);
@@ -232,6 +232,6 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
       myInsertedMetadata[key] = value;
     }
   }
-  
+
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

@@ -30,14 +30,14 @@ public class EventMetadataTestWithRealEventsTest : ProcessTestBase
 
     Assert.That(initialKeys, Has.Count.EqualTo(initialCount));
     Assert.That(initialValues, Has.Count.EqualTo(initialCount));
-    
+
     var keyToRemove = initialKeys[indexToRemove];
     Assert.That(metadata.Remove(keyToRemove), Is.True);
     initialKeys.RemoveAt(indexToRemove);
     initialValues.RemoveAt(indexToRemove);
-    
+
     Assert.That(metadata, Has.Count.EqualTo(initialCount - 1));
-    
+
     TestUtil.AssertCollectionsAreSame(initialKeys, metadata.Keys.ToList());
     TestUtil.AssertCollectionsAreSame(initialValues, metadata.Values.ToList());
   }

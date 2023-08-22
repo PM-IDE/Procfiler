@@ -14,7 +14,7 @@ public class ReadWriteDepsJsonTests : TestWithContainerBase
     var depsJsonsDirectory = Path.Combine(TestPaths.CreatePathToTestData(), "DepsJsons");
     var reader = Container.Resolve<IDepsJsonReader>();
     var writer = Container.Resolve<IDepsJsonWriter>();
-    
+
     foreach (var file in Directory.GetFiles(depsJsonsDirectory))
     {
       var filePath = Path.Combine(depsJsonsDirectory, file);

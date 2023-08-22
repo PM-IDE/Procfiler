@@ -19,12 +19,12 @@ public class SplitEventsByCategoriesCommand(
   IStackTraceSerializer stackTraceSerializer,
   IDelegatingEventsSerializer serializer,
   IProcfilerLogger logger
-) : CollectAndSplitCommandBase<string>(logger, commandExecutor, eventsMerger, processor, serializer, stackTraceSerializer), 
-    ISplitEventsByCategoriesCommand
+) : CollectAndSplitCommandBase<string>(logger, commandExecutor, eventsMerger, processor, serializer, stackTraceSerializer),
+  ISplitEventsByCategoriesCommand
 {
-  public override void Execute(CollectClrEventsContext context) => 
+  public override void Execute(CollectClrEventsContext context) =>
     ExecuteSimpleSplitCommand(context, SplitEventsHelper.EventClassKeyExtractor, CollectAndSplitContext.DoNothing);
 
-  protected override Command CreateCommandInternal() => 
+  protected override Command CreateCommandInternal() =>
     new("split-by-names", "Split the events into different files based on managed thread ID");
 }

@@ -6,7 +6,7 @@ using Procfiler.Utils;
 namespace Procfiler.Commands.CollectClrEvents.Base;
 
 public abstract partial class CollectCommandBase(
-  IProcfilerLogger logger, 
+  IProcfilerLogger logger,
   ICommandExecutorDependantOnContext commandExecutor
 ) : ICommandWithContext<CollectClrEventsContext>
 {
@@ -19,14 +19,14 @@ public abstract partial class CollectCommandBase(
   {
     using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(ExecuteCommand)}", Logger);
     ClearPathBeforeProfilingIfNeeded(context.CommonContext);
-    
+
     commandExecutor.Execute(context, commandAction);
   }
 
   private void ClearPathBeforeProfilingIfNeeded(CollectingClrEventsCommonContext commonContext)
   {
     if (!commonContext.ClearPathBefore) return;
-    
+
     PathUtils.ClearPath(commonContext.OutputPath, Logger);
   }
 }

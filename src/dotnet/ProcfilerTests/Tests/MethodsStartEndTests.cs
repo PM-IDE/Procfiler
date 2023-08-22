@@ -11,9 +11,9 @@ namespace ProcfilerTests.Tests;
 public class MethodsStartEndTests : GoldProcessBasedTest
 {
   [TestCaseSource(nameof(Source))]
-  public void Test(KnownSolution knownSolution) => DoTest(knownSolution); 
-  
-  
+  public void Test(KnownSolution knownSolution) => DoTest(knownSolution);
+
+
   private void DoTest(KnownSolution knownSolution)
   {
     ExecuteTestWithGold(
@@ -24,11 +24,11 @@ public class MethodsStartEndTests : GoldProcessBasedTest
   {
     var mainThreadEvents = TestUtil.FindEventsForMainThread(events.Events);
     var processingContext = EventsProcessingContext.DoEverything(mainThreadEvents, events.GlobalData);
-    
+
     var processor = Container.Resolve<IUnitedEventsProcessor>();
     processor.ProcessFullEventLog(processingContext);
     processor.ApplyMultipleMutators(mainThreadEvents, events.GlobalData, EmptyCollections<Type>.EmptySet);
-    
+
     var dump = ProgramMethodCallTreeDumper.CreateDump(mainThreadEvents, filterPattern);
     return dump;
   }

@@ -9,7 +9,7 @@ public abstract class MetadataValueToNameAppenderBase(
 {
   protected abstract IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
-  
+
   public override IEnumerable<EventLogMutation> Mutations =>
     Transformations.Select(t => new AttributeToNameAppendMutation(EventType, t.EventClassKind, t.MetadataKey, removeProperties));
 

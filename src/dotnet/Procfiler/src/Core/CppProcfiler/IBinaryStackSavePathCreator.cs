@@ -12,7 +12,7 @@ public interface IBinaryStackSavePathCreator
 public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
 {
   private const string BinaryStacksFileName = "bstacks.bin";
-  
+
   public string CreateSavePath(BuildResult buildResult)
   {
     var directory = Path.GetDirectoryName(buildResult.BuiltDllPath);

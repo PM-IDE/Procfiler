@@ -4,7 +4,7 @@ public static class JsonElementExtensions
 {
   public static string GetPropertyStringValueOrThrow(this JsonElement element, string propertyName)
   {
-    return element.TryGetPropertyStringValue(propertyName) ?? 
+    return element.TryGetPropertyStringValue(propertyName) ??
            throw new ArgumentOutOfRangeException(propertyName);
   }
 

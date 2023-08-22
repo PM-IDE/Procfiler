@@ -10,7 +10,7 @@ public class SessionGlobalData(IShadowStacks shadowStacks)
   private readonly Dictionary<long, string> myMethodIdToFqn = new();
   private readonly Dictionary<long, string> myTypeIdsToNames = new();
 
-  
+
   public IReadOnlyDictionary<long, string> TypeIdToNames => myTypeIdsToNames;
   public IReadOnlyDictionary<long, string> MethodIdToFqn => myMethodIdToFqn;
   public IShadowStacks Stacks { get; } = shadowStacks;

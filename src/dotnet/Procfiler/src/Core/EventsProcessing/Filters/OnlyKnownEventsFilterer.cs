@@ -42,7 +42,7 @@ public class OnlyKnownEventsFilterer : IEventsFilter
     TraceEventsConstants.GcCreateConcurrentThread,
     TraceEventsConstants.GcTerminateConcurrentThread,
     TraceEventsConstants.GcLohCompact,
-    
+
     TraceEventsConstants.ContentionStart,
     TraceEventsConstants.ContentionStop,
 
@@ -67,7 +67,7 @@ public class OnlyKnownEventsFilterer : IEventsFilter
     TraceEventsConstants.AssemblyLoaderStop,
     TraceEventsConstants.AssemblyLoaderKnownPathProbed,
     TraceEventsConstants.AssemblyLoaderResolutionAttempted,
-    
+
     TraceEventsConstants.LoaderAppDomainLoad,
     TraceEventsConstants.LoaderAppDomainUnload,
     TraceEventsConstants.LoaderAssemblyLoad,
@@ -112,7 +112,7 @@ public class OnlyKnownEventsFilterer : IEventsFilter
     TraceEventsConstants.ThreadPoolWorkerThreadWait,
 
     TraceEventsConstants.AppDomainResourceManagementThreadCreated,
-    
+
     TraceEventsConstants.RequestStart,
     TraceEventsConstants.RequestStop,
     TraceEventsConstants.RequestFailed,
@@ -136,7 +136,7 @@ public class OnlyKnownEventsFilterer : IEventsFilter
     TraceEventsConstants.AcceptFailed,
   };
 
-  
+
   public IEnumerable<string> AllowedEventsNames => ourAllowedEvents;
 
   public void Filter(IEventsCollection events)

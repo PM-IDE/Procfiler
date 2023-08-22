@@ -19,7 +19,7 @@ public static partial class TraceEventsConstants
   public const string GcSampledObjectAllocationTypeName = CommonTypeName;
 
   public const string GcFinalizeObject = "GC/FinalizeObject";
-  
+
   public const string GcPinObjectAtGcTime = "GC/PinObjectAtGCTime";
   public const string GcAllocationTick = "GC/AllocationTick";
   public const string GcGenerationRange = "GC/GenerationRange";

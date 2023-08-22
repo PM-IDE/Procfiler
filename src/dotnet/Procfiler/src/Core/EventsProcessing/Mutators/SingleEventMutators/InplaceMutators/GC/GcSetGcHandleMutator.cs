@@ -11,8 +11,8 @@ public class GcSetGcHandleMutator : MetadataValueToNameAppenderBase
 {
   public override string EventType => TraceEventsConstants.GcSetGcHandle;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
-  
-  
+
+
   public GcSetGcHandleMutator(IProcfilerLogger logger) : base(logger)
   {
     Transformations = new[]

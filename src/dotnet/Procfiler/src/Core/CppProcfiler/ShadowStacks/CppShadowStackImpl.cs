@@ -7,7 +7,7 @@ public class CppShadowStackImpl : ICppShadowStack
   private readonly IProcfilerLogger myLogger;
   private readonly string myBinStackFilePath;
   private readonly long myStartPosition;
-  
+
 
   public long ManagedThreadId { get; }
   public long FramesCount { get; }
@@ -22,20 +22,20 @@ public class CppShadowStackImpl : ICppShadowStack
     using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
     using var reader = new BinaryReader(fs);
     reader.BaseStream.Seek(startPosition, SeekOrigin.Begin);
-    
+
     CppShadowStackHelpers.ReadManagedThreadIdAndFramesCount(reader, out var threadId, out var framesCount);
     ManagedThreadId = threadId;
     FramesCount = framesCount;
   }
 
-  
+
   public IEnumerator<FrameInfo> GetEnumerator()
   {
     using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
     using var reader = new BinaryReader(fs);
-    
+
     CppShadowStackHelpers.SeekToPositionAndSkipHeader(reader, myStartPosition);
-    
+
     var frameInfo = new FrameInfo();
     for (long i = 0; i < FramesCount; i++)
     {

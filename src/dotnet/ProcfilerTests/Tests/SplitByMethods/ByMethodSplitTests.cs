@@ -19,7 +19,7 @@ public class ByMethodSplitTests : GoldProcessBasedTest
   {
     ExecuteTestWithGold(knownSolution, events => DumpMethodCallTree(knownSolution.NamespaceFilterPattern, events));
   }
-  
+
   private string DumpMethodCallTree(string filterPattern, CollectedEvents events)
   {
     var eventByMethods = SplitByMethodsTestUtil.SplitByMethods(events, Container, filterPattern);

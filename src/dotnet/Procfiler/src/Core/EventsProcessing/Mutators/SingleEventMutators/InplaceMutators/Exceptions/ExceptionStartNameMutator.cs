@@ -10,6 +10,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 public class ExceptionStartNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.ExceptionStart;
+
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
     MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.ExceptionType, EventClassKind.Zero)

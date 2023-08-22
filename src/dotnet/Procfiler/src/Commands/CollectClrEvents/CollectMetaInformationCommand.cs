@@ -11,7 +11,7 @@ public interface ICollectMetaInformationCommand : ICommandWithContext<CollectClr
 
 [CommandLineCommand]
 public class CollectMetaInformationCommand(
-  IProcfilerLogger logger, 
+  IProcfilerLogger logger,
   ICommandExecutorDependantOnContext commandExecutor
 ) : CollectCommandBase(logger, commandExecutor), ICollectMetaInformationCommand
 {
@@ -21,7 +21,7 @@ public class CollectMetaInformationCommand(
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
       var map = SplitEventsHelper.SplitByKey(Logger, events.Events, SplitEventsHelper.EventClassKeyExtractor);
-      
+
       foreach (var (name, eventsByName) in map)
       {
         var payloadValues = new Dictionary<string, Dictionary<string, int>>();
@@ -40,11 +40,11 @@ public class CollectMetaInformationCommand(
     });
   }
 
-  protected override Command CreateCommandInternal() => 
+  protected override Command CreateCommandInternal() =>
     new("meta-info", "Collects meta-information about CLR events received during listening to process");
 
   private static void SerializeMetadata(
-    CollectClrEventsContext context, 
+    CollectClrEventsContext context,
     string name,
     Dictionary<string, Dictionary<string, int>> payloadValues)
   {
@@ -67,11 +67,11 @@ public class CollectMetaInformationCommand(
           }
         }
 
-        break; 
+        break;
       }
 
       default:
         throw new ArgumentOutOfRangeException();
-    } 
+    }
   }
 }

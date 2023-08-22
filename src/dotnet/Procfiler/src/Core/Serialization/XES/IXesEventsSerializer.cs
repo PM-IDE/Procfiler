@@ -15,12 +15,11 @@ public interface IXesEventsSerializer
 
 [AppComponent]
 public partial class XesEventsSerializer(
-    IUnitedEventsProcessor unitedEventsProcessor, 
-    IProcfilerLogger logger
+  IUnitedEventsProcessor unitedEventsProcessor,
+  IProcfilerLogger logger
 ) : IXesEventsSerializer
 {
-  [ThreadStatic]
-  private static int ourNextEventId;
+  [ThreadStatic] private static int ourNextEventId;
 
 
   public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
@@ -56,15 +55,15 @@ public partial class XesEventsSerializer(
   private static void WriteEventNode(XmlWriter writer, EventRecordWithMetadata currentEvent)
   {
     using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, EventTag, null);
-    
+
     WriteDateTag(writer, currentEvent.Stamp);
     WriteStringValueTag(writer, ConceptName, currentEvent.EventName);
     WriteStringValueTag(writer, EventId, (ourNextEventId++).ToString());
     WriteStringValueTag(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
-    
+
     AddMetadataValueIfPresentAndRemoveFromMetadata(
       writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
-    
+
     AddMetadataValueIfPresentAndRemoveFromMetadata(
       writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
   }
@@ -116,7 +115,7 @@ public partial class XesEventsSerializer(
   {
     using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, DateTag, null);
     WriteKeyAttribute(writer, DateTimeKey);
-    
+
     var dateString = new DateTime(stamp).ToUniversalTime().ToString("O");
     WriteAttribute(writer, ValueAttr, dateString);
   }

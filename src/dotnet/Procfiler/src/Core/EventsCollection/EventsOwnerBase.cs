@@ -17,7 +17,7 @@ public abstract class EventsOwnerBase : IEventsOwner
     PointersManager = new EventPointersManager(initialEventsCount, new InsertedEvents(), this);
   }
 
-  
+
   public virtual IEnumerator<EventRecordWithPointer> GetEnumerator() => EnumerateInternal().GetEnumerator();
 
   protected IEnumerable<EventRecordWithPointer> EnumerateInternal()
@@ -25,7 +25,7 @@ public abstract class EventsOwnerBase : IEventsOwner
     using var initialEventsEnumerator = EnumerateInitialEvents().GetEnumerator();
     initialEventsEnumerator.MoveNext();
     var currentIndex = 0;
-    
+
     var current = PointersManager.First;
     while (current is { })
     {
@@ -63,10 +63,10 @@ public abstract class EventsOwnerBase : IEventsOwner
     }
   }
 
-  public virtual EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert) => 
+  public virtual EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert) =>
     PointersManager.InsertAfter(pointer, eventToInsert);
 
-  public virtual EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert) => 
+  public virtual EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert) =>
     PointersManager.InsertBefore(pointer, eventToInsert);
 
 
@@ -81,6 +81,6 @@ public abstract class EventsOwnerBase : IEventsOwner
   }
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-  
+
   protected abstract IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents();
 }

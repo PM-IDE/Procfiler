@@ -33,7 +33,7 @@ public class Libraries
 public class LibraryEntry
 {
   public string Name { get; set; }
-  
+
   public string? Type { get; set; }
   public string? Path { get; set; }
   public bool? Serviceable { get; set; }
@@ -78,7 +78,7 @@ public class NameWithVersion
 
   public static NameWithVersion Create(string name, string version) => new()
   {
-    Name = name, 
+    Name = name,
     Version = version
   };
 

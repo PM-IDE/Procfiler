@@ -20,15 +20,15 @@ public static class KnownSolutionExtensions
       }
     };
   }
-  
+
   public static CollectClrEventsFromExeContext CreateContext(this KnownSolution knownSolution)
   {
     var solutionsDir = TestPaths.CreatePathToSolutionsSource();
     var csprojPath = Path.Combine(solutionsDir, knownSolution.Name, knownSolution.Name + ".csproj");
     var projectBuildInfo = new ProjectBuildInfo(
-      csprojPath, knownSolution.Tfm, BuildConfiguration.Debug, InstrumentationKind.None, 
+      csprojPath, knownSolution.Tfm, BuildConfiguration.Debug, InstrumentationKind.None,
       true, PathUtils.CreateTempFolderPath(), false);
-    
+
     return new CollectClrEventsFromExeContext(projectBuildInfo, CreateCommonContext());
   }
 

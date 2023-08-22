@@ -15,7 +15,7 @@ public class DefaultIdCreationStrategy(string basePart, IReadOnlySet<string> sta
 
 
   public string CreateIdTemplate() => DoCreateId("{AUTOINCREMENT_ID}");
-  
+
   private string DoCreateId(string nextId)
   {
     return $"{basePart}_{nextId}";
@@ -48,7 +48,7 @@ public class FromAttributesIdCreationStrategy
 
     return basePartSb.ToString();
   }
-  
+
   public string CreateId(EventRecordWithMetadata eventRecord)
   {
     var attributeValues = new List<string>();
@@ -58,7 +58,7 @@ public class FromAttributesIdCreationStrategy
       {
         throw new KeyNotFoundException(attributeName);
       }
-      
+
       attributeValues.Add(value);
     }
 

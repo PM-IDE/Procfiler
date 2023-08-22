@@ -4,23 +4,22 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Serialization;
 
-
 public interface ICsvEventsSerializer : IEventsSerializer;
 
 [AppComponent]
 public class CsvEventsSerializer : ICsvEventsSerializer
 {
-  private const char Delimiter = '\t'; 
+  private const char Delimiter = '\t';
 
-  
+
   public void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path)
   {
     using var fs = File.OpenWrite(path);
     using var sw = new StreamWriter(fs);
     using var enumerator = events.GetEnumerator();
-    
+
     if (!enumerator.MoveNext()) return;
-    
+
     var firstEvent = enumerator.Current;
     sw.Write(SerializeCsvHeader(firstEvent));
     sw.Write(SerializeEventToCsvBytes(firstEvent));
@@ -30,7 +29,7 @@ public class CsvEventsSerializer : ICsvEventsSerializer
       sw.Write(SerializeEventToCsvBytes(enumerator.Current));
     }
   }
-  
+
   private static string SerializeCsvHeader(EventRecordWithMetadata firstEvent)
   {
     var sb = new StringBuilder();
@@ -48,7 +47,7 @@ public class CsvEventsSerializer : ICsvEventsSerializer
     sb.AppendNewLine();
     return sb.ToString();
   }
-  
+
   private static string SerializeEventToCsvBytes(EventRecordWithMetadata @event)
   {
     var sb = new StringBuilder();
@@ -57,7 +56,7 @@ public class CsvEventsSerializer : ICsvEventsSerializer
       .Append(@event.EventName).Append(Delimiter)
       .Append(@event.ManagedThreadId).Append(Delimiter)
       .Append(@event.ActivityId).Append(Delimiter);
-    
+
     foreach (var (_, value) in @event.Metadata)
     {
       sb.Append(StringBuilderExtensions.SerializeValue(value)).Append(Delimiter);

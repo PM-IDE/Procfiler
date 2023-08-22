@@ -8,11 +8,11 @@ internal readonly struct StartEndElementCookie : IDisposable
     xmlWriter.WriteStartElement(prefix, tagName, @namespace);
     return new StartEndElementCookie(xmlWriter);
   }
-  
-  
+
+
   private readonly XmlWriter myXmlWriter;
 
-  
+
   private StartEndElementCookie(XmlWriter xmlWriter)
   {
     myXmlWriter = xmlWriter;

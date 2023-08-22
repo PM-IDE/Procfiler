@@ -10,7 +10,7 @@ public abstract class ContentionStartStopNameMutatorBase : MetadataValueToNameAp
 {
   protected sealed override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
-  
+
   protected ContentionStartStopNameMutatorBase(IProcfilerLogger logger) : base(logger)
   {
     Transformations = new[]

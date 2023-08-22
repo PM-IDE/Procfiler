@@ -38,7 +38,7 @@ public class MethodStartEndEventsLogMutator(
       ICppShadowStacks => new CppStacksMethodsStartEndMutator(factory, logger),
       _ => throw new ArgumentOutOfRangeException(context.Stacks.GetType().Name)
     };
-    
+
     processor.Process(events, context);
   }
 }

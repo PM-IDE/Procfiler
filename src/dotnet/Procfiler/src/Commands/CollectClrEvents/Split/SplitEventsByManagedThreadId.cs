@@ -23,8 +23,8 @@ public class SplitEventsByManagedThreadId(
   IStackTraceSerializer stackTraceSerializer,
   IDelegatingEventsSerializer serializer,
   IProcfilerLogger logger
-) : CollectAndSplitCommandBase<long>(logger, commandExecutor, eventsMerger, processor,serializer, stackTraceSerializer), 
-    ISplitEventsByManagedThreadIdCommand
+) : CollectAndSplitCommandBase<long>(logger, commandExecutor, eventsMerger, processor, serializer, stackTraceSerializer),
+  ISplitEventsByManagedThreadIdCommand
 {
   public override void Execute(CollectClrEventsContext context)
   {
@@ -33,7 +33,7 @@ public class SplitEventsByManagedThreadId(
     {
       MergeFromUndefinedThread = parseResult.TryGetOptionValue(MergeFromUndefinedThread)
     };
-    
+
     ExecuteSimpleSplitCommand(context, SplitEventsHelper.ManagedThreadIdExtractor, collectAndSplitContext);
   }
 
@@ -50,11 +50,11 @@ public class SplitEventsByManagedThreadId(
     IEventsCollection? undefinedEvents)
   {
     if (undefinedEvents is null) return undefinedEvents;
-    
+
     UnitedEventsProcessor.ApplyMultipleMutators(undefinedEvents, globalData, EmptyCollections<Type>.EmptySet);
     return managedEventsExtractor.Extract(events, undefinedEvents);
   }
 
-  protected override Command CreateCommandInternal() => 
+  protected override Command CreateCommandInternal() =>
     new("split-by-threads", "Split the events into different files based on managed thread ID");
 }

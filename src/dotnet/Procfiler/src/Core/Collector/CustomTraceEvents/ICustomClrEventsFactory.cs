@@ -16,11 +16,11 @@ public class CustomClrEventsFactoryImpl : ICustomClrEventsFactory
   {
     UnknownEventsIds.GcLohCompactId
   };
-  
+
 
   public bool NeedToCreateCustomWrapper(int originalEventId) => ourSupportedOriginalEvents.Contains(originalEventId);
 
-  public TraceEvent CreateWrapperEvent(TraceEvent rawEvent) => (int) rawEvent.ID switch
+  public TraceEvent CreateWrapperEvent(TraceEvent rawEvent) => (int)rawEvent.ID switch
   {
     UnknownEventsIds.GcLohCompactId => CreateGcLohCompactTraceData(rawEvent),
     _ => throw new ArgumentOutOfRangeException()

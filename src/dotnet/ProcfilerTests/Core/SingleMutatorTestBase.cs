@@ -7,10 +7,10 @@ namespace ProcfilerTests.Core;
 public abstract class SingleMutatorTestBase
 {
   protected abstract string EventClass { get; }
-  
-  
+
+
   protected abstract ISingleEventMutator CreateMutator();
-  
+
   protected EventRecordWithMetadata CreateRandomEvent(EventMetadata metadata)
   {
     return TestUtil.CreateRandomEvent(EventClass, metadata);
@@ -20,7 +20,7 @@ public abstract class SingleMutatorTestBase
   {
     var eventRecord = CreateRandomEvent(metadata);
     CreateMutator().Process(eventRecord, new SessionGlobalData(EmptyShadowStacks.Instance));
-    
+
     action(eventRecord);
   }
 }

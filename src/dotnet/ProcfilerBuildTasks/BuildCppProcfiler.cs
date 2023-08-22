@@ -10,10 +10,10 @@ using Microsoft.Build.Utilities;
 public class BuildCppProcfiler : Task
 {
   private const string BuildFolderName = "build";
-  
+
   [Required] public string CppProcfilerFolderPath { get; set; } = null!;
-  
-  
+
+
   public override bool Execute()
   {
     try
@@ -42,7 +42,7 @@ public class BuildCppProcfiler : Task
       Log.LogError("Failed to initialize cmake project");
       return false;
     }
-    
+
     if (!BuildCmakeProject())
     {
       Log.LogError("Failed to build cmake project");
@@ -60,7 +60,7 @@ public class BuildCppProcfiler : Task
       Log.LogError($"The build directory ({buildDirectory}) does not exist");
       return false;
     }
-    
+
     const string Name = "BuildingCmakeProject";
     return LaunchProcessAndWaitForExit(CreateBuildCmakeProjectProcess(), Name);
   }
@@ -76,7 +76,7 @@ public class BuildCppProcfiler : Task
   };
 
   private string FindCmakeExecutable() => "cmake";
-  
+
   private bool InitializeCmakeProject()
   {
     var buildDirectory = CreateBuildDirectoryPath();
@@ -84,9 +84,9 @@ public class BuildCppProcfiler : Task
     {
       Directory.Delete(buildDirectory, true);
     }
-    
+
     Directory.CreateDirectory(buildDirectory);
-    
+
     const string Name = "InitializingCmakeProject";
     return LaunchProcessAndWaitForExit(CreateInitializeCmakeProject(), Name);
   }
@@ -116,7 +116,7 @@ public class BuildCppProcfiler : Task
       Log.LogError($"Failed to start the process {name}");
       return false;
     }
-    
+
     if (!process.WaitForExit(timeout))
     {
       process.Kill();
@@ -143,7 +143,7 @@ public class BuildCppProcfiler : Task
       if (process.StartInfo.RedirectStandardOutput)
       {
         Log.LogMessage($"The process {name} output:");
-        Log.LogMessage(process.StandardOutput.ReadToEnd()); 
+        Log.LogMessage(process.StandardOutput.ReadToEnd());
       }
 
       if (process.StartInfo.RedirectStandardError)

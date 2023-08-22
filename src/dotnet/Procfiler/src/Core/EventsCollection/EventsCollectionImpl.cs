@@ -10,7 +10,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
   private readonly EventRecordWithMetadata[] myInitialEvents;
   private readonly List<IModificationSource> myModificationSources;
 
-  
+
   public override long Count => PointersManager.Count + myModificationSources.Select(source => source.Count).Sum();
 
 
@@ -23,7 +23,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
     myInitialEvents = initialEvents;
     myLogger = logger;
   }
-  
+
 
   public void InjectModificationSource(IModificationSource modificationSource)
   {
@@ -64,11 +64,11 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
         return modificationSource;
       }
     }
-    
+
     myLogger.LogError("Failed to find modification source for {Owner}, skipping remove", pointer.Owner.GetType().Name);
     return null;
   }
-  
+
   public override EventPointer InsertAfter(EventPointer pointer, EventRecordWithMetadata eventToInsert)
   {
     AssertNotFrozen();
@@ -81,7 +81,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
       throw new ArgumentOutOfRangeException();
     }
-    
+
     return base.InsertAfter(pointer, eventToInsert);
   }
 
@@ -97,7 +97,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
       throw new ArgumentOutOfRangeException();
     }
-    
+
     return base.InsertBefore(pointer, eventToInsert);
   }
 
@@ -109,7 +109,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
     {
       EnumerateInternal()
     };
-    
+
     foreach (var modificationSource in myModificationSources)
     {
       enumerators.Add(modificationSource);

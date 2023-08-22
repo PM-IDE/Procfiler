@@ -15,7 +15,7 @@ public static class MutatorsUtil
 
   public static void LogAbsenceOfMetadata(this IProcfilerLogger logger, string eventName, string metadataName) =>
     logger.LogError("The {MetadataName} was not present at {EventName}", metadataName, eventName);
-  
+
   public static void DevastateMetadataValuesAndAppendToName(
     IProcfilerLogger logger,
     EventRecordWithMetadata eventRecord,
@@ -23,7 +23,7 @@ public static class MutatorsUtil
     bool removeFromProperties = true)
   {
     var orderedTransforms = keysWithTransformation.OrderBy(transform => transform.EventClassKind).ToList();
-    if (orderedTransforms.Count == 0) return; 
+    if (orderedTransforms.Count == 0) return;
 
     var sb = new StringBuilder();
     sb.Append(eventRecord.EventName);
@@ -41,13 +41,13 @@ public static class MutatorsUtil
       {
         metadata.Remove(metadataKey);
       }
-      
+
       sb.Append(transformation(value));
     }
-    
+
     var index = 0;
-    while (index < orderedTransforms.Count && 
-           orderedTransforms[index] is { EventClassKind: EventClassKind.NotEventClass} transform)
+    while (index < orderedTransforms.Count &&
+           orderedTransforms[index] is { EventClassKind: EventClassKind.NotEventClass } transform)
     {
       TryAppendMetadata(transform.MetadataKey, transform.Transformation);
       ++index;
@@ -57,7 +57,7 @@ public static class MutatorsUtil
 
     const char EventClassOpenChar = '{';
     const char EventClassCloseChar = '}';
-    
+
     while (index < orderedTransforms.Count)
     {
       var (metadataKey, transformation, eventClass) = orderedTransforms[index];
@@ -72,7 +72,7 @@ public static class MutatorsUtil
         sb.Append(TraceEventsConstants.Underscore)
           .Append(EventClassOpenChar);
       }
-      
+
       TryAppendMetadata(metadataKey, transformation);
       ++index;
     }
@@ -101,7 +101,7 @@ public static class MutatorsUtil
 
     return string.Intern(sb.ToString());
   }
-  
+
   public static string TransformTypeLikeNameForEventNameConcatenation(string typeName)
   {
     return TransformTypeLikeNameForEventNameConcatenation(new StringBuilder(typeName));
@@ -139,7 +139,7 @@ public static class MutatorsUtil
 
     var sb = new StringBuilder(assemblyName);
     sb.Remove(index, sb.Length - index);
-    
+
     return TransformTypeLikeNameForEventNameConcatenation(sb);
   }
 
@@ -150,7 +150,7 @@ public static class MutatorsUtil
 
     var sb = new StringBuilder(fileName);
     sb.Remove(indexOfExtension, sb.Length - indexOfExtension);
-    
+
     return TransformTypeLikeNameForEventNameConcatenation(sb);
   }
 
@@ -158,7 +158,7 @@ public static class MutatorsUtil
   {
     var indexOfLastSeparator = filePath.IndexOf("/", StringComparison.Ordinal);
     if (indexOfLastSeparator == -1) return filePath;
-    
+
     var sb = new StringBuilder(filePath);
     sb.Remove(0, indexOfLastSeparator + 1);
 

@@ -10,8 +10,8 @@ namespace ProcfilerTests.Tests.Mutators;
 public class AwaitContinuationScheduledMutatorTest : SingleMutatorTestBase
 {
   protected override string EventClass => TraceEventsConstants.AwaitTaskContinuationScheduledSend;
-  
-  protected override ISingleEventMutator CreateMutator() => 
+
+  protected override ISingleEventMutator CreateMutator() =>
     new AwaitContinuationScheduledMutator(TestLogger.CreateInstance());
 
   [Test]

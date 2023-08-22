@@ -16,7 +16,7 @@ public static class SplitByMethodsTestUtil
   {
     var mainThreadEvents = TestUtil.FindEventsForMainThread(events.Events);
     var processingContext = EventsProcessingContext.DoEverything(mainThreadEvents, events.GlobalData);
-    
+
     var processor = container.Resolve<IUnitedEventsProcessor>();
     processor.ProcessFullEventLog(processingContext);
     processor.ApplyMultipleMutators(mainThreadEvents, events.GlobalData, EmptyCollections<Type>.EmptySet);

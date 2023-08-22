@@ -8,14 +8,14 @@ public static class StringBuilderExtensions
       .AppendNewLine();
   }
 
-  public static StringBuilder LogDictionary<TKey, TValue>(this StringBuilder sb, string name, Dictionary<TKey, TValue> map) 
+  public static StringBuilder LogDictionary<TKey, TValue>(this StringBuilder sb, string name, Dictionary<TKey, TValue> map)
     where TKey : notnull
   {
     sb.Append(name).Append(':')
       .AppendNewLine()
       .Append('{')
       .AppendNewLine();
-    
+
     foreach (var (key, value) in map)
     {
       sb.Append('\t').Append(key).Append(" = ").Append(SerializeValue(value))
@@ -36,7 +36,7 @@ public static class StringBuilderExtensions
     if (value is string @string) return @string;
     if (value is IEnumerable<char> chars) return new string(chars.ToArray());
     if (value is not IEnumerable enumerable) return value.ToString() ?? string.Empty;
-    
+
     var sb = new StringBuilder();
     var any = false;
     const string Delimiter = "  ";
@@ -66,7 +66,7 @@ public readonly struct PairedCharCookie : IDisposable
   private readonly StringBuilder myStringBuilder;
   private readonly char myCloseChar;
 
-  
+
   public PairedCharCookie(StringBuilder stringBuilder, char openChar, char closeChar)
   {
     stringBuilder.Append(openChar);

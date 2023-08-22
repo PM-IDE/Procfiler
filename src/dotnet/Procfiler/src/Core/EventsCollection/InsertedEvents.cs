@@ -26,14 +26,14 @@ public class InsertedEvents
   }
 
   public bool ContainsKey(int index) => myInsertedEvents.ContainsKey(index);
-  
+
   private List<EventRecordWithMetadata> GetOrCreateInsertedEventsList(EventPointer pointer)
   {
     if (pointer.IsInFirstEvents)
     {
       return FirstEvents ??= new List<EventRecordWithMetadata>();
     }
-    
+
     return GetOrCreateInsertionList(pointer.IndexInArray);
   }
 
@@ -77,7 +77,7 @@ public class InsertedEvents
 
     IncreaseCount();
   }
-  
+
   private List<EventRecordWithMetadata> GetOrCreateInsertionList(int index)
   {
     if (myInsertedEvents.TryGetValue(index, out var events)) return events;

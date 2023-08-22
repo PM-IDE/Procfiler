@@ -9,7 +9,7 @@ public interface IProcfilerLogger : ILogger
 public class ProcfilerLogger(ILogger logger) : IProcfilerLogger
 {
   private const string Space = "--";
-  
+
   private int myIndent;
 
 
@@ -29,7 +29,7 @@ public class ProcfilerLogger(ILogger logger) : IProcfilerLogger
     Debug.Assert(myIndent >= 0);
 
     if (myIndent == 0) return message;
-    
+
     var sb = new StringBuilder();
     for (var i = 0; i < myIndent; ++i)
     {

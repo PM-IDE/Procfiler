@@ -8,8 +8,8 @@ namespace Procfiler.Core.SplitByMethod;
 public interface IAsyncMethodsGrouper
 {
   string AsyncMethodsPrefix { get; }
-  
-  
+
+
   IDictionary<string, IList<IReadOnlyList<EventRecordWithMetadata>>> GroupAsyncMethods(
     IEnumerable<string> methodsNames,
     IDictionary<long, IEventsCollection> managedThreadsEvents);
@@ -36,7 +36,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
   {
     var asyncMethodsWithTypeNames = FindAllAsyncMoveNextMethods(methodsNames);
     var asyncMethodsToTraces = CreateAsyncMethodsToTracesMap(asyncMethodsWithTypeNames, managedThreadsEvents);
-    
+
     return DiscoverLogicalAsyncMethodsExecutions(asyncMethodsToTraces);
   }
 
@@ -46,7 +46,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
   {
     var asyncMethods = asyncMethodsWithTypeNames.Keys.ToHashSet();
     var asyncMethodsToTraces = new Dictionary<string, List<AsyncMethodTrace>>();
-    
+
     foreach (var (_, events) in managedThreadsEvents)
     {
       EventRecordWithMetadata? lastSeenTaskEvent = null;
@@ -59,7 +59,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
           eventsList.Add(eventRecord);
         }
       }
-      
+
       foreach (var (_, eventRecord) in events)
       {
         if (eventRecord.IsTaskWaitSendOrStopEvent())
@@ -78,7 +78,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
             var newAsyncMethodTraces = new AsyncMethodTrace(lastSeenTaskEvent, listOfEvents);
             var stateMachineName = $"{AsyncMethodsPrefix}{asyncMethodsWithTypeNames[frame]}";
             var listOfAsyncTraces = asyncMethodsToTraces.GetOrCreate(stateMachineName, () => new List<AsyncMethodTrace>());
-            
+
             listOfAsyncTraces.Add(newAsyncMethodTraces);
             lastTracesStack.Push(newAsyncMethodTraces);
             lastSeenTaskEvent = null;
@@ -93,13 +93,13 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
               lastTrace.AfterTaskEvent = lastSeenTaskEvent;
             }
           }
-          
+
           continue;
         }
 
         AppendEventToTraceIfHasSome(eventRecord);
       }
-      
+
       Debug.Assert(lastTracesStack.Count == 0);
     }
 
@@ -124,14 +124,14 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
     {
       var logicalExecution = new List<AsyncMethodTrace>();
       var currentTrace = startingPoint;
-      
+
       while (true)
       {
         logicalExecution.Add(currentTrace);
         if (!tracesTaskInfos.TracesToQueuedTasks.TryGetValue(currentTrace, out var queuedTaskId)) break;
         if (!tracesTaskInfos.TasksToWaitedTraces.TryGetValue(queuedTaskId, out currentTrace)) break;
       }
-      
+
       result.Add(logicalExecution);
     }
 
@@ -160,7 +160,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
   {
     var tasksToTracesWhoWaited = new Dictionary<int, AsyncMethodTrace>();
     var tracesToQueuedTasks = new Dictionary<AsyncMethodTrace, int>();
-    
+
     foreach (var asyncMethodTrace in traces)
     {
       if (asyncMethodTrace.BeforeTaskEvent?.IsTaskWaitStopEvent(out var waitedTaskId) ?? false)
@@ -178,7 +178,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
 
     return new AsyncTracesTaskInfo(tasksToTracesWhoWaited, tracesToQueuedTasks);
   }
-  
+
   private static IDictionary<string, string> FindAllAsyncMoveNextMethods(IEnumerable<string> methodNames)
   {
     var asyncMethods = new Dictionary<string, string>();
@@ -186,14 +186,14 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
     {
       var fullNameWithoutSignature = fullMethodName.AsSpan();
       fullNameWithoutSignature = fullNameWithoutSignature[..fullMethodName.IndexOf('[')];
-      
+
       if (!fullNameWithoutSignature.Contains('+')) continue;
       if (!fullNameWithoutSignature.EndsWith(MoveNextWithDot)) continue;
 
       var stateMachineEnd = fullNameWithoutSignature.IndexOf(MoveNextWithDot, StringComparison.Ordinal);
       var stateMachineStart = fullNameWithoutSignature.LastIndexOf('+');
       if (stateMachineStart >= stateMachineEnd) continue;
-      
+
       var stateMachineType = fullMethodName.AsSpan(stateMachineStart + 1, stateMachineEnd - (stateMachineStart + 1));
       if (!RoslynGeneratedNamesParser.TryParseGeneratedName(stateMachineType, out var kind, out _, out _) ||
           kind != RoslynGeneratedNameKind.StateMachineType)
@@ -203,7 +203,7 @@ public class AsyncMethodsGrouper(IProcfilerLogger logger) : IAsyncMethodsGrouper
 
       var typeNameStart = fullNameWithoutSignature.IndexOf('!');
       if (typeNameStart < 0) typeNameStart = 0;
-      
+
       asyncMethods[fullMethodName] = fullMethodName.Substring(typeNameStart, stateMachineEnd - typeNameStart);
     }
 

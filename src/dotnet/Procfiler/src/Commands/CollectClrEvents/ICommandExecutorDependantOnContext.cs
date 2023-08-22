@@ -108,7 +108,7 @@ public class CommandExecutorImpl(
     {
       var launcherDto = DotnetProcessLauncherDto.CreateFrom(
         context.CommonContext, buildResult, cppProcfilerLocator, binaryStackSavePathCreator);
-      
+
       if (dotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
       {
         logger.LogError("Failed to start or to find process");
@@ -146,9 +146,9 @@ public class CommandExecutorImpl(
       else
       {
         const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
-        logger.LogInformation(Message, process.Id, pathToCsproj); 
+        logger.LogInformation(Message, process.Id, pathToCsproj);
       }
-      
+
       if (events.HasValue)
       {
         commandAction(events.Value);

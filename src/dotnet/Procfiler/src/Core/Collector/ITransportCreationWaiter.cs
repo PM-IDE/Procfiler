@@ -29,4 +29,4 @@ public class TransportCreationWaiterImpl(IProcfilerLogger logger) : ITransportCr
       throw new FileNotFoundException($"The transport file {transportPath} was not created after {TimeoutMs}ms");
     }
   }
-}  
+}

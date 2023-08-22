@@ -29,15 +29,15 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
   public async Task PatchMethodStartEndAsync(string dllPath, InstrumentationKind instrumentationKind)
   {
     if (instrumentationKind == InstrumentationKind.None) return;
-    
+
     try
     {
       var directory = Path.GetDirectoryName(dllPath);
       Debug.Assert(directory is { });
-      
+
       var cache = new SelfContainedTypeCache(logger, directory);
       cache.Initialize();
-      
+
       var assembly = AssemblyDefinition.ReadAssembly(dllPath, new ReaderParameters
       {
         InMemory = true,
@@ -76,15 +76,15 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
   {
     var directory = Path.GetDirectoryName(dllPath);
     Debug.Assert(directory is { });
-    
+
     var assemblyName = mainAssembly.Name.Name;
     var depsJsonPath = Path.Combine(directory, $"{assemblyName}.deps.json");
     await depsJsonPatcher.AddAssemblyReferenceAsync(
       mainAssembly, depsJsonPath, ProcfilerEventSources, new Version(1, 0, 0));
   }
-  
+
   private void PatchAssemblyMethodsWithReferences(
-    AssemblyDefWithPath assemblyDefWithPath, 
+    AssemblyDefWithPath assemblyDefWithPath,
     SelfContainedTypeCache cache,
     List<AssemblyDefWithPath> patchedAssemblies)
   {
@@ -98,9 +98,9 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
       if (visited.Contains(currentAssembly.Assembly.FullName)) continue;
 
       visited.Add(currentAssembly.Assembly.FullName);
-      
+
       PatchAssemblyMethods(currentAssembly, cache, patchedAssemblies);
-      
+
       foreach (var module in currentAssembly.Assembly.Modules)
       {
         foreach (var reference in module.AssemblyReferences)
@@ -125,23 +125,23 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
       logger.LogWarning("Will not patch {Assembly} as it is not IL only", path);
       return;
     }
-    
+
     try
     {
       logger.LogInformation("Patching assembly: {Name}", assembly.Name);
       var loggerType = cache.Types[InstrumentalProfilerConstants.MethodStartEndEventSourceType];
-      
+
       var methodStartedLogger = loggerType.Methods.FirstOrDefault(IsLogMethodStartedMethod);
       var methodFinishedLogger = loggerType.Methods.FirstOrDefault(IsLogMethodFinishedMethod);
 
       Debug.Assert(methodStartedLogger is { });
       Debug.Assert(methodFinishedLogger is { });
-      
+
       foreach (var moduleDefinition in assembly.Modules)
       {
         var methodStartLogReference = moduleDefinition.ImportReference(methodStartedLogger);
         var methodFinishedLogReference = moduleDefinition.ImportReference(methodFinishedLogger);
-        
+
         foreach (var type in moduleDefinition.Types)
         {
           foreach (var method in type.Methods)
@@ -188,7 +188,7 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
     {
       return context.Previous.Previous.Previous.Previous;
     }
-    
+
     foreach (var instruction in instructions)
     {
       if (instruction.Operand is Instruction target && ShouldInsertExitLogging(target))
@@ -196,7 +196,7 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
         instruction.Operand = GetStartOfInsertedInstructions(target);
       }
     }
-    
+
     foreach (var handler in method.Body.ExceptionHandlers)
     {
       if (ShouldInsertExitLogging(handler.HandlerEnd))
@@ -224,20 +224,20 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
     methodDefinition.Parameters[0].ParameterType.FullName == DotNetConstants.SystemString;
 
   private static bool IsConsoleWriteLineMethod(MethodDefinition methodDefinition) =>
-    methodDefinition.Name == DotNetConstants.WriteLine && 
+    methodDefinition.Name == DotNetConstants.WriteLine &&
     IsMethodWithOneStringParameter(methodDefinition);
-  
+
   private static bool ShouldInsertExitLogging(Instruction instruction) =>
     instruction.OpCode == OpCodes.Ret;
-  
-  private static bool ShouldInsertExitLogging(Collection<Instruction> instructions, int index) => 
+
+  private static bool ShouldInsertExitLogging(Collection<Instruction> instructions, int index) =>
     ShouldInsertExitLogging(instructions[index]);
 
   private static void InsertProcfilerLogBefore(
     int index, ILProcessor processor, MethodReference methodReference, bool entering)
   {
     var message = processor.Body.Method.FullName;
-    
+
     var instruction = processor.Body.Instructions[index];
     if (index == 0 || processor.Body.Instructions[index - 1].OpCode != OpCodes.Nop)
     {
@@ -249,7 +249,7 @@ public class DllMethodsPatcher(IProcfilerLogger logger, IDepsJsonPatcher depsJso
     processor.InsertBefore(instruction, loadStringInstruction);
     var call = Instruction.Create(OpCodes.Call, methodReference);
     processor.InsertAfter(loadStringInstruction, call);
-          
+
     processor.InsertAfter(call, Instruction.Create(OpCodes.Nop));
   }
 }

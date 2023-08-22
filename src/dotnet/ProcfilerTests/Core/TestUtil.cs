@@ -16,7 +16,7 @@ public static class TestUtil
   {
     var eventsByThreads = SplitEventsHelper.SplitByKey(
       TestLogger.CreateInstance(), events, SplitEventsHelper.ManagedThreadIdExtractor);
-    
+
     return FindEventsForMainThread(eventsByThreads);
   }
 
@@ -26,9 +26,9 @@ public static class TestUtil
     var (_, mainThreadEvents) = eventsByThreads.Where(e => e.Key != -1).MaxBy(e => e.Value.Count);
     return mainThreadEvents;
   }
-  
+
   public static EventsProcessingContext CreateEventsProcessingContext(
-    IEventsCollection managedThreadEvents, 
+    IEventsCollection managedThreadEvents,
     SessionGlobalData globalData)
   {
     var config = new EventsProcessingConfig(false, true, EmptyCollections<Type>.EmptySet);
@@ -43,11 +43,11 @@ public static class TestUtil
       SerializeBrokenStacks(container, globalData, threadId, events);
       Assert.Fail(message);
     }
-    
+
     var frames = new Stack<string>();
     var index = -1;
     string? assertMessage = null;
-    
+
     foreach (var (_, eventRecord) in events)
     {
       ++index;
@@ -64,7 +64,7 @@ public static class TestUtil
             assertMessage = $"Stack was empty, index = {index}, ts = {eventRecord.Stamp}";
             continue;
           }
-          
+
           var topMost = frames.Pop();
           if (topMost != frame)
           {
@@ -87,8 +87,8 @@ public static class TestUtil
   }
 
   private static void SerializeBrokenStacks(
-    IContainer container, 
-    SessionGlobalData globalData, 
+    IContainer container,
+    SessionGlobalData globalData,
     long brokenThreadId,
     IEventsCollection eventsCollection)
   {
@@ -121,7 +121,7 @@ public static class TestUtil
   {
     var chars = Enumerable
       .Range(0, Random.Shared.Next(1, 13))
-      .Select(_ => (char) Random.Shared.Next('a', 'z' + 1))
+      .Select(_ => (char)Random.Shared.Next('a', 'z' + 1))
       .ToArray();
 
     return new string(chars);
@@ -134,7 +134,7 @@ public static class TestUtil
     {
       Assert.That(firstItem is { }, Is.True);
       Assert.That(secondItem is { }, Is.True);
-      
+
       Assert.That(firstItem!.Equals(secondItem), Is.True);
     }
   }

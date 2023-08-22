@@ -6,10 +6,10 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.StatefulMutators.Activities.Contention;
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class ContentionLifecycleMutator(IProcfilerLogger logger) 
+public class ContentionLifecycleMutator(IProcfilerLogger logger)
   : EventsLifecycleMutatorBase(
-      logger, 
-      "Contention", 
-      new [] { TraceEventsConstants.ContentionStart }, 
-      new [] { TraceEventsConstants.ContentionStop }
-    );
+    logger,
+    "Contention",
+    new[] { TraceEventsConstants.ContentionStart },
+    new[] { TraceEventsConstants.ContentionStop }
+  );

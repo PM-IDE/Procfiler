@@ -28,7 +28,7 @@ public class FromEventsMethodsStartEndMutator(
     {
       var name = context.Stacks.GetType().Name;
       logger.LogError("Not compatible shadow stacks, got {Type}, expected {Type}", name, nameof(IFromEventsShadowStacks));
-      
+
       return;
     }
 
@@ -38,10 +38,10 @@ public class FromEventsMethodsStartEndMutator(
     {
       var (ptr, eventRecord) = eventWithPtr;
       last = eventWithPtr;
-      
+
       if (!eventRecord.IsMethodStartEndProvider()) return false;
       if (!fromEventsShadowStacks.StackTraceInfos.TryGetValue(eventRecord.StackTraceId, out var stack)) return false;
-      
+
       if (currentFrames.Count == 0)
       {
         InitializeCurrentStack(currentFrames, stack, events, ptr, eventRecord);
@@ -72,14 +72,14 @@ public class FromEventsMethodsStartEndMutator(
     });
 
     if (last is null) return;
-    
+
     var lastPtr = last.Value.EventPointer;
 
     while (currentFrames.Count != 0)
     {
       var info = currentFrames[^1];
       currentFrames.RemoveAt(currentFrames.Count - 1);
-      
+
       var lastEvent = last!.Value.Event;
       lastPtr = events.InsertAfter(lastPtr, CreateMethodEndEvent(lastEvent, info.Frame));
     }
@@ -87,7 +87,7 @@ public class FromEventsMethodsStartEndMutator(
 
   private void InitializeCurrentStack(
     List<StackFrameInfo> currentFrames,
-    StackTraceInfo stack, 
+    StackTraceInfo stack,
     IEventsCollection events,
     EventPointer pointer,
     EventRecordWithMetadata current)
@@ -133,7 +133,7 @@ public class FromEventsMethodsStartEndMutator(
     {
       return true;
     }
-      
+
     return firstFrame == secondFrame;
   }
 
@@ -156,18 +156,18 @@ public class FromEventsMethodsStartEndMutator(
   {
     return eventsFactory.CreateMethodEndEvent(CreateContext(@event), frame);
   }
-  
-  private static EventsCreationContext CreateContext(EventRecord.EventRecord @event) => 
+
+  private static EventsCreationContext CreateContext(EventRecord.EventRecord @event) =>
     new(@event.Stamp, @event.ManagedThreadId);
-  
+
   private EventRecordWithMetadata CreateMethodStartEvent(EventRecordWithMetadata @event, string frame)
   {
     return eventsFactory.CreateMethodStartEvent(CreateContext(@event), frame);
   }
 
   private void AddFramesFromEventToCurrentStack(
-    List<StackFrameInfo> currentFrames, 
-    StackTraceInfo stack, 
+    List<StackFrameInfo> currentFrames,
+    StackTraceInfo stack,
     IEventsCollection events,
     EventPointer current,
     EventRecordWithMetadata contextEvent)
@@ -177,7 +177,7 @@ public class FromEventsMethodsStartEndMutator(
       var frameToAdd = stack.Frames[index];
       var methodStartEvent = CreateMethodStartEvent(contextEvent, frameToAdd);
       currentFrames.Add(new StackFrameInfo(frameToAdd, methodStartEvent));
-      
+
       events.InsertBefore(current, methodStartEvent);
     }
   }

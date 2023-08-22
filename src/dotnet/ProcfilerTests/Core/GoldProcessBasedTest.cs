@@ -33,7 +33,7 @@ public class GoldProcessBasedTest : ProcessTestBase
 
         using var fs = File.CreateText(CreateTmpFilePath());
         fs.Write(testValue);
-        
+
         Assert.Fail(sb.ToString());
       }
     });
@@ -45,7 +45,7 @@ public class GoldProcessBasedTest : ProcessTestBase
   {
     var test = TestContext.CurrentContext.Test;
     var testName = test.Name;
-    
+
     if (test.Arguments.FirstOrDefault() is KnownSolution knownSolution)
     {
       testName = knownSolution.Name;
@@ -63,7 +63,7 @@ public class GoldProcessBasedTest : ProcessTestBase
     {
       Directory.CreateDirectory(directory);
     }
-    
+
     return Path.Combine(directory, fileName);
   }
 

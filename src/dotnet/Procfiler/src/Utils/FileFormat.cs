@@ -1,6 +1,6 @@
 namespace Procfiler.Utils;
 
-public enum FileFormat 
+public enum FileFormat
 {
   Csv,
   MethodCallTree,

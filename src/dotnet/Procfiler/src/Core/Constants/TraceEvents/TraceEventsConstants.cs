@@ -1,13 +1,12 @@
 namespace Procfiler.Core.Constants.TraceEvents;
 
-
 public static partial class TraceEventsConstants
 {
   public const char Underscore = '_';
   public const char Dot = '.';
-  
+
   public const string EventTypeSeparator = "/";
-  
+
   public const string ThreadFrameTemplate = "Thread (";
 
   public const string Undefined = "?!?";

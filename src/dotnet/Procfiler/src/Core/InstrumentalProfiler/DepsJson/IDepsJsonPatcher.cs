@@ -19,7 +19,7 @@ public class DepsJsonPatcherImpl(IDepsJsonReader depsJsonReader, IDepsJsonWriter
     var depsJsonFile = await depsJsonReader.ReadOrThrowAsync(depsJsonPath);
     var originalAssemblyVersion = originalAssembly.Name.Version.ToString(3);
     var asmToAddNameWithVersion = $"{assemblyToAddName}/{assemblyToAddVersion.ToString(3)}";
-    
+
     foreach (var item in depsJsonFile.Targets.TargetsList.Where(list => list.Dependencies.Count > 0))
     {
       foreach (var targetDependency in item.Dependencies)
@@ -49,7 +49,7 @@ public class DepsJsonPatcherImpl(IDepsJsonReader depsJsonReader, IDepsJsonWriter
         }
       });
     }
-    
+
     depsJsonFile.Libraries.LibrariesList.Add(new LibraryEntry
     {
       Name = asmToAddNameWithVersion,

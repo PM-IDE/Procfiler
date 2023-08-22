@@ -11,7 +11,7 @@ public class BinStacksWithFilterTest : CppBinStacksTestBase
 {
   protected override bool UseMethodsFilter => true;
 
-  
+
   [TestCaseSource(nameof(Source))]
   public void TestBinStacksWithFilter(KnownSolution solution) => DoTestWithCollectedEvents(solution, events =>
   {
@@ -20,7 +20,7 @@ public class BinStacksWithFilterTest : CppBinStacksTestBase
     var cppShadowStacks = (ICppShadowStacks)shadowStacks;
     var regex = new Regex(solution.Name);
     var eventsFactory = Container.Resolve<IProcfilerEventsFactory>();
-    
+
     foreach (var cppShadowStack in cppShadowStacks.EnumerateStacks())
     {
       foreach (var methodEvent in cppShadowStack.EnumerateMethods(eventsFactory, events.GlobalData))

@@ -12,7 +12,7 @@ public class BufferAllocatedNameMutator : MetadataValueToNameAppenderBase
   public override string EventType => TraceEventsConstants.BufferAllocated;
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; }
 
-  
+
   public BufferAllocatedNameMutator(IProcfilerLogger logger) : base(logger)
   {
     Transformations = new[]

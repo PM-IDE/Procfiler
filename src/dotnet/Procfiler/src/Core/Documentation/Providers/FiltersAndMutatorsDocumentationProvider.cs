@@ -19,7 +19,7 @@ public class FiltersAndMutatorsDocumentationProvider(
     var eventClassToSingleEventMutationsMap = CreateEventClassToEventMutationsMap(allMutations);
     var headerCells = CreateHeaderCells();
     var table = new MdTable(headerCells.Count);
-    
+
     foreach (var eventType in allEventTypes.OrderBy(static name => name))
     {
       if (eventClassToSingleEventMutationsMap.TryGetValue(eventType, out var mutations))
@@ -52,7 +52,7 @@ public class FiltersAndMutatorsDocumentationProvider(
     new("Attributes which will be removed"),
     new("Attributes which will be added")
   };
-  
+
   private IReadOnlyList<EventLogMutation> GetAllMutations() => mutators.SelectMany(mutator => mutator.Mutations).ToList();
 
   private IEnumerable<string> GetEventsNames(IReadOnlyList<EventLogMutation> allMutations)
@@ -73,7 +73,7 @@ public class FiltersAndMutatorsDocumentationProvider(
         .GetOrCreate(eventLogMutation.EventType, static () => new List<EventLogMutation>())
         .Add(eventLogMutation);
     }
-    
+
     return eventsMutations;
   }
 
@@ -92,7 +92,7 @@ public class FiltersAndMutatorsDocumentationProvider(
     {
       eventName = eventTypeNameMutation.NewEventTypeName;
     }
-    
+
     return new[]
     {
       eventName, newEventNameCell, activityName, lifecycleTransition, renamesCell, attributesToRemoveCell, newAttributesCell
@@ -108,13 +108,13 @@ public class FiltersAndMutatorsDocumentationProvider(
       false => string.Empty
     };
   }
-  
+
   private static string CreateNewAttributesCell(ICollection<EventLogMutation> mutations)
   {
     var newAttributes = mutations.OfType<NewAttributeCreationMutation>().Select(m => m.AttributeName);
     return string.Join(", ", newAttributes);
   }
-  
+
   private static string CreateActivityNameCell(ICollection<EventLogMutation> mutations)
   {
     return mutations.OfType<ActivityIdCreation>().Select(m => m.ActivityIdTemplate).FirstOrDefault() switch
@@ -123,24 +123,24 @@ public class FiltersAndMutatorsDocumentationProvider(
       _ => string.Empty
     };
   }
-  
+
   private static string CreateLifecycleTransition(ICollection<EventLogMutation> mutations)
   {
     var lifecycleTransitionMutation = mutations.OfType<AddLifecycleTransitionAttributeMutation>().FirstOrDefault();
-    
+
     return lifecycleTransitionMutation switch
     {
       null => string.Empty,
       _ => lifecycleTransitionMutation.LifecycleTransition
     };
   }
-  
+
   private static string CreateNewNameCell(ICollection<EventLogMutation> list)
   {
     var attributesToName = list.OfType<AttributeToNameAppendMutation>().OrderBy(m => m.EventClassKind).ToList();
 
     if (attributesToName.Count <= 0) return string.Empty;
-    
+
     const string BaseName = "BaseName";
     var sb = new StringBuilder($"{BaseName}");
 
@@ -149,7 +149,7 @@ public class FiltersAndMutatorsDocumentationProvider(
     {
       sb.Append('{');
     }
-    
+
     while (index < attributesToName.Count && attributesToName[index].EventClassKind == EventClassKind.NotEventClass)
     {
       sb.Append(attributesToName[index++].AttributeName);
@@ -179,19 +179,19 @@ public class FiltersAndMutatorsDocumentationProvider(
 
     return sb.ToString();
   }
-  
+
   private static string CreateAttributesToRemoveCell(ICollection<EventLogMutation> mutations)
   {
     var attributesToRemoveWhenAppendingToName = mutations
       .OfType<AttributeToNameAppendMutation>()
       .Where(m => m.RemoveFromMetadata)
       .Select(m => m.AttributeName);
-    
+
     var attributesToRemove = mutations
       .OfType<AttributeRemovalMutation>()
       .Select(m => m.AttributeName)
       .Concat(attributesToRemoveWhenAppendingToName);
-    
+
     return string.Join(", ", attributesToRemove);
   }
 }

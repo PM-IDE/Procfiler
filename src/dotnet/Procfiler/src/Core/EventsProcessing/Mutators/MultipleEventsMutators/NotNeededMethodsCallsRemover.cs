@@ -11,7 +11,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.MultipleEventsMutators;
 [EventMutator(MultipleEventMutatorsPasses.NotNeededMethodsRemove)]
 public class NotNeededMethodsCallsRemover : IMultipleEventsMutator
 {
-  private static Regex[] PatternsToRemove { get; } = 
+  private static Regex[] PatternsToRemove { get; } =
   {
     new(@"System\.Diagnostics\.Tracing\..*")
   };
@@ -24,7 +24,7 @@ public class NotNeededMethodsCallsRemover : IMultipleEventsMutator
   {
     foreach (var (ptr, eventRecord) in events)
     {
-      if (eventRecord.TryGetMethodStartEndEventInfo() is var (frameName, _) && 
+      if (eventRecord.TryGetMethodStartEndEventInfo() is var (frameName, _) &&
           ShouldSkipFrame(frameName))
       {
         events.Remove(ptr);

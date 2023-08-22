@@ -21,7 +21,7 @@ public class SerializeUndefinedThreadEventsToXesCommand(
   {
     var mergingSerializer = new MergingTracesXesSerializer(serializer, Logger);
     var outputPath = Path.Combine(context.CommonContext.OutputPath, "UndefinedEvents.xes");
-    
+
     ExecuteCommand(context, collectedEvents =>
     {
       var (events, globalData) = collectedEvents;
@@ -29,10 +29,10 @@ public class SerializeUndefinedThreadEventsToXesCommand(
       var eventsByThreads = SplitEventsHelper.SplitByKey(Logger, events, extractor);
       var undefinedThreadEvents = eventsByThreads[-1];
       var processingContext = EventsProcessingContext.DoEverythingWithoutMethodStartEnd(undefinedThreadEvents, globalData);
-      
+
       unitedEventsProcessor.ProcessFullEventLog(processingContext);
-      var sessionInfo = new EventSessionInfo(new [] { undefinedThreadEvents }, globalData);
-      
+      var sessionInfo = new EventSessionInfo(new[] { undefinedThreadEvents }, globalData);
+
       mergingSerializer.AddTrace(outputPath, sessionInfo);
     });
 

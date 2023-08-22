@@ -23,7 +23,7 @@ public record EventsLifecycleMutatorState
     public string? CurrentId { get; set; }
   }
 
-  
+
   public Dictionary<string, State> StatesByActivities { get; } = new();
 }
 
@@ -45,8 +45,8 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
   protected EventsLifecycleMutatorBase(
     IProcfilerLogger logger,
     string activityName,
-    ICollection<string> startEventClasses, 
-    ICollection<string> completeEventClasses, 
+    ICollection<string> startEventClasses,
+    ICollection<string> completeEventClasses,
     string? scheduleEventClass = null)
   {
     myLogger = logger;
@@ -62,11 +62,11 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
     {
       myAllProcessableEvents.Add(myScheduleEventClass);
     }
-    
+
     IdCreationStrategy = new DefaultIdCreationStrategy(activityName, myStartEventClasses);
   }
-  
-  
+
+
   public IEnumerable<EventLogMutation> Mutations
   {
     get
@@ -81,10 +81,10 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
       {
         mutations.Add(new AddLifecycleTransitionAttributeMutation(myScheduleEventClass, XesStandardLifecycleConstants.Schedule));
       }
-    
+
       foreach (var eventClass in myCompleteEventClasses)
       {
-        var mutation = new AddLifecycleTransitionAttributeMutation(eventClass, XesStandardLifecycleConstants.Complete); 
+        var mutation = new AddLifecycleTransitionAttributeMutation(eventClass, XesStandardLifecycleConstants.Complete);
         mutations.Add(mutation);
       }
 
@@ -96,7 +96,7 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
       return mutations;
     }
   }
-  
+
   public void Process(
     EventRecordWithMetadata eventRecord, SessionGlobalData context, object mutatorState)
   {
@@ -119,7 +119,8 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
     {
       if (state.LifecycleState != LifecycleState.Unknown)
       {
-        myLogger.LogTrace($"Scheduling activity in with state {state.LifecycleState} for {eventRecord.EventClass} with id {activityId} on {eventRecord.ManagedThreadId}");
+        myLogger.LogTrace(
+          $"Scheduling activity in with state {state.LifecycleState} for {eventRecord.EventClass} with id {activityId} on {eventRecord.ManagedThreadId}");
         return;
       }
 
@@ -131,7 +132,8 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
     {
       if (state.LifecycleState != LifecycleState.Schedule && state.LifecycleState != LifecycleState.Unknown)
       {
-        myLogger.LogTrace($"Starting activity from incorrect state {state.LifecycleState} for {eventRecord.EventClass} with id {activityId} on {eventRecord.ManagedThreadId}");
+        myLogger.LogTrace(
+          $"Starting activity from incorrect state {state.LifecycleState} for {eventRecord.EventClass} with id {activityId} on {eventRecord.ManagedThreadId}");
         return;
       }
 
@@ -143,13 +145,14 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
     {
       if (state.LifecycleState != LifecycleState.Start)
       {
-        myLogger.LogTrace($"Met completed activity without start {state.LifecycleState} for {eventRecord.EventClass} with id {activityId} on {eventRecord.ManagedThreadId}");
+        myLogger.LogTrace(
+          $"Met completed activity without start {state.LifecycleState} for {eventRecord.EventClass} with id {activityId} on {eventRecord.ManagedThreadId}");
         return;
       }
-      
+
       Debug.Assert(state.CurrentId is { });
       StandardLifecycleModelUtil.MarkAsCompleted(eventRecord, state.CurrentId);
-      
+
       state.LifecycleState = LifecycleState.Unknown;
       state.CurrentId = null;
     }

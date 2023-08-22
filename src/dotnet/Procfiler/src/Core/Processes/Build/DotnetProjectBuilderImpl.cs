@@ -18,7 +18,7 @@ public class DotnetProjectBuilderImpl(
     {
       var procfilerDirectory = Environment.CurrentDirectory;
       const string ProcfilerEventSourceDllName = $"{InstrumentalProfilerConstants.ProcfilerEventSource}.dll";
-      
+
       var procfilerEventSourceDll = Directory
         .GetFiles(procfilerDirectory)
         .FirstOrDefault(f => f.EndsWith(ProcfilerEventSourceDllName));
@@ -31,10 +31,10 @@ public class DotnetProjectBuilderImpl(
       var from = Path.Combine(Environment.CurrentDirectory, procfilerEventSourceDll);
       var buildResultDirName = Path.GetDirectoryName(result.BuiltDllPath);
       Debug.Assert(buildResultDirName is { });
-      
+
       var to = Path.Combine(buildResultDirName, ProcfilerEventSourceDllName);
       File.Copy(from, to, true);
-      
+
       dllMethodsPatcher.PatchMethodStartEndAsync(result.BuiltDllPath, projectBuildInfo.InstrumentationKind);
     }
 
@@ -46,7 +46,7 @@ public class DotnetProjectBuilderImpl(
     var (pathToCsproj, tfm, configuration, _, removeTempPath, tempPath, selfContained) = projectBuildInfo;
     var projectName = Path.GetFileNameWithoutExtension(pathToCsproj);
     using var _ = new PerformanceCookie($"Building::{projectName}", logger);
-    
+
     var projectDirectory = Path.GetDirectoryName(pathToCsproj);
     Debug.Assert(projectDirectory is { });
 
@@ -55,7 +55,7 @@ public class DotnetProjectBuilderImpl(
       null => CreateTempArtifactsPath(),
       { } => new TempFolderCookie(logger, tempPath)
     };
-    
+
     var buildConfig = BuildConfigurationExtensions.ToString(configuration);
     var startInfo = new ProcessStartInfo
     {
@@ -83,7 +83,7 @@ public class DotnetProjectBuilderImpl(
         artifactsFolderCookie.Dispose();
       }
     }
-    
+
     try
     {
       if (!process.Start())
@@ -110,7 +110,7 @@ public class DotnetProjectBuilderImpl(
       logger.LogError(ex, "Failed to build project {Path}, {Output}", pathToCsproj, output);
       return null;
     }
-    
+
     var pathToDll = Path.Combine(artifactsFolderCookie.FolderPath, projectName + ".dll");
     return new BuildResult(artifactsFolderCookie)
     {

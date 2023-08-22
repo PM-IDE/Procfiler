@@ -18,7 +18,7 @@ public interface ISingleEventMutator : IEventsLogMutator
 public interface ISingleEventMutatorWithState : IEventsLogMutator
 {
   Type StateType { get; }
-  
+
   void Process(EventRecordWithMetadata eventRecord, SessionGlobalData context, object mutatorState);
 }
 

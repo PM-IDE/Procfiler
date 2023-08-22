@@ -12,17 +12,17 @@ public class EventTimeStampsConsistencyTest : ProcessTestBase
 {
   [TestCaseSource(nameof(Source))]
   public void Test(KnownSolution knownSolution) => DoTest(knownSolution);
-  
-  
+
+
   private void DoTest(KnownSolution knownSolution)
   {
     StartProcessSplitEventsByThreadsAndDoTest(knownSolution, (eventsByThreads, globalData) =>
     {
       foreach (var (_, events) in eventsByThreads)
       {
-        var processor = Container.Resolve<IUnitedEventsProcessor>(); 
+        var processor = Container.Resolve<IUnitedEventsProcessor>();
         processor.ApplyMultipleMutators(events, globalData, EmptyCollections<Type>.EmptySet);
-        
+
         EventRecordWithMetadata? prev = null;
         foreach (var (_, currentEvent) in events)
         {

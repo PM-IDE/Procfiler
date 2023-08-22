@@ -32,7 +32,7 @@ public class FolderBasedAssemblyResolver(
 
     throw new FailedToResolveAssemblyException(this, reference);
   }
-  
+
   public AssemblyDefinition Resolve(AssemblyNameReference reference) => Resolve(reference, CreateReaderParameters());
 
   public AssemblyDefinition Resolve(AssemblyNameReference reference, ReaderParameters parameters) =>
@@ -45,7 +45,7 @@ public class FolderBasedAssemblyResolver(
     ReadSymbols = false,
     AssemblyResolver = this
   };
-  
+
   public void Initialize() => InitializeContextAssembliesIfNeeded(CreateReaderParameters());
 
   private void InitializeContextAssembliesIfNeeded(ReaderParameters readerParameters)
@@ -55,7 +55,7 @@ public class FolderBasedAssemblyResolver(
     foreach (var filePath in Directory.GetFiles(contextFolder))
     {
       if (!filePath.EndsWith(DotNetConstants.DllExtension)) continue;
-      
+
       try
       {
         var assembly = AssemblyDefinition.ReadAssembly(filePath, readerParameters);
@@ -72,10 +72,10 @@ public class FolderBasedAssemblyResolver(
         logger.LogWarning("Failed to read assembly {Path}", filePath);
       }
     }
-    
+
     myContextAssembliesInitialized = true;
   }
-  
+
   public void Dispose()
   {
   }

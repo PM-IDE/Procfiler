@@ -21,7 +21,7 @@ public class GcSuspendEeMutator : MetadataValueToNameAppenderBase
         TraceEventsConstants.GcSuspendEeStartReason, GenerateNameForReason, EventClassKind.Zero)
     };
   }
-  
+
 
   private string GenerateNameForReason(string reason) => reason switch
   {

@@ -12,7 +12,7 @@ public class EventsCollectionTests
   {
     var events = CreateInitialArrayOfRandomEvents();
     var collection = CreateNewCollection(events);
-    
+
     Assert.That(collection, Has.Count.EqualTo(events.Length));
     foreach (var (arrayEvent, (_, collectionEvent)) in events.Zip(collection))
     {
@@ -26,14 +26,14 @@ public class EventsCollectionTests
     var events = CreateInitialArrayOfRandomEvents();
     var collection = CreateNewCollection(events);
     var eventsToInsert = CreateInitialArrayOfRandomEvents(10);
-    
+
     collection.ApplyNotPureActionForAllEvents(eventWithPtr =>
     {
       foreach (var eventRecord in eventsToInsert)
       {
         collection.InsertBefore(eventWithPtr.EventPointer, eventRecord);
       }
-      
+
       return true;
     });
 
@@ -51,13 +51,13 @@ public class EventsCollectionTests
     var pointerForIndex = EventPointer.ForInitialArray(index, collection);
     var eventRecordAtIndex = SlowlyFindEventFor(collection, pointerForIndex);
     Assert.That(eventRecordAtIndex, Is.Not.Null);
-    
+
     collection.InsertBefore(EventPointer.ForInitialArray(index, collection), eventRecord);
 
     var eventRecordAtIndexAfterInsertion = SlowlyFindEventFor(collection, pointerForIndex);
     Assert.That(ReferenceEquals(eventRecordAtIndex, eventRecordAtIndexAfterInsertion), Is.True);
     Assert.That(collection, Has.Count.EqualTo(events.Length + 1));
-    
+
     var list = events.ToList();
     list.Insert(index, eventRecord);
 
@@ -91,7 +91,7 @@ public class EventsCollectionTests
     var pointerForIndex = EventPointer.ForInitialArray(index, collection);
     var eventRecordAtIndex = SlowlyFindEventFor(collection, pointerForIndex);
     Assert.That(eventRecordAtIndex, Is.Not.Null);
-    
+
     collection.InsertAfter(EventPointer.ForInitialArray(index, collection), eventRecord);
 
     var eventRecordAtIndexAfterInsertion = SlowlyFindEventFor(collection, pointerForIndex);
@@ -100,7 +100,7 @@ public class EventsCollectionTests
 
     var list = events.ToList();
     list.Insert(index + 1, eventRecord);
-    
+
     AssertCollectionsAreSame(collection, list);
   }
 
@@ -119,13 +119,13 @@ public class EventsCollectionTests
     var events = CreateInitialArrayOfRandomEvents();
     var collection = CreateNewCollection(events);
     var index = Random.Shared.Next((int)collection.Count);
-    
+
     collection.Remove(EventPointer.ForInitialArray(index, collection));
-    
+
     Assert.That(collection, Has.Count.EqualTo(events.Length - 1));
     var list = events.ToList();
     list.RemoveAt(index);
-    
+
     AssertCollectionsAreSame(collection, list);
   }
 
@@ -149,7 +149,7 @@ public class EventsCollectionTests
       {
         added = false;
       }
-      
+
       return false;
     });
 
@@ -159,7 +159,7 @@ public class EventsCollectionTests
       expectedResult.Add(initialEvent);
       expectedResult.Add(insertedEvent);
     }
-    
+
     AssertCollectionsAreSame(collection, expectedResult);
   }
 
@@ -183,7 +183,7 @@ public class EventsCollectionTests
       expectedResult.Add(insertedEvent);
       expectedResult.Add(initialEvent);
     }
-    
+
     AssertCollectionsAreSame(collection, expectedResult);
   }
 
@@ -211,17 +211,17 @@ public class EventsCollectionTests
     return eventRecordAtIndex;
   }
 
-  
+
   [Test]
   public void TestLast()
   {
     var events = CreateInitialArrayOfRandomEvents();
     var collection = CreateNewCollection(events);
-    
+
     Assert.That(collection, Has.Count.EqualTo(events.Length));
     Assert.That(ReferenceEquals(SlowlyGetLastEvent(collection)?.Event, events[^1]), Is.True);
   }
-  
+
   private static EventRecordWithPointer? SlowlyGetLastEvent(IEventsCollection collection)
   {
     EventRecordWithPointer? eventRecordAtIndex = null;
@@ -246,7 +246,7 @@ public class EventsCollectionTests
       () => collection.InsertBefore(SlowlyGetLastEvent(collection)!.Value.EventPointer, randomEvent),
       () => collection.Remove(GetFirstEvent(collection)!.Value.EventPointer)
     };
-    
+
     collection.Freeze();
     foreach (var action in actions)
     {
@@ -265,20 +265,20 @@ public class EventsCollectionTests
   {
     var events = CreateInitialArrayOfRandomEvents(1);
     var collection = CreateNewCollection(events);
-    
+
     Assert.That(collection, Has.Count.EqualTo(1));
     var eventToInsert = TestUtil.CreateAbsolutelyRandomEvent();
     collection.InsertBefore(GetFirstEvent(collection)!.Value.EventPointer, eventToInsert);
     Assert.That(collection, Has.Count.EqualTo(2));
     AssertCollectionsAreSame(collection, new[] { eventToInsert }.Concat(events));
   }
-  
+
   [Test]
   public void TestInsertAfterLast()
   {
     var events = CreateInitialArrayOfRandomEvents(1);
     var collection = CreateNewCollection(events);
-    
+
     Assert.That(collection, Has.Count.EqualTo(1));
     var eventToInsert = TestUtil.CreateAbsolutelyRandomEvent();
     collection.InsertAfter(GetFirstEvent(collection)!.Value.EventPointer, eventToInsert);
@@ -288,7 +288,7 @@ public class EventsCollectionTests
 
   private static IEventsCollection CreateNewCollection(EventRecordWithMetadata[] events) =>
     new EventsCollectionImpl(events, TestLogger.CreateInstance());
-  
+
   private static EventRecordWithMetadata[] CreateInitialArrayOfRandomEvents(int count = 200) =>
     Enumerable.Range(0, count).Select(_ => TestUtil.CreateAbsolutelyRandomEvent()).OrderBy(e => e.Stamp).ToArray();
 
@@ -302,7 +302,7 @@ public class EventsCollectionTests
     collection.InjectModificationSource(modificationSource);
 
     var concatenation = events.Concat(modificationSourceEvents).OrderBy(x => x.Stamp);
-    
+
     AssertCollectionsAreSame(collection, concatenation);
   }
 

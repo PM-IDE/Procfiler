@@ -18,7 +18,7 @@ public static class ProgramMethodCallTreeDumper
     var sb = new StringBuilder();
     var regex = new Regex(pattern);
     var currentIndent = 0;
-    
+
     foreach (var eventRecord in events)
     {
       if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStart) &&

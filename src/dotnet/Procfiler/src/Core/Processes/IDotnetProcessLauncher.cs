@@ -64,7 +64,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
     {
       startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
     }
-    
+
     var process = new Process
     {
       StartInfo = startInfo,

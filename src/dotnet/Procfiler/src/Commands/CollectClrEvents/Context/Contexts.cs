@@ -25,7 +25,7 @@ public record struct ProjectBuildInfo(
   BuildConfiguration Configuration,
   InstrumentationKind InstrumentationKind,
   bool RemoveTempPath,
-  string? TempPath, 
+  string? TempPath,
   bool SelfContained
 );
 

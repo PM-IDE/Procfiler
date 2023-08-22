@@ -13,9 +13,9 @@ public abstract partial class CollectCommandBase
   {
     var parseResult = context.ParseResult;
     if (CheckForParserErrors(parseResult)) return -1;
-    
+
     CheckForPidOrExePathOrThrow(parseResult);
-    
+
     try
     {
       Execute(CreateCollectClrContextFrom(parseResult));
@@ -45,7 +45,7 @@ public abstract partial class CollectCommandBase
     {
       throw new MissingOptionException(OutputPathOption);
     }
-    
+
     var fileFormat = parseResult.GetValueForOption(OutputFileFormat);
     var duration = parseResult.GetValueForOption(DurationOption);
     var timeout = parseResult.GetValueForOption(TimeoutOption);
@@ -54,15 +54,15 @@ public abstract partial class CollectCommandBase
     var arguments = parseResult.GetValueForOption(ArgumentsOption) ?? string.Empty;
     var printOutput = parseResult.GetValueForOption(PrintProcessOutputOption);
     var methodsFilterRegex = parseResult.GetValueForOption(FilterOption);
-    
+
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
-      outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout, 
+      outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout,
       printOutput, methodsFilterRegex);
   }
-  
+
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
   {
     var commonContext = CreateCommonContext(parseResult);
@@ -72,8 +72,8 @@ public abstract partial class CollectCommandBase
       {
         Logger.LogWarning("The repeat option was specified when attaching to already running process, for now this option will be ignored");
       }
-      
-      var pid = parseResult.GetValueForOption(ProcessIdOption); 
+
+      var pid = parseResult.GetValueForOption(ProcessIdOption);
       return new CollectClrEventsFromRunningProcessContext(pid, commonContext);
     }
 
@@ -86,15 +86,15 @@ public abstract partial class CollectCommandBase
       }
 
       var projectBuildInfo = CreateProjectBuildInfo(parseResult, pathToCsproj);
-      if (parseResult.HasOption(RepeatOption) && 
-          parseResult.GetValueForOption(RepeatOption) > 1 && 
+      if (parseResult.HasOption(RepeatOption) &&
+          parseResult.GetValueForOption(RepeatOption) > 1 &&
           parseResult.HasOption(ArgumentsFileOption) &&
           !Equals(parseResult.GetValueForOption(ArgumentsFileOption), ArgumentsFileOption.GetDefaultValue()))
       {
         Logger.LogError("Executing with arguments file and repeat count is not yet supported");
         throw new ArgumentOutOfRangeException();
       }
-      
+
       if (parseResult.HasOption(ArgumentsFileOption))
       {
         var filePath = parseResult.GetValueForOption(ArgumentsFileOption);
@@ -107,10 +107,10 @@ public abstract partial class CollectCommandBase
           }
 
           var arguments = File.ReadAllLines(filePath);
-          return new CollectClrEventsFromExeWithArguments(projectBuildInfo, commonContext, arguments); 
+          return new CollectClrEventsFromExeWithArguments(projectBuildInfo, commonContext, arguments);
         }
       }
-      
+
       if (parseResult.HasOption(RepeatOption))
       {
         var repeatCount = parseResult.GetValueForOption(RepeatOption);
@@ -121,7 +121,7 @@ public abstract partial class CollectCommandBase
 
         return new CollectClrEventsFromExeWithRepeatContext(projectBuildInfo, repeatCount, commonContext);
       }
-      
+
       return new CollectClrEventsFromExeContext(projectBuildInfo, commonContext);
     }
 
@@ -136,9 +136,9 @@ public abstract partial class CollectCommandBase
     var buildConfiguration = parseResult.GetValueForOption(ConfigurationOption);
     var instrumentationKind = parseResult.GetValueForOption(InstrumentCodeOption);
     var selfContained = parseResult.GetValueForOption(SelfContainedOption);
-    
+
     var tempPath = parseResult.GetValueForOption(TempPathOption);
-    if (Equals(tempPath, ((IValueDescriptor) TempPathOption).GetDefaultValue()))
+    if (Equals(tempPath, ((IValueDescriptor)TempPathOption).GetDefaultValue()))
     {
       tempPath = null;
     }
@@ -147,7 +147,7 @@ public abstract partial class CollectCommandBase
     return new ProjectBuildInfo(
       pathToCsproj, tfm, buildConfiguration, instrumentationKind, removeTemp, tempPath, selfContained);
   }
-  
+
   private void CheckForPidOrExePathOrThrow(ParseResult parseResult)
   {
     if (!parseResult.HasOption(ProcessIdOption) && !parseResult.HasOption(PathToCsprojOption))
@@ -160,7 +160,7 @@ public abstract partial class CollectCommandBase
   {
     var errors = parseResult.Errors;
     if (errors.Count <= 0) return false;
-    
+
     foreach (var error in errors)
     {
       Logger.LogError(error.Message);

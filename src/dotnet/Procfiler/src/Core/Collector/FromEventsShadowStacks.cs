@@ -3,8 +3,8 @@ namespace Procfiler.Core.Collector;
 public interface IFromEventsShadowStacks : IShadowStacks
 {
   IReadOnlyDictionary<int, StackTraceInfo> StackTraceInfos { get; }
-  
-  
+
+
   void AddStack(TraceEvent traceEvent);
 }
 
@@ -27,7 +27,7 @@ public class StackTracesStorage(MutableTraceEventStackSource source)
   private readonly Dictionary<int, int> myStacksHashCodesToIds = new();
   private readonly Dictionary<int, StackTraceInfo> myIdsToStackTraces = new();
 
-  
+
   public IReadOnlyDictionary<int, StackTraceInfo> StackTraces => myIdsToStackTraces;
 
 
@@ -36,7 +36,7 @@ public class StackTracesStorage(MutableTraceEventStackSource source)
     var id = @event.CallStackIndex();
     if (id == CallStackIndex.Invalid) return;
 
-    var intId = (int) id;
+    var intId = (int)id;
     if (myIdsToStackTraces.TryGetValue(intId, out _)) return;
 
     var info = @event.CreateEventStackTraceInfoOrThrow(source);

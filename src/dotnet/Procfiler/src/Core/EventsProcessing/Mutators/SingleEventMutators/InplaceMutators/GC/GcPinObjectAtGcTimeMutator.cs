@@ -10,6 +10,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 public class GcPinObjectAtGcTimeMutator(IProcfilerLogger logger) : MetadataValuesRemover(logger)
 {
   public override string EventType => TraceEventsConstants.GcPinObjectAtGcTime;
+
   protected override string[] MetadataKeys { get; } =
   {
     TraceEventsConstants.CommonObjectId,
@@ -21,6 +22,7 @@ public class GcPinObjectAtGcTimeMutator(IProcfilerLogger logger) : MetadataValue
 public class GcPinObjectAtGcTimeNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.GcPinObjectAtGcTime;
+
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
     MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.CommonTypeName, EventClassKind.Zero)

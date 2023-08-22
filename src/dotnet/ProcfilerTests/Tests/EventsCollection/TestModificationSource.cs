@@ -11,13 +11,13 @@ public class TestModificationSource : ModificationSourceBase, IModificationSourc
 
   public override long Count => PointersManager.Count;
 
-  
+
   public TestModificationSource(EventRecordWithMetadata[] initialEvents) : base(initialEvents.Length)
   {
     myInitialEvents = initialEvents;
   }
 
-  
+
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents()
   {
     for (var i = 0; i < myInitialEvents.Length; i++)

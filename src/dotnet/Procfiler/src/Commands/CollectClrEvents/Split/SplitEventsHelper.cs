@@ -26,7 +26,7 @@ public static class SplitEventsHelper
     }
 
     return map.ToDictionary(
-      pair => pair.Key, 
+      pair => pair.Key,
       pair => (IEventsCollection)new EventsCollectionImpl(pair.Value.ToArray(), logger)
     );
   }

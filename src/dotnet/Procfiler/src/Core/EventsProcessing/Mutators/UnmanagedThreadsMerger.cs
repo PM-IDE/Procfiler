@@ -23,7 +23,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
     IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
   {
     if (undefinedThreadEvents.Count == 0) return managedThreadEvents;
-    
+
     var mergedArray = new EventRecordWithMetadata[managedThreadEvents.Count + undefinedThreadEvents.Count];
     var index = 0;
     foreach (var eventRecord in MergeLazyInternal(managedThreadEvents, undefinedThreadEvents))
@@ -50,7 +50,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
     var undefinedFinished = false;
     using var managedEnumerator = managedThreadEvents.GetEnumerator();
     using var undefinedEnumerator = undefinedThreadEvents.GetEnumerator();
-    
+
     if (!managedEnumerator.MoveNext()) managedFinished = true;
     if (!undefinedEnumerator.MoveNext()) undefinedFinished = true;
 
@@ -111,7 +111,7 @@ public static class ExtensionsForIUndefinedThreadsEventsMerger
 {
   public static void Merge<TKey>(
     this IUndefinedThreadsEventsMerger merger,
-    IDictionary<TKey, IEventsCollection> eventsByKeys, 
+    IDictionary<TKey, IEventsCollection> eventsByKeys,
     IEventsCollection undefinedThreadEvents)
   {
     foreach (var key in eventsByKeys.Keys)

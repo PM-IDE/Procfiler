@@ -11,7 +11,7 @@ namespace ProcfilerTests.Core;
 public abstract class CppBinStacksTestBase : ProcessTestBase
 {
   protected abstract bool UseMethodsFilter { get; }
-  
+
   protected void DoTestWithPath(KnownSolution solution, Action<string> testAction)
   {
     var context = solution.CreateContextWithMethodsFilter();

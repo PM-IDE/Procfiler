@@ -9,7 +9,7 @@ public class EventsMetadataTest
   public void SimpleTest()
   {
     var metadata = new EventMetadata();
-    
+
     var (key, value) = ("Key", "Value");
     metadata.Add(key, value);
     Assert.That(metadata, Has.Count.EqualTo(1));
@@ -23,7 +23,7 @@ public class EventsMetadataTest
     Assert.That(metadata.Contains(new KeyValuePair<string, string>(NotExistingKey, "asdasd")), Is.False);
     Assert.That(metadata.Remove(NotExistingKey), Is.False);
     Assert.That(metadata.Count, Is.EqualTo(1));
-    
+
     Assert.That(metadata.Remove(key), Is.True);
     Assert.That(metadata.ContainsKey(key), Is.False);
     Assert.That(metadata.Contains(new KeyValuePair<string, string>(key, value)), Is.False);

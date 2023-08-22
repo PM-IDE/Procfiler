@@ -19,14 +19,14 @@ public class CppProcfilerLocatorImpl(IProcfilerLogger logger) : ICppProcfilerLoc
       logger.LogError("The Procfiler.dll has no path: {Path}", procfilerAssemblyLocation);
       throw new FileNotFoundException();
     }
-    
+
     var path = Path.Combine(procfilerAssemblyLocation, "CppProcfiler.dll");
     if (!File.Exists(path))
     {
       logger.LogError("The CppProcfiler.dll does not exist here: {Path}", path);
       throw new FileNotFoundException();
     }
-    
+
     logger.LogInformation("The cpp Procfiler is located at {Path}", path);
     return path;
   }

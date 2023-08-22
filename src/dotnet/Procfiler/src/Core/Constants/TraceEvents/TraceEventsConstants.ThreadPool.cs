@@ -5,7 +5,7 @@ public static partial class TraceEventsConstants
   public const string ThreadPoolWorkerThreadStart = "ThreadPoolWorkerThread/Start";
   public const string ThreadPoolWorkerThreadStop = "ThreadPoolWorkerThread/Stop";
   public const string ThreadPoolWorkerThreadWait = "ThreadPoolWorkerThread/Wait";
-  
+
   public const string ThreadPoolWorkerThreadRetirementStart = "ThreadPoolWorkerThreadRetirement/Start";
   public const string ThreadPoolWorkerThreadRetirementStop = "ThreadPoolWorkerThreadRetirement/Stop";
   public const string ThreadPoolWorkerThreadAdjustmentSample = "ThreadPoolWorkerThreadAdjustment/Sample";

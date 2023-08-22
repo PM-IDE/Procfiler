@@ -14,11 +14,10 @@ public interface IEventsSerializer
   void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path);
 }
 
-
 [AppComponent]
 public class DelegatingEventsSerializer(
-    ICsvEventsSerializer csvEventsSerializer, 
-    IMethodTreeEventSerializer treeEventSerializer
+  ICsvEventsSerializer csvEventsSerializer,
+  IMethodTreeEventSerializer treeEventSerializer
 ) : IDelegatingEventsSerializer
 {
   public void SerializeEvents(

@@ -12,14 +12,14 @@ public class EventMetadata : IEventMetadata
   public ICollection<string> Values => CreateArrayOfNotNullElementsFrom(myValues, Count);
 
   public int Count { get; private set; }
-  
-  
+
+
   public EventMetadata(TraceEvent traceEvent)
   {
     var length = traceEvent.PayloadNames.Length;
     myValues = new List<string?>(length);
     myNames = new List<string?>(length);
-    
+
     for (var i = 0; i < length; i++)
     {
       var serializedValue = Convert.ToString(traceEvent.PayloadValue(i)) ??
@@ -48,7 +48,7 @@ public class EventMetadata : IEventMetadata
     const int EmptyMetadataExpectedAttributesCount = 0;
     myValues = new List<string?>(EmptyMetadataExpectedAttributesCount);
     myNames = new List<string?>(EmptyMetadataExpectedAttributesCount);
-    
+
     Count = EmptyMetadataExpectedAttributesCount;
   }
 
@@ -94,7 +94,7 @@ public class EventMetadata : IEventMetadata
   public void Add(string key, string value)
   {
     if (ContainsKey(key)) throw new ArgumentException(key);
-    
+
     myNames.Add(string.Intern(key));
     myValues.Add(string.Intern(value));
     ++Count;
@@ -143,11 +143,11 @@ public class EventMetadata : IEventMetadata
         Add(key, value);
         return;
       }
-      
+
       myValues[index] = value;
     }
   }
-  
+
   private static string[] CreateArrayOfNotNullElementsFrom(List<string?> givenList, int resultArraySize)
   {
     var values = new string[resultArraySize];
@@ -160,13 +160,13 @@ public class EventMetadata : IEventMetadata
 
     return values;
   }
-  
+
   public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
   {
     for (var i = 0; i < myNames.Count; i++)
     {
       if (myNames[i] is not { } name) continue;
-      
+
       var value = myValues[i];
       Debug.Assert(value is { });
       yield return new KeyValuePair<string, string>(name, value);

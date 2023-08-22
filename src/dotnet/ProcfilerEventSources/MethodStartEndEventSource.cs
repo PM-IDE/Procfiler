@@ -7,7 +7,7 @@ public class MethodStartEndEventSource : EventSource
 {
   public const int MethodStartedId = 5000;
   public const int MethodFinishedId = 5001;
-  
+
   public static MethodStartEndEventSource Log { get; } = new();
 
   public static void LogMethodStarted(string methodName) => Log.MethodStarted(methodName);

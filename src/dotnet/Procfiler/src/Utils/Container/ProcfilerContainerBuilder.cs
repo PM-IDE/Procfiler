@@ -27,7 +27,7 @@ public static class ProcfilerContainerBuilder
         formatterOptions.ColorBehavior = LoggerColorBehavior.Enabled;
       });
     }).CreateLogger(string.Empty);
-    
+
     builder.RegisterInstance(logger);
     return builder;
   }

@@ -16,10 +16,10 @@ public class CppStacksMethodsStartEndMutator(
     {
       var name = context.Stacks.GetType().Name;
       logger.LogError("Not compatible shadow stacks, got {Type}, expected {Type}", name, nameof(ICppShadowStacks));
-      
+
       return;
     }
-    
+
     using var collectionEnumerator = events.GetEnumerator();
     if (!collectionEnumerator.MoveNext())
     {
@@ -38,7 +38,7 @@ public class CppStacksMethodsStartEndMutator(
       logger.LogWarning("Skipping shadow stack for {Id} because it does not contain frames", managedThreadId);
       return;
     }
-    
+
     var modificationSource = new MethodStartEndModificationSource(factory, context, foundShadowStack);
     events.InjectModificationSource(modificationSource);
   }

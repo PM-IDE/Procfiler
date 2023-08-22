@@ -21,7 +21,7 @@ public static class StandardLifecycleModelUtil
     AddCommonAttributes(eventRecord, activityId);
     eventRecord.Metadata[XesStandardLifecycleConstants.Transition] = XesStandardLifecycleConstants.Start;
   }
-  
+
   public static void MarkAsCompleted(EventRecordWithMetadata eventRecord, string activityId)
   {
     AddCommonAttributes(eventRecord, activityId);

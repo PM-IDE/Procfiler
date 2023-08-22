@@ -16,8 +16,8 @@ public readonly struct PerformanceCookie : IDisposable
     myLogger.LogInformation("Started activity {Name}", activityName);
     myProcfilerLoggerIndentCookie = myLogger.CreateIndentCookie();
   }
-  
-  
+
+
   public void Dispose()
   {
     myStopwatch.Stop();

@@ -19,7 +19,7 @@ public interface ISplitEventsByMethodCommand : ICommandWithContext<CollectClrEve
 public enum InlineMode
 {
   NotInline,
-  
+
   OnlyEvents,
   EventsAndMethodsEvents,
   EventsAndMethodsEventsWithFilter
@@ -41,7 +41,7 @@ public class SplitEventsByMethodCommand(
   private Option<bool> GroupAsyncMethods { get; } =
     new("--group-async-methods", static () => true, "Group events from async methods");
 
-  private Option<InlineMode> InlineInnerMethodsCalls { get; } = 
+  private Option<InlineMode> InlineInnerMethodsCalls { get; } =
     new("--inline", static () => InlineMode.NotInline, "Should we inline inner methods calls to all previous traces");
 
 
@@ -59,11 +59,11 @@ public class SplitEventsByMethodCommand(
       var (allEvents, globalData) = events;
       var processingContext = EventsProcessingContext.DoEverything(allEvents, globalData);
       unitedEventsProcessor.ProcessFullEventLog(processingContext);
-      
+
       var filterPattern = GetFilterPattern(context.CommonContext);
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
-      
+
       var tracesByMethods = splitter.Split(
         events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
 
@@ -79,17 +79,17 @@ public class SplitEventsByMethodCommand(
         }
       }
     });
-    
+
     xesSerializer.SerializeAll();
   }
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)
   {
     if (context.CommandParseResult.TryGetOptionValue(FilterOption) is { } pattern) return pattern;
-    
+
     return string.Empty;
   }
-  
+
   private string GetFileNameForMethod(string directory, string methodName)
   {
     var fileName = methodNameBeautifier.Beautify(methodName);
@@ -97,7 +97,7 @@ public class SplitEventsByMethodCommand(
   }
 
   private Dictionary<int, EventSessionInfo> PrepareEventSessionInfo(
-    IEnumerable<IReadOnlyList<EventRecordWithMetadata>> traces, 
+    IEnumerable<IReadOnlyList<EventRecordWithMetadata>> traces,
     SessionGlobalData mergedGlobalData)
   {
     var index = 0;
@@ -106,21 +106,21 @@ public class SplitEventsByMethodCommand(
       values =>
       {
         var collection = new EventsCollectionImpl(values.ToArray(), Logger);
-        return new EventSessionInfo(new [] { collection }, mergedGlobalData);
+        return new EventSessionInfo(new[] { collection }, mergedGlobalData);
       });
   }
 
   protected override Command CreateCommandInternal()
   {
     const string CommandName = "split-by-methods";
-    const string CommandDescription = "Splits the events by methods, in which they occured, and serializes to XES"; 
-    
+    const string CommandDescription = "Splits the events by methods, in which they occured, and serializes to XES";
+
     var splitByMethodsCommand = new Command(CommandName, CommandDescription);
-    
+
     splitByMethodsCommand.AddOption(RepeatOption);
     splitByMethodsCommand.AddOption(InlineInnerMethodsCalls);
     splitByMethodsCommand.AddOption(GroupAsyncMethods);
-    
+
     return splitByMethodsCommand;
   }
 }

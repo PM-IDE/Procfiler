@@ -6,10 +6,10 @@ using Procfiler.Utils.Container;
 namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.StatefulMutators.Activities.Loader;
 
 [EventMutator(SingleEventMutatorsPasses.ActivityAttributesSetter)]
-public class AssemblyLoaderLifecycleMutator(IProcfilerLogger logger) : 
+public class AssemblyLoaderLifecycleMutator(IProcfilerLogger logger) :
   EventsLifecycleMutatorBase(
-    logger, 
-    "AssemblyLoader", 
-    new [] { TraceEventsConstants.AssemblyLoaderStart }, 
-    new [] { TraceEventsConstants.AssemblyLoaderStop }
+    logger,
+    "AssemblyLoader",
+    new[] { TraceEventsConstants.AssemblyLoaderStart },
+    new[] { TraceEventsConstants.AssemblyLoaderStop }
   );

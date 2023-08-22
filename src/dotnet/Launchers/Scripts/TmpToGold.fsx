@@ -14,5 +14,5 @@ let renameToGoldIfTmp (filePath: string) =
 let rec tmpToGoldRecursive folder =
     Directory.GetFiles(folder) |> Seq.iter renameToGoldIfTmp
     Directory.EnumerateDirectories(folder) |> Seq.iter tmpToGoldRecursive
-    
+
 tmpToGoldRecursive fsi.CommandLineArgs[1]

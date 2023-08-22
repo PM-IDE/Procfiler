@@ -10,6 +10,7 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 public class MethodJittingStartedNameMutator(IProcfilerLogger logger) : MetadataValueToNameAppenderBase(logger)
 {
   public override string EventType => TraceEventsConstants.MethodJittingStarted;
+
   protected override IEnumerable<MetadataKeysWithTransform> Transformations { get; } = new[]
   {
     MetadataKeysWithTransform.CreateForTypeLikeName(TraceEventsConstants.MethodNamespace, EventClassKind.Zero),

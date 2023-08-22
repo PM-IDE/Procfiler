@@ -80,7 +80,7 @@ public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsF
     return new EventRecordWithMetadata(stamp, name, managedThreadId, -1, metadata);
   }
 
-  private static string CreateEventNameForMethodExecutionEvent(string fqn) => 
+  private static string CreateEventNameForMethodExecutionEvent(string fqn) =>
     $"{TraceEventsConstants.ProcfilerMethodExecution}_{fqn}";
 
   public EventRecordWithMetadata CreateMethodEvent(FromFrameInfoCreationContext context)

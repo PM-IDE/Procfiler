@@ -37,15 +37,15 @@ public abstract class CollectAndSplitCommandBase<TKey>(
     ExecuteCommand(context, collectedEvents =>
     {
       PathUtils.CheckIfDirectoryOrThrow(context.CommonContext.OutputPath);
-      
+
       var (allEvents, globalData) = collectedEvents;
       var (useFilters, useMutators, mergeFromUndefinedThread) = collectAndSplitContext;
       var processingContext = CreateContext(allEvents, globalData, useFilters, useMutators, false);
       UnitedEventsProcessor.ProcessFullEventLog(processingContext);
-      
+
       var eventsByKey = SplitEventsHelper.SplitByKey(Logger, allEvents, keyExtractor);
       var undefinedEventsPair = FindEventsForUndefinedThread(eventsByKey);
-      
+
       var undefinedEvents = undefinedEventsPair?.Value;
       undefinedEvents = AddNewManagedThreadsFromUndefined(eventsByKey, globalData, undefinedEvents);
 
@@ -72,7 +72,7 @@ public abstract class CollectAndSplitCommandBase<TKey>(
     IEventsCollection? undefinedThreadEvents,
     CollectClrEventsContext context,
     TKey key,
-    SessionGlobalData globalData, 
+    SessionGlobalData globalData,
     CollectAndSplitContext collectAndSplitContext)
   {
     if (collectAndSplitContext.UseMutators)
@@ -115,10 +115,10 @@ public abstract class CollectAndSplitCommandBase<TKey>(
       false => EventsProcessingConfig.CreateContextWithoutStartAndEnd(useFilters, useMutators),
       true => new EventsProcessingConfig(useFilters, useMutators, EmptyCollections<Type>.EmptySet)
     };
-    
+
     return new EventsProcessingContext(currentEvents, globalData, config);
   }
-  
+
   protected virtual KeyValuePair<TKey, IEventsCollection?>? FindEventsForUndefinedThread(
     Dictionary<TKey, IEventsCollection> eventsByKey)
   {

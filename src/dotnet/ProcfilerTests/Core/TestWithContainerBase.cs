@@ -10,10 +10,10 @@ namespace ProcfilerTests.Core;
 public abstract class TestWithContainerBase
 {
   protected static IEnumerable<KnownSolution> Source() => KnownSolution.AllSolutions;
-  
+
   protected readonly IContainer Container;
-  
-  
+
+
   protected TestWithContainerBase()
   {
     var assembly = typeof(IClrEventsCollector).Assembly;

@@ -23,7 +23,7 @@ public class CollectEventsFromSeveralLaunchesCommand(
   public override void Execute(CollectClrEventsContext context)
   {
     var sessionInfos = new List<EventSessionInfo>();
-    
+
     ExecuteCommand(context, collectedEvents =>
     {
       var (events, globalData) = collectedEvents;
@@ -33,7 +33,7 @@ public class CollectEventsFromSeveralLaunchesCommand(
       var sessionInfo = new EventSessionInfo(eventsByThreadIds.Values, globalData);
       sessionInfos.Add(sessionInfo);
     });
-    
+
     var path = context.CommonContext.OutputPath;
     using var fs = File.OpenWrite(path);
     xesEventsSerializer.SerializeEvents(sessionInfos, fs);

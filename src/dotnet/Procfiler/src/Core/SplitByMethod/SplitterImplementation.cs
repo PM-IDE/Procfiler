@@ -15,7 +15,7 @@ public class SplitterImplementation(
   private readonly record struct CurrentFrameInfo(
     string Frame,
     bool ShouldProcess,
-    List<EventRecordWithMetadata> Events, 
+    List<EventRecordWithMetadata> Events,
     long OriginalEventStamp,
     long OriginalEventThreadId
   );
@@ -44,7 +44,7 @@ public class SplitterImplementation(
 
       ProcessNormalEvent(eventRecord);
     }
-    
+
     Debug.Assert(myFramesStack.Count == 0);
     return myResult;
   }
@@ -57,29 +57,29 @@ public class SplitterImplementation(
       events.Add(eventRecord);
       AddEventToAllFrames(eventRecord);
     }
-    
+
     myFramesStack.Push(new CurrentFrameInfo(frame, ShouldProcess(frame), events, eventRecord.Stamp, eventRecord.ManagedThreadId));
   }
 
-  private bool ShouldInline(string frame) => 
+  private bool ShouldInline(string frame) =>
     inlineMode == InlineMode.EventsAndMethodsEvents ||
     (inlineMode == InlineMode.EventsAndMethodsEventsWithFilter && ShouldProcess(frame));
 
   private bool ShouldProcess(string frame) => myFilterRegex.IsMatch(frame);
-  
+
   private void ProcessEndOfMethod(string frame, EventRecordWithMetadata methodEndEvent)
   {
     var topOfStack = myFramesStack.Pop();
     var (topmostFrame, shouldProcess, methodEvents, _, _) = topOfStack;
     if (!shouldProcess) return;
-    
+
     if (methodEvents.Count > 0)
     {
       var existingValue = myResult.GetOrCreate(topmostFrame, static () => new List<List<EventRecordWithMetadata>>());
-      var listOfListOfEvents = (List<List<EventRecordWithMetadata>>) existingValue;
+      var listOfListOfEvents = (List<List<EventRecordWithMetadata>>)existingValue;
       listOfListOfEvents.Add(methodEvents);
     }
-    
+
     if (ShouldInline(frame))
     {
       topOfStack.Events.Add(methodEndEvent);
@@ -95,13 +95,13 @@ public class SplitterImplementation(
       > 0 => currentTopmost.Events[^1],
       _ => null
     };
-    
+
     var startEventCtx = contextEvent switch
     {
       { } => EventsCreationContext.CreateWithUndefinedStackTrace(contextEvent),
       _ => new EventsCreationContext(currentTopmost.OriginalEventStamp, currentTopmost.OriginalEventThreadId)
     };
-    
+
     currentTopmost.Events.Add(eventsFactory.CreateMethodExecutionEvent(startEventCtx, topmostFrame));
   }
 
@@ -119,7 +119,7 @@ public class SplitterImplementation(
   private void ProcessNormalEvent(EventRecordWithMetadata eventRecord)
   {
     if (myFramesStack.Count <= 0) return;
-    
+
     if (inlineMode != InlineMode.NotInline)
     {
       AddEventToAllFrames(eventRecord);

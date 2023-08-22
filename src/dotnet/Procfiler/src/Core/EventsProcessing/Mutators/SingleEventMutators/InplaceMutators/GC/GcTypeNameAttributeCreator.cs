@@ -12,8 +12,8 @@ namespace Procfiler.Core.EventsProcessing.Mutators.SingleEventMutators.InplaceMu
 public class GcTypeNameAttributeCreator : ISingleEventMutator
 {
   private readonly IProcfilerLogger myLogger;
-  
-  
+
+
   public IEnumerable<EventLogMutation> Mutations { get; }
   public string EventClass { get; }
 
@@ -27,11 +27,11 @@ public class GcTypeNameAttributeCreator : ISingleEventMutator
       new NewAttributeCreationMutation(EventClass, TraceEventsConstants.GcSampledObjectAllocationTypeName)
     };
   }
-  
-  
+
+
   public void Process(EventRecordWithMetadata eventRecord, SessionGlobalData context)
   {
-    if (eventRecord.EventClass is TraceEventsConstants.GcSampledObjectAllocation && 
+    if (eventRecord.EventClass is TraceEventsConstants.GcSampledObjectAllocation &&
         eventRecord.Metadata.GetValueOrDefault(TraceEventsConstants.GcSampledObjectAllocTypeId) is { } id)
     {
       if (context.TypeIdToNames.TryGetValue(id.ParseId(), out var typeName))
