@@ -128,8 +128,13 @@ public class CommandExecutorImpl(
       }
       finally
       {
-        process.Kill();
-        process.WaitForExit();
+        const int WaitForProcessTimeoutMs = 10_000;
+        if (!process.WaitForExit(WaitForProcessTimeoutMs))
+        {
+          logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", WaitForProcessTimeoutMs);
+          process.Kill();
+          process.WaitForExit();
+        }
       }
 
       if (context.CommonContext.PrintProcessOutput)
