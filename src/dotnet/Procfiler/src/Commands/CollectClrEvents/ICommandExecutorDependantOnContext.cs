@@ -83,7 +83,7 @@ public class CommandExecutorImpl(
   private CollectedEvents CollectEventsFromProcess(
     CollectClrEventsContext context, int processId, string? binaryStacksPath)
   {
-    var (_, _, _, _, category, _, duration, timeout, _, _) = context.CommonContext;
+    var (_, _, _, _, category, _, duration, timeout, _, _, _) = context.CommonContext;
     var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
       processId, duration, timeout, category, binaryStacksPath);
 
@@ -128,10 +128,10 @@ public class CommandExecutorImpl(
       }
       finally
       {
-        const int WaitForProcessTimeoutMs = 10_000;
-        if (!process.WaitForExit(WaitForProcessTimeoutMs))
+        var timeoutMs = context.CommonContext.ProcessWaitTimeoutMs;
+        if (!process.WaitForExit(timeoutMs))
         {
-          logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", WaitForProcessTimeoutMs);
+          logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", timeoutMs);
           process.Kill();
           process.WaitForExit();
         }

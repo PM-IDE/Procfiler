@@ -31,7 +31,7 @@ public class SplitEventsByManagedThreadId(
     var parseResult = context.CommonContext.CommandParseResult;
     var collectAndSplitContext = CollectAndSplitContext.DoEverything with
     {
-      MergeFromUndefinedThread = parseResult.TryGetOptionValue(MergeFromUndefinedThread)
+      MergeFromUndefinedThread = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption)
     };
 
     ExecuteSimpleSplitCommand(context, SplitEventsHelper.ManagedThreadIdExtractor, collectAndSplitContext);

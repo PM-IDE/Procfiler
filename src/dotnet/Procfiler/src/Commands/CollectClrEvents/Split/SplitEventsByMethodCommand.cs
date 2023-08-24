@@ -52,7 +52,7 @@ public class SplitEventsByMethodCommand(
     var directory = context.CommonContext.OutputPath;
     var xesSerializer = new MergingTracesXesSerializer(xesEventsSerializer, Logger);
     var parseResult = context.CommonContext.CommandParseResult;
-    var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThread);
+    var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption);
 
     ExecuteCommand(context, events =>
     {

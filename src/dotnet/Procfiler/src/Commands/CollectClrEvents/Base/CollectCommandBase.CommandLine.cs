@@ -46,21 +46,22 @@ public abstract partial class CollectCommandBase
       throw new MissingOptionException(OutputPathOption);
     }
 
-    var fileFormat = parseResult.GetValueForOption(OutputFileFormat);
+    var fileFormat = parseResult.GetValueForOption(OutputFileFormatOption);
     var duration = parseResult.GetValueForOption(DurationOption);
     var timeout = parseResult.GetValueForOption(TimeoutOption);
-    var clearBefore = parseResult.GetValueForOption(ClearPathBefore);
-    var category = parseResult.GetValueForOption(ProvidersCategory);
+    var clearBefore = parseResult.GetValueForOption(ClearPathBeforeOption);
+    var category = parseResult.GetValueForOption(ProvidersCategoryOption);
     var arguments = parseResult.GetValueForOption(ArgumentsOption) ?? string.Empty;
     var printOutput = parseResult.GetValueForOption(PrintProcessOutputOption);
     var methodsFilterRegex = parseResult.GetValueForOption(FilterOption);
+    var processWaitTimeoutMs = parseResult.GetValueForOption(ProcessWaitTimeoutOption);
 
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
       outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout,
-      printOutput, methodsFilterRegex);
+      printOutput, methodsFilterRegex, processWaitTimeoutMs);
   }
 
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
@@ -143,7 +144,7 @@ public abstract partial class CollectCommandBase
       tempPath = null;
     }
 
-    var removeTemp = parseResult.GetValueForOption(RemoveTempFolder);
+    var removeTemp = parseResult.GetValueForOption(RemoveTempFolderOption);
     return new ProjectBuildInfo(
       pathToCsproj, tfm, buildConfiguration, instrumentationKind, removeTemp, tempPath, selfContained);
   }

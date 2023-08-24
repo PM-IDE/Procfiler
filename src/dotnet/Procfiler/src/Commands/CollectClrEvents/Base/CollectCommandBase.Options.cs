@@ -12,21 +12,22 @@ public partial class CollectCommandBase
     command.AddOption(PathToCsprojOption);
     command.AddOption(OutputPathOption);
     command.AddOption(DurationOption);
-    command.AddOption(OutputFileFormat);
+    command.AddOption(OutputFileFormatOption);
     command.AddOption(TimeoutOption);
-    command.AddOption(ClearPathBefore);
-    command.AddOption(MergeFromUndefinedThread);
+    command.AddOption(ClearPathBeforeOption);
+    command.AddOption(MergeFromUndefinedThreadOption);
     command.AddOption(TfmOption);
     command.AddOption(ConfigurationOption);
-    command.AddOption(ProvidersCategory);
+    command.AddOption(ProvidersCategoryOption);
     command.AddOption(InstrumentCodeOption);
     command.AddOption(SelfContainedOption);
     command.AddOption(TempPathOption);
-    command.AddOption(RemoveTempFolder);
+    command.AddOption(RemoveTempFolderOption);
     command.AddOption(ArgumentsOption);
     command.AddOption(ArgumentsFileOption);
     command.AddOption(PrintProcessOutputOption);
     command.AddOption(FilterOption);
+    command.AddOption(ProcessWaitTimeoutOption);
   }
 
   private Option<bool> SelfContainedOption { get; } =
@@ -44,13 +45,13 @@ public partial class CollectCommandBase
   private Option<string> TempPathOption { get; } =
     new("--temp", static () => string.Empty, "Folder which will be used for temp artifacts of events collection");
 
-  private Option<bool> RemoveTempFolder { get; } =
+  private Option<bool> RemoveTempFolderOption { get; } =
     new("--remove-temp", static () => true, "Whether to remove temp directory for artifacts after finishing work");
 
   private Option<InstrumentationKind> InstrumentCodeOption { get; } =
     new("--instrument", static () => InstrumentationKind.None, "Kind of instrumentation to be used");
 
-  private Option<ProvidersCategoryKind> ProvidersCategory { get; } =
+  private Option<ProvidersCategoryKind> ProvidersCategoryOption { get; } =
     new("--providers", static () => ProvidersCategoryKind.All, "Providers which will be used for collecting events");
 
   protected Option<int> RepeatOption { get; } =
@@ -76,17 +77,20 @@ public partial class CollectCommandBase
     new("--duration", static () => 60_000, "The amount of time to spend collecting CLR events");
 
   private Option<int> TimeoutOption { get; } =
-    new("--timeout", static () => 10_000, "The timeout which we want to wait until processing all events");
+    new("--timeout", static () => 10_000, "The timeout (ms) which we want to wait until processing all events");
 
-  private Option<FileFormat> OutputFileFormat { get; } =
+  private Option<int> ProcessWaitTimeoutOption { get; } =
+    new("--process-wait-timeout", static () => 10_000, "The timeout (ms) which we will wait until process naturally exits");
+
+  private Option<FileFormat> OutputFileFormatOption { get; } =
     new("--format", static () => FileFormat.Csv, "The output file(s) format");
 
-  private Option<bool> ClearPathBefore { get; } =
+  private Option<bool> ClearPathBeforeOption { get; } =
     new("--clear-before", static () => true, "Clear (delete) output folder (file) before profiling session");
 
   protected Option<string> FilterOption { get; } =
     new("--filter", static () => string.Empty, "Regex to filter methods");
 
-  protected Option<bool> MergeFromUndefinedThread { get; } =
+  protected Option<bool> MergeFromUndefinedThreadOption { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");
 }
