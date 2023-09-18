@@ -94,7 +94,7 @@ public class CommandExecutorImpl(
     CollectClrEventsFromExeContext context,
     Action<CollectedEvents> commandAction)
   {
-    var (pathToCsproj, tfm, _, _, clearTemp, _, _) = context.ProjectBuildInfo;
+    var (pathToCsproj, tfm, _, _, clearTemp, _, _, _) = context.ProjectBuildInfo;
     var buildResultNullable = projectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
     if (!buildResultNullable.HasValue)
     {

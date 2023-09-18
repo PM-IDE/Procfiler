@@ -27,6 +27,7 @@ public partial class CollectCommandBase
     command.AddOption(ArgumentsFileOption);
     command.AddOption(PrintProcessOutputOption);
     command.AddOption(FilterOption);
+    command.AddOption(AdditionalBuildArgsOption);
     command.AddOption(ProcessWaitTimeoutOption);
   }
 
@@ -91,6 +92,9 @@ public partial class CollectCommandBase
   protected Option<string> FilterOption { get; } =
     new("--filter", static () => string.Empty, "Regex to filter methods");
 
+  protected Option<string> AdditionalBuildArgsOption { get; } =
+    new("--additional-build-args", static () => string.Empty, "Regex to filter methods");
+  
   protected Option<bool> MergeFromUndefinedThreadOption { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");
 }

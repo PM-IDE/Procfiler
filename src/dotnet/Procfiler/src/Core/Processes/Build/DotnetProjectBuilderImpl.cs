@@ -43,7 +43,7 @@ public class DotnetProjectBuilderImpl(
 
   private BuildResult? TryBuildDotnetProjectInternal(ProjectBuildInfo projectBuildInfo)
   {
-    var (pathToCsproj, tfm, configuration, _, removeTempPath, tempPath, selfContained) = projectBuildInfo;
+    var (pathToCsproj, tfm, configuration, _, removeTempPath, tempPath, selfContained, args) = projectBuildInfo;
     var projectName = Path.GetFileNameWithoutExtension(pathToCsproj);
     using var _ = new PerformanceCookie($"Building::{projectName}", logger);
 
@@ -68,7 +68,7 @@ public class DotnetProjectBuilderImpl(
       {
         ["DOTNET_DefaultDiagnosticPortSuspend"] = "0"
       },
-      Arguments = $"build {pathToCsproj} -c {buildConfig} -f {tfm} -o {artifactsFolderCookie.FolderPath} --self-contained {selfContained}"
+      Arguments = $"build {pathToCsproj} -c {buildConfig} -f {tfm} -o {artifactsFolderCookie.FolderPath} --self-contained {selfContained} {args}"
     };
 
     var process = new Process

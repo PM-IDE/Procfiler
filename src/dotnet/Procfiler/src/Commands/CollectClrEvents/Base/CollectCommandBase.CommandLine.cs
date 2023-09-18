@@ -138,6 +138,12 @@ public abstract partial class CollectCommandBase
     var instrumentationKind = parseResult.GetValueForOption(InstrumentCodeOption);
     var selfContained = parseResult.GetValueForOption(SelfContainedOption);
 
+    var additionalBuildArgs = parseResult.GetValueForOption(AdditionalBuildArgsOption);
+    if (Equals(additionalBuildArgs, ((IValueDescriptor)TempPathOption).GetDefaultValue()))
+    {
+      additionalBuildArgs = null;
+    }
+
     var tempPath = parseResult.GetValueForOption(TempPathOption);
     if (Equals(tempPath, ((IValueDescriptor)TempPathOption).GetDefaultValue()))
     {
@@ -146,7 +152,7 @@ public abstract partial class CollectCommandBase
 
     var removeTemp = parseResult.GetValueForOption(RemoveTempFolderOption);
     return new ProjectBuildInfo(
-      pathToCsproj, tfm, buildConfiguration, instrumentationKind, removeTemp, tempPath, selfContained);
+      pathToCsproj, tfm, buildConfiguration, instrumentationKind, removeTemp, tempPath, selfContained, additionalBuildArgs);
   }
 
   private void CheckForPidOrExePathOrThrow(ParseResult parseResult)

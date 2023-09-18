@@ -27,7 +27,8 @@ public record struct ProjectBuildInfo(
   InstrumentationKind InstrumentationKind,
   bool RemoveTempPath,
   string? TempPath,
-  bool SelfContained
+  bool SelfContained,
+  string? AdditionalBuildArgs
 );
 
 public record CollectClrEventsContext(CollectingClrEventsCommonContext CommonContext);
