@@ -12,9 +12,10 @@ public readonly struct DotnetProcessLauncherDto
   public required string PathToDotnetExecutable { get; init; }
   public required string Arguments { get; init; }
   public required bool RedirectOutput { get; init; }
-  public required string BinaryStacksSavePath { get; init; }
+  public required string? BinaryStacksSavePath { get; init; }
   public required string CppProcfilerPath { get; init; }
   public required string? MethodsFilterRegex { get; init; }
+  public required bool UseCppProfiler { get; init; }
 
 
   public static DotnetProcessLauncherDto CreateFrom(
@@ -28,8 +29,9 @@ public readonly struct DotnetProcessLauncherDto
     RedirectOutput = context.PrintProcessOutput,
     PathToDotnetExecutable = buildResult.BuiltDllPath,
     CppProcfilerPath = locator.FindCppProcfilerPath(),
-    BinaryStacksSavePath = savePathCreator.CreateSavePath(buildResult),
-    MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex
+    BinaryStacksSavePath = context.UseCppProfiler ? savePathCreator.CreateSavePath(buildResult) : null,
+    MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
+    UseCppProfiler = context.UseCppProfiler
   };
 }
 
@@ -50,15 +52,24 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       RedirectStandardOutput = launcherDto.RedirectOutput,
       CreateNoWindow = true,
       Arguments = $"{launcherDto.PathToDotnetExecutable} {launcherDto.Arguments}",
-      Environment =
-      {
-        ["DOTNET_DefaultDiagnosticPortSuspend"] = launcherDto.DefaultDiagnosticPortSuspend ? "1" : "0",
-        ["CORECLR_ENABLE_PROFILING"] = "1",
-        ["CORECLR_PROFILER"] = "{90684E90-99CE-4C99-A95A-AFE3B9E09E85}",
-        ["CORECLR_PROFILER_PATH"] = launcherDto.CppProcfilerPath,
-        ["PROCFILER_BINARY_SAVE_STACKS_PATH"] = launcherDto.BinaryStacksSavePath
-      }
     };
+
+    startInfo.Environment["DOTNET_DefaultDiagnosticPortSuspend"] = launcherDto.DefaultDiagnosticPortSuspend ? "1" : "0";
+
+    if (launcherDto.UseCppProfiler)
+    {
+      startInfo.Environment["CORECLR_ENABLE_PROFILING"] = "1";
+      startInfo.Environment["CORECLR_PROFILER"] = "{90684E90-99CE-4C99-A95A-AFE3B9E09E85}";
+      startInfo.Environment["CORECLR_PROFILER_PATH"] = launcherDto.CppProcfilerPath;
+
+      if (launcherDto.BinaryStacksSavePath is null)
+      {
+        logger.LogError("BinaryStacksSavePath was null even when UseCppProfiler was true");
+        return null;
+      }
+      
+      startInfo.Environment["PROCFILER_BINARY_SAVE_STACKS_PATH"] = launcherDto.BinaryStacksSavePath;
+    }
 
     if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
     {
@@ -67,7 +78,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
 
     var process = new Process
     {
-      StartInfo = startInfo,
+      StartInfo = startInfo
     };
 
     if (!process.Start())

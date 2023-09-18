@@ -93,7 +93,7 @@ public class DotnetProjectBuilderImpl(
         return null;
       }
 
-      var timeout = TimeSpan.FromSeconds(10);
+      var timeout = TimeSpan.FromSeconds(30);
       if (!process.WaitForExit(timeout))
       {
         logger.LogError("Build process didn't exited for {Timeout}ms, killing it", timeout.TotalMilliseconds);

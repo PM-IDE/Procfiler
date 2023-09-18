@@ -83,7 +83,7 @@ public class CommandExecutorImpl(
   private CollectedEvents CollectEventsFromProcess(
     CollectClrEventsContext context, int processId, string? binaryStacksPath)
   {
-    var (_, _, _, _, category, _, duration, timeout, _, _, _) = context.CommonContext;
+    var (_, _, _, _, category, _, duration, timeout, _, _, _, _) = context.CommonContext;
     var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
       processId, duration, timeout, category, binaryStacksPath);
 

@@ -17,7 +17,8 @@ public record struct CollectingClrEventsCommonContext(
   int MaxWaitForLogWriteTimeoutMs,
   bool PrintProcessOutput,
   string? CppProcfilerMethodsFilterRegex,
-  int ProcessWaitTimeoutMs
+  int ProcessWaitTimeoutMs,
+  bool UseCppProfiler
 );
 
 public record struct ProjectBuildInfo(

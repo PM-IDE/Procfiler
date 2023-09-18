@@ -29,6 +29,7 @@ public partial class CollectCommandBase
     command.AddOption(FilterOption);
     command.AddOption(AdditionalBuildArgsOption);
     command.AddOption(ProcessWaitTimeoutOption);
+    command.AddOption(UseCppProfilerOption);
   }
 
   private Option<bool> SelfContainedOption { get; } =
@@ -93,8 +94,11 @@ public partial class CollectCommandBase
     new("--filter", static () => string.Empty, "Regex to filter methods");
 
   protected Option<string> AdditionalBuildArgsOption { get; } =
-    new("--additional-build-args", static () => string.Empty, "Regex to filter methods");
+    new("--additional-build-args", static () => string.Empty, "Additional arguments for an application build command");
   
   protected Option<bool> MergeFromUndefinedThreadOption { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");
+  
+  protected Option<bool> UseCppProfilerOption { get; } =
+    new("--use-cpp-profiler", static () => true, "Should we load cpp profiler");
 }
