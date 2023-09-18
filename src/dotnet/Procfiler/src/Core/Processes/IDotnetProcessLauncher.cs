@@ -69,11 +69,12 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       }
       
       startInfo.Environment["PROCFILER_BINARY_SAVE_STACKS_PATH"] = launcherDto.BinaryStacksSavePath;
-    }
-
-    if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
-    {
-      startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
+      
+      if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
+      {
+        startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
+        startInfo.Environment["PROCFILER_FILTER_METHODS_DURING_RUNTIME"] = "1";
+      }
     }
 
     var process = new Process

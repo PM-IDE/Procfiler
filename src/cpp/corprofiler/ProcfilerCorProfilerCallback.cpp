@@ -99,7 +99,7 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 }
 
 void ProcfilerCorProfilerCallback::InitializeShadowStack() {
-    myShadowStack = new ShadowStack(myLogger);
+    myShadowStack = new ShadowStack(this->myProfilerInfo, myLogger);
 
     if (IsEnvVarDefined(binaryStackSavePath)) {
         myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);

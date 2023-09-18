@@ -7,6 +7,7 @@
 #include <string>
 #include <stack>
 #include <atomic>
+#include <regex>
 #include "../../util/util.h"
 #include "../info/FunctionInfo.h"
 
@@ -60,13 +61,17 @@ class ShadowStack {
 private:
     static EventsWithThreadId* GetOrCreatePerThreadEvents(DWORD threadId);
 
+    std::regex* myFilterRegex{nullptr};
+
+    ICorProfilerInfo12* myProfilerInfo;
     ProcfilerLogger* myLogger;
     std::atomic<int> myCurrentAddition{0};
     std::atomic<bool> myCanProcessFunctionEvents{true};
 
     bool CanProcessFunctionEvents();
+    bool ShouldAddFunc(FunctionID& id);
 public:
-    explicit ShadowStack(ProcfilerLogger* logger);
+    explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);

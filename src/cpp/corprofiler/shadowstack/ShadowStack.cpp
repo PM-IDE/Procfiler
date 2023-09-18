@@ -1,4 +1,5 @@
 #include "ShadowStack.h"
+#include "../../util/env_constants.h"
 #include <mutex>
 #include <stack>
 
@@ -7,7 +8,25 @@ static thread_local EventsWithThreadId* ourEvents;
 static std::map<ThreadID, EventsWithThreadId*> ourEventsPerThreads;
 static std::mutex ourEventsPerThreadMutex;
 
-ShadowStack::ShadowStack(ProcfilerLogger* logger) {
+ShadowStack::ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger) {
+    myProfilerInfo = profilerInfo;
+
+    std::string value;
+    TryGetEnvVar(filterMethodsDuringRuntime, value);
+
+    if (value == "1") {
+        if (TryGetEnvVar(filterMethodsRegex, value)) {
+            try {
+                myFilterRegex = new std::regex(value);
+            }
+            catch (const std::regex_error &e) {
+                myFilterRegex = nullptr;
+            }
+        } else {
+            myFilterRegex = nullptr;
+        }
+    }
+
     myLogger = logger;
 }
 
@@ -22,8 +41,19 @@ void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timest
 
     if (!CanProcessFunctionEvents()) return;
 
-    const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
-    GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
+    if (ShouldAddFunc(id)) {
+        const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
+        GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
+    }
+}
+
+bool ShadowStack::ShouldAddFunc(FunctionID& id) {
+    if (myFilterRegex == nullptr) return true;
+
+    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, id).GetFullName();
+
+    std::smatch m;
+    return std::regex_search(functionName, m, *myFilterRegex);
 }
 
 void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp) {
@@ -33,8 +63,10 @@ void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t tim
 
     if (!CanProcessFunctionEvents()) return;
 
-    const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
-    GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
+    if (ShouldAddFunc(id)) {
+        const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
+        GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
+    }
 }
 
 void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD threadId, int64_t timestamp) {

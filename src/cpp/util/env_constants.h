@@ -9,6 +9,7 @@ const std::string binaryStackSavePath = "PROCFILER_BINARY_SAVE_STACKS_PATH";
 const std::string eventPipeSaveShadowStack = "PROCFILER_EVENT_PIPE_SAVE_STACKS";
 
 const std::string filterMethodsRegex = "PROCFILER_FILTER_METHODS_REGEX";
+const std::string filterMethodsDuringRuntime = "PROCFILER_FILTER_METHODS_DURING_RUNTIME";
 
 
 bool IsEnvVarDefined(const std::string& envVarName);
