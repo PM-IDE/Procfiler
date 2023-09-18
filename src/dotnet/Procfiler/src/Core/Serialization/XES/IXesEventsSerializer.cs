@@ -11,6 +11,8 @@ namespace Procfiler.Core.Serialization.XES;
 public interface IXesEventsSerializer
 {
   void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
+  void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum);
+  void WriteHeader(XmlWriter writer);
 }
 
 [AppComponent]
@@ -31,7 +33,6 @@ public partial class XesEventsSerializer(
       Indent = true,
     });
 
-    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, LogTagName, null);
     WriteHeader(writer);
 
     var traceNum = 0;
@@ -39,6 +40,16 @@ public partial class XesEventsSerializer(
     {
       WriteTrace(traceNum++, sessionInfo, writer);
     }
+    
+    writer.WriteEndElement();
+  }
+
+  public void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum) => WriteTrace(traceNum, session, writer);
+
+  public void WriteHeader(XmlWriter writer)
+  {
+    writer.WriteStartElement(null, LogTagName, null);
+    DoWriteHeader(writer);
   }
 
   private static void WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
@@ -78,7 +89,7 @@ public partial class XesEventsSerializer(
     }
   }
 
-  private static void WriteHeader(XmlWriter writer)
+  private static void DoWriteHeader(XmlWriter writer)
   {
     writer.WriteAttributeString(null, XesVersion, null, "1849.2016");
     writer.WriteAttributeString(null, XesFeatures, null, string.Empty);

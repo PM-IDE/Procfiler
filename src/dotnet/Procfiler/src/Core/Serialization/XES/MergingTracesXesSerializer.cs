@@ -23,3 +23,52 @@ public class MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfi
     }
   }
 }
+
+public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger) : IDisposable
+{
+  private class PathWriteState
+  {
+    public required XmlWriter Writer { get; init; }
+    public int TracesCount { get; set; }
+  }
+  
+  private readonly Dictionary<string, PathWriteState> myPathsToWriters = new();
+  
+  public void WriteTrace(string path, EventSessionInfo sessionInfo)
+  {
+    using var _ = new PerformanceCookie($"{GetType()}::{nameof(WriteTrace)}", logger);
+
+    if (!myPathsToWriters.TryGetValue(path, out var existingState))
+    {
+      var newWriter = XmlWriter.Create(File.OpenWrite(path), new XmlWriterSettings
+      {
+        ConformanceLevel = ConformanceLevel.Document,
+        Indent = true,
+      });
+
+      serializer.WriteHeader(newWriter);
+      var newState = new PathWriteState { Writer = newWriter };
+      myPathsToWriters[path] = newState;
+      existingState = newState;
+    }
+
+    serializer.AppendTrace(sessionInfo, existingState.Writer, existingState.TracesCount);
+    existingState.TracesCount += 1;
+  }
+
+  public void Dispose()
+  {
+    foreach (var (path, writer) in myPathsToWriters)
+    {
+      try
+      {
+        writer.Writer.WriteEndElement();
+        writer.Writer.Dispose();
+      }
+      catch (Exception ex)
+      {
+        logger.LogWarning(ex, "Failed to dispose writer for path {Path}", path);
+      }
+    }
+  }
+}

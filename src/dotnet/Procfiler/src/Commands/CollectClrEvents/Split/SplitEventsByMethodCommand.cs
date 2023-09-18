@@ -50,9 +50,10 @@ public class SplitEventsByMethodCommand(
     using var _ = new PerformanceCookie("SplittingEventsByMethods", Logger);
 
     var directory = context.CommonContext.OutputPath;
-    var xesSerializer = new MergingTracesXesSerializer(xesEventsSerializer, Logger);
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption);
+
+    using var xesSerializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, Logger);
 
     ExecuteCommand(context, events =>
     {
@@ -75,12 +76,10 @@ public class SplitEventsByMethodCommand(
         var filePath = GetFileNameForMethod(directory, methodName);
         foreach (var (_, sessionInfo) in eventsByMethodsInvocation)
         {
-          xesSerializer.AddTrace(filePath, sessionInfo);
+          xesSerializer.WriteTrace(filePath, sessionInfo);
         }
       }
     });
-
-    xesSerializer.SerializeAll();
   }
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)
