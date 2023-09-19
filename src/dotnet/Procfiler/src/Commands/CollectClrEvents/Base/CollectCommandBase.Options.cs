@@ -9,6 +9,7 @@ public partial class CollectCommandBase
   protected void AddCommonOptions(Command command)
   {
     command.AddOption(ProcessIdOption);
+    command.AddOption(CommandNameOption);
     command.AddOption(PathToCsprojOption);
     command.AddOption(OutputPathOption);
     command.AddOption(DurationOption);
@@ -58,6 +59,8 @@ public partial class CollectCommandBase
 
   protected Option<int> RepeatOption { get; } =
     new("--repeat", static () => 1, "The number of times launching of the program should be repeated");
+
+  private Option<string> CommandNameOption { get; } = new("-command", "The command to be executed");
 
   private Option<string> PathToCsprojOption { get; } =
     new("-csproj", "The path to the .csproj file of the project to be executed");

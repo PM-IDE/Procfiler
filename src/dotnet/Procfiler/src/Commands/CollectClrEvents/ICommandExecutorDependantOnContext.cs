@@ -39,11 +39,45 @@ public class CommandExecutorImpl(
       case CollectClrEventsFromRunningProcessContext runContext:
         ExecuteCommandWithRunningProcess(runContext, commandAction);
         return;
+      case CollectClrEventsFromCommandContext commandContext:
+        ExecuteSpecifiedCommand(commandContext, commandAction);
+        return;
       default:
         throw new ArgumentOutOfRangeException(nameof(context), context, null);
     }
   }
 
+  private void ExecuteSpecifiedCommand(CollectClrEventsFromCommandContext context, Action<CollectedEvents> commandAction)
+  {
+    if (context.Arguments is { })
+    {
+      foreach (var currentArguments in context.Arguments)
+      {
+        var newContext = context with
+        {
+          CommonContext = context.CommonContext with
+          {
+            Arguments = currentArguments
+          }
+        };
+
+        DoExecuteCommand(newContext, commandAction);
+      }
+
+      return;
+    }
+
+    DoExecuteCommand(context, commandAction);
+  }
+
+  private void DoExecuteCommand(CollectClrEventsFromCommandContext context, Action<CollectedEvents> commandAction)
+  {
+    var laucnherDto = DotnetProcessLauncherDto.CreateFrom(
+      context.CommonContext, context.CommandName, cppProcfilerLocator, binaryStackSavePathCreator);
+        
+    ExecuteDotnetProcess(context, laucnherDto, context.CommandName, commandAction);
+  }
+  
   private void ExecuteCommandWithArgumentsList(
     CollectClrEventsFromExeWithArguments context, Action<CollectedEvents> commandAction)
   {
@@ -103,61 +137,12 @@ public class CommandExecutorImpl(
     }
 
     var buildResult = buildResultNullable.Value;
+    var launcherDto = DotnetProcessLauncherDto.CreateFrom(
+      context.CommonContext, buildResult, cppProcfilerLocator, binaryStackSavePathCreator);
 
     try
     {
-      var launcherDto = DotnetProcessLauncherDto.CreateFrom(
-        context.CommonContext, buildResult, cppProcfilerLocator, binaryStackSavePathCreator);
-
-      if (dotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
-      {
-        logger.LogError("Failed to start or to find process");
-        return;
-      }
-
-      logger.LogInformation("Started process: {Id} {Path}", process.Id, buildResult.BuiltDllPath);
-
-      CollectedEvents? events = null;
-      try
-      {
-        events = CollectEventsFromProcess(context, process.Id, launcherDto.BinaryStacksSavePath);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
-      }
-      finally
-      {
-        var timeoutMs = context.CommonContext.ProcessWaitTimeoutMs;
-        if (!process.WaitForExit(timeoutMs))
-        {
-          logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", timeoutMs);
-          process.Kill();
-          process.WaitForExit();
-        }
-      }
-
-      if (context.CommonContext.PrintProcessOutput)
-      {
-        var output = process.StandardOutput.ReadToEnd();
-        logger.LogInformation("Process output:");
-        logger.LogInformation(output);
-      }
-
-      if (!process.HasExited)
-      {
-        logger.LogError("The process {Id} somehow didn't exit", process.Id);
-      }
-      else
-      {
-        const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
-        logger.LogInformation(Message, process.Id, pathToCsproj);
-      }
-
-      if (events.HasValue)
-      {
-        commandAction(events.Value);
-      }
+      ExecuteDotnetProcess(context, launcherDto, buildResult.BuiltDllPath, commandAction);
     }
     finally
     {
@@ -165,6 +150,63 @@ public class CommandExecutorImpl(
       {
         buildResult.ClearUnderlyingFolder();
       }
+    }
+  }
+
+  private void ExecuteDotnetProcess(
+    CollectClrEventsContext context,
+    DotnetProcessLauncherDto launcherDto,
+    string commandName,
+    Action<CollectedEvents> commandAction)
+  {
+    if (dotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
+    {
+      logger.LogError("Failed to start or to find process");
+      return;
+    }
+
+    logger.LogInformation("Started process: {Id} {Path}", process.Id, commandName);
+
+    CollectedEvents? events = null;
+    try
+    {
+      events = CollectEventsFromProcess(context, process.Id, launcherDto.BinaryStacksSavePath);
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
+    }
+    finally
+    {
+      var timeoutMs = context.CommonContext.ProcessWaitTimeoutMs;
+      if (!process.WaitForExit(timeoutMs))
+      {
+        logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", timeoutMs);
+        process.Kill();
+        process.WaitForExit();
+      }
+    }
+
+    if (context.CommonContext.PrintProcessOutput)
+    {
+      var output = process.StandardOutput.ReadToEnd();
+      logger.LogInformation("Process output:");
+      logger.LogInformation(output);
+    }
+
+    if (!process.HasExited)
+    {
+      logger.LogError("The process {Id} somehow didn't exit", process.Id);
+    }
+    else
+    {
+      const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
+      logger.LogInformation(Message, process.Id, commandName);
+    }
+
+    if (events.HasValue)
+    {
+      commandAction(events.Value);
     }
   }
 }

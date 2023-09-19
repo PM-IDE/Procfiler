@@ -55,3 +55,9 @@ public record CollectClrEventsFromRunningProcessContext(
   int ProcessId,
   CollectingClrEventsCommonContext CommonContext
 ) : CollectClrEventsContext(CommonContext);
+
+public record CollectClrEventsFromCommandContext(
+  string CommandName,
+  IReadOnlyList<string>? Arguments,
+  CollectingClrEventsCommonContext CommonContext
+) : CollectClrEventsContext(CommonContext);

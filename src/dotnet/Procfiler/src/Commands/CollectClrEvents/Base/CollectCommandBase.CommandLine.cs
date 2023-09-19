@@ -68,6 +68,18 @@ public abstract partial class CollectCommandBase
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
   {
     var commonContext = CreateCommonContext(parseResult);
+
+    if (parseResult.HasOption(CommandNameOption))
+    {
+      if (parseResult.GetValueForOption(CommandNameOption) is not { } command)
+      {
+        Logger.LogError("{Option} was null", CommandNameOption.Name);
+        throw new ArgumentNullException(nameof(CommandNameOption));
+      }
+
+      return new CollectClrEventsFromCommandContext(command, TryGetArgumentsOrThrow(parseResult), commonContext);
+    }
+    
     if (parseResult.HasOption(ProcessIdOption))
     {
       if (parseResult.HasOption(RepeatOption))
@@ -97,20 +109,9 @@ public abstract partial class CollectCommandBase
         throw new ArgumentOutOfRangeException();
       }
 
-      if (parseResult.HasOption(ArgumentsFileOption))
+      if (TryGetArgumentsOrThrow(parseResult) is { } arguments)
       {
-        var filePath = parseResult.GetValueForOption(ArgumentsFileOption);
-        if (!Equals(filePath, ArgumentsFileOption.GetDefaultValue()))
-        {
-          if (!File.Exists(filePath))
-          {
-            Logger.LogError("Invalid path to arguments file: {Path}", filePath);
-            throw new FileNotFoundException("Failed to find argument file", filePath);
-          }
-
-          var arguments = File.ReadAllLines(filePath);
-          return new CollectClrEventsFromExeWithArguments(projectBuildInfo, commonContext, arguments);
-        }
+        return new CollectClrEventsFromExeWithArguments(projectBuildInfo, commonContext, arguments);
       }
 
       if (parseResult.HasOption(RepeatOption))
@@ -128,6 +129,26 @@ public abstract partial class CollectCommandBase
     }
 
     throw new ArgumentOutOfRangeException();
+  }
+
+  private IReadOnlyList<string>? TryGetArgumentsOrThrow(ParseResult parseResult)
+  {
+    if (parseResult.HasOption(ArgumentsFileOption))
+    {
+      var filePath = parseResult.GetValueForOption(ArgumentsFileOption);
+      if (!Equals(filePath, ArgumentsFileOption.GetDefaultValue()))
+      {
+        if (!File.Exists(filePath))
+        {
+          Logger.LogError("Invalid path to arguments file: {Path}", filePath);
+          throw new FileNotFoundException("Failed to find argument file", filePath);
+        }
+
+        return File.ReadAllLines(filePath);
+      }
+    }
+
+    return null;
   }
 
   private ProjectBuildInfo CreateProjectBuildInfo(ParseResult parseResult, string pathToCsproj)
@@ -158,7 +179,7 @@ public abstract partial class CollectCommandBase
 
   private void CheckForPidOrExePathOrThrow(ParseResult parseResult)
   {
-    if (!parseResult.HasOption(ProcessIdOption) && !parseResult.HasOption(PathToCsprojOption))
+    if (!parseResult.HasOption(ProcessIdOption) && !parseResult.HasOption(PathToCsprojOption) && !parseResult.HasOption(CommandNameOption))
     {
       throw new OneOfFollowingOptionsMustBeSpecifiedException(ProcessIdOption, PathToCsprojOption);
     }

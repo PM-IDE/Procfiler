@@ -1,4 +1,5 @@
 using Procfiler.Core.Processes.Build;
+using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.CppProcfiler;
@@ -6,6 +7,7 @@ namespace Procfiler.Core.CppProcfiler;
 public interface IBinaryStackSavePathCreator
 {
   string CreateSavePath(BuildResult buildResult);
+  string CreateTempSavePath();
 }
 
 [AppComponent]
@@ -20,4 +22,6 @@ public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
 
     return Path.Combine(directory, BinaryStacksFileName);
   }
+
+  public string CreateTempSavePath() => Path.Combine(PathUtils.CreateTempFolderPath(), BinaryStacksFileName);
 }
