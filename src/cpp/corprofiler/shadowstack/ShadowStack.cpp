@@ -41,19 +41,28 @@ void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timest
 
     if (!CanProcessFunctionEvents()) return;
 
-    if (ShouldAddFunc(id)) {
+    if (ShouldAddFunc(id, threadId)) {
         const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
         GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
     }
 }
 
-bool ShadowStack::ShouldAddFunc(FunctionID& id) {
+bool ShadowStack::ShouldAddFunc(FunctionID& id, DWORD threadId) {
     if (myFilterRegex == nullptr) return true;
 
-    auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, id).GetFullName();
+    auto events = GetOrCreatePerThreadEvents(threadId);
 
-    std::smatch m;
-    return std::regex_search(functionName, m, *myFilterRegex);
+    bool shouldLog;
+    if (events->ShouldLog(id, &shouldLog)) {
+        return shouldLog;
+    } else {
+        auto functionName = FunctionInfo::GetFunctionInfo(myProfilerInfo, id).GetFullName();
+
+        std::smatch m;
+        shouldLog = std::regex_search(functionName, m, *myFilterRegex);
+        events->PutFunctionShouldLogDecision(id, shouldLog);
+        return shouldLog;
+    }
 }
 
 void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t timestamp) {
@@ -63,7 +72,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t tim
 
     if (!CanProcessFunctionEvents()) return;
 
-    if (ShouldAddFunc(id)) {
+    if (ShouldAddFunc(id, threadId)) {
         const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
         GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
     }

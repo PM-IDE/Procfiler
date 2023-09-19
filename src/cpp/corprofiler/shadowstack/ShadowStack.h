@@ -32,11 +32,13 @@ struct FunctionEvent {
 };
 
 struct EventsWithThreadId {
+    std::map<FunctionID, bool>* ShouldLogFuncs;
     std::vector<FunctionEvent>* Events;
     std::stack<FunctionID>* CurrentStack;
     DWORD ThreadId;
 
     explicit EventsWithThreadId(DWORD threadId) {
+        ShouldLogFuncs = new std::map<FunctionID, bool>;
         Events = new std::vector<FunctionEvent>();
         CurrentStack = new std::stack<FunctionID>();
         ThreadId = threadId;
@@ -46,7 +48,7 @@ struct EventsWithThreadId {
         delete Events;
     }
 
-    void AddFunctionEvent(FunctionEvent event) {
+    void AddFunctionEvent(FunctionEvent event) const {
         Events->push_back(event);
 
         if (event.EventKind == FunctionEventKind::Started) {
@@ -54,6 +56,19 @@ struct EventsWithThreadId {
         } else {
             CurrentStack->pop();
         }
+    }
+
+    bool ShouldLog(FunctionID& id, bool* shouldLog) const {
+        if (ShouldLogFuncs->find(id) == ShouldLogFuncs->end()) {
+            return false;
+        } else {
+            *shouldLog = ShouldLogFuncs->at(id);
+            return true;
+        }
+    }
+
+    void PutFunctionShouldLogDecision(FunctionID& id, bool shouldLog) const {
+        ShouldLogFuncs->insert({id, shouldLog});
     }
 };
 
@@ -69,7 +84,7 @@ private:
     std::atomic<bool> myCanProcessFunctionEvents{true};
 
     bool CanProcessFunctionEvents();
-    bool ShouldAddFunc(FunctionID& id);
+    bool ShouldAddFunc(FunctionID& id, DWORD threadId);
 public:
     explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
 
