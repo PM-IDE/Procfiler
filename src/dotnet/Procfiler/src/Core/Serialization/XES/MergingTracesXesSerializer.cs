@@ -36,7 +36,7 @@ public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, I
   
   public void WriteTrace(string path, EventSessionInfo sessionInfo)
   {
-    using var _ = new PerformanceCookie($"{GetType()}::{nameof(WriteTrace)}", logger);
+    using var _ = new PerformanceCookie($"{GetType()}::{nameof(WriteTrace)}", logger, LogLevel.Trace);
 
     if (!myPathsToWriters.TryGetValue(path, out var existingState))
     {
