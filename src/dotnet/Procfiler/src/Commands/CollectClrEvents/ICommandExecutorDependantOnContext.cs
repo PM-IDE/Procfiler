@@ -165,8 +165,6 @@ public class CommandExecutorImpl(
       return;
     }
 
-    logger.LogInformation("Started process: {Id} {Path}", process.Id, commandName);
-
     CollectedEvents? events = null;
     try
     {

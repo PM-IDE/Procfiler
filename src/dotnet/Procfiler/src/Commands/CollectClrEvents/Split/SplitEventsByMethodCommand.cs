@@ -44,6 +44,9 @@ public class SplitEventsByMethodCommand(
   private Option<InlineMode> InlineInnerMethodsCalls { get; } =
     new("--inline", static () => InlineMode.NotInline, "Should we inline inner methods calls to all previous traces");
 
+  private Option<string?> TargetMethodsRegex { get; } =
+    new("--target-methods-regex", static () => null, "Target methods regex ");
+
 
   public override void Execute(CollectClrEventsContext context)
   {
@@ -52,6 +55,12 @@ public class SplitEventsByMethodCommand(
     var directory = context.CommonContext.OutputPath;
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption);
+    var targetMethodsRegexString = parseResult.TryGetOptionValue(TargetMethodsRegex);
+    var targetMethodsRegex = targetMethodsRegexString switch
+    {
+      { } => new Regex(targetMethodsRegexString),
+      _ => null
+    };
 
     using var xesSerializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, Logger);
 
@@ -71,6 +80,7 @@ public class SplitEventsByMethodCommand(
       foreach (var (methodName, traces) in tracesByMethods)
       {
         if (methodName is TraceEventsConstants.UndefinedMethod) continue;
+        if (targetMethodsRegex is { } && !targetMethodsRegex.IsMatch(methodName)) continue;
 
         var eventsByMethodsInvocation = PrepareEventSessionInfo(traces, globalData);
         var filePath = GetFileNameForMethod(directory, methodName);
@@ -119,6 +129,7 @@ public class SplitEventsByMethodCommand(
     splitByMethodsCommand.AddOption(RepeatOption);
     splitByMethodsCommand.AddOption(InlineInnerMethodsCalls);
     splitByMethodsCommand.AddOption(GroupAsyncMethods);
+    splitByMethodsCommand.AddOption(TargetMethodsRegex);
 
     return splitByMethodsCommand;
   }
