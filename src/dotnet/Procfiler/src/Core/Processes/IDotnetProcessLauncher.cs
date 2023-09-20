@@ -42,7 +42,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
       {
         startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
-        //startInfo.Environment["PROCFILER_FILTER_METHODS_DURING_RUNTIME"] = "1";
+        startInfo.Environment["PROCFILER_FILTER_METHODS_DURING_RUNTIME"] = "1";
       }
     }
 
@@ -56,6 +56,8 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       logger.LogError("Failed to start process {Path}", launcherDto.PathToDotnetExecutable);
       return null;
     }
+
+    logger.LogInformation("Started process: {Id} {Path} {Arguments}", process.Id, launcherDto.PathToDotnetExecutable, startInfo.Arguments);
 
     return process;
   }

@@ -54,6 +54,7 @@ public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, I
 
     serializer.AppendTrace(sessionInfo, existingState.Writer, existingState.TracesCount);
     existingState.TracesCount += 1;
+    existingState.Writer.Flush();
   }
 
   public void Dispose()
