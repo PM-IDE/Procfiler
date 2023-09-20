@@ -14,6 +14,7 @@ public readonly struct DotnetProcessLauncherDto
   public required string CppProcfilerPath { get; init; }
   public required string? MethodsFilterRegex { get; init; }
   public required bool UseCppProfiler { get; init; }
+  public required bool UseDuringRuntimeFiltering { get; init; }
 
 
   public static DotnetProcessLauncherDto CreateFrom(
@@ -29,7 +30,8 @@ public readonly struct DotnetProcessLauncherDto
     CppProcfilerPath = locator.FindCppProcfilerPath(),
     BinaryStacksSavePath = context.UseCppProfiler ? savePathCreator.CreateSavePath(buildResult) : null,
     MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
-    UseCppProfiler = context.UseCppProfiler
+    UseCppProfiler = context.UseCppProfiler,
+    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering
   };
 
   public static DotnetProcessLauncherDto CreateFrom(
@@ -45,6 +47,7 @@ public readonly struct DotnetProcessLauncherDto
     CppProcfilerPath = locator.FindCppProcfilerPath(),
     BinaryStacksSavePath = context.UseCppProfiler ? savePathCreator.CreateTempSavePath() : null,
     MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
-    UseCppProfiler = context.UseCppProfiler
+    UseCppProfiler = context.UseCppProfiler,
+    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering
   };
 }

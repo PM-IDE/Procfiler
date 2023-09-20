@@ -42,7 +42,11 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
       {
         startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
-        startInfo.Environment["PROCFILER_FILTER_METHODS_DURING_RUNTIME"] = "1";
+
+        if (launcherDto.UseDuringRuntimeFiltering)
+        {
+          startInfo.Environment["PROCFILER_FILTER_METHODS_DURING_RUNTIME"] = "1";
+        }
       }
     }
 

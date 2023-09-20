@@ -56,13 +56,14 @@ public abstract partial class CollectCommandBase
     var methodsFilterRegex = parseResult.GetValueForOption(FilterOption);
     var processWaitTimeoutMs = parseResult.GetValueForOption(ProcessWaitTimeoutOption);
     var useCppProfiler = parseResult.GetValueForOption(UseCppProfilerOption);
+    var useDuringRuntimeFiltering = parseResult.GetValueForOption(UseDuringRuntimeMethodsFiltering);
 
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
       outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout,
-      printOutput, methodsFilterRegex, processWaitTimeoutMs, useCppProfiler);
+      printOutput, methodsFilterRegex, processWaitTimeoutMs, useCppProfiler, useDuringRuntimeFiltering);
   }
 
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)

@@ -31,6 +31,7 @@ public partial class CollectCommandBase
     command.AddOption(AdditionalBuildArgsOption);
     command.AddOption(ProcessWaitTimeoutOption);
     command.AddOption(UseCppProfilerOption);
+    command.AddOption(UseDuringRuntimeMethodsFiltering);
   }
 
   private Option<bool> SelfContainedOption { get; } =
@@ -104,4 +105,7 @@ public partial class CollectCommandBase
   
   protected Option<bool> UseCppProfilerOption { get; } =
     new("--use-cpp-profiler", static () => true, "Should we load cpp profiler");
+
+  private Option<bool> UseDuringRuntimeMethodsFiltering { get; } = 
+    new("--use-during-runtime-filtering", static () => false, "Whether to use during runtime methods filtering");
 }
