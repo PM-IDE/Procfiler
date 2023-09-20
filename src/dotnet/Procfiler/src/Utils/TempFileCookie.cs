@@ -9,5 +9,5 @@ public readonly struct TempFileCookie(string alreadyCreatedTempFileFilePath, IPr
   {
   }
 
-  public void Dispose() => PathUtils.ClearPath(FullFilePath, logger);
+  public void Dispose() => PathUtils.ClearPathIfExists(FullFilePath, logger);
 }

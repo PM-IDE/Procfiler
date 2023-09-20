@@ -27,6 +27,6 @@ public abstract partial class CollectCommandBase(
   {
     if (!commonContext.ClearPathBefore) return;
 
-    PathUtils.ClearPath(commonContext.OutputPath, Logger);
+    PathUtils.ClearPathIfExists(commonContext.OutputPath, Logger);
   }
 }

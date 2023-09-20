@@ -38,7 +38,7 @@ public static class PathUtils
     Directory.CreateDirectory(path);
   }
 
-  public static void ClearPath(string path, IProcfilerLogger logger)
+  public static void ClearPathIfExists(string path, IProcfilerLogger logger)
   {
     try
     {

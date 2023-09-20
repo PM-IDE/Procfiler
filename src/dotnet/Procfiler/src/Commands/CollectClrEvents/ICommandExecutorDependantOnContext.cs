@@ -159,52 +159,62 @@ public class CommandExecutorImpl(
     string commandName,
     Action<CollectedEvents> commandAction)
   {
-    if (dotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
-    {
-      logger.LogError("Failed to start or to find process");
-      return;
-    }
-
-    CollectedEvents? events = null;
     try
     {
-      events = CollectEventsFromProcess(context, process.Id, launcherDto.BinaryStacksSavePath);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
+      if (dotnetProcessLauncher.TryStartDotnetProcess(launcherDto) is not { } process)
+      {
+        logger.LogError("Failed to start or to find process");
+        return;
+      }
+
+      CollectedEvents? events = null;
+      try
+      {
+        events = CollectEventsFromProcess(context, process.Id, launcherDto.BinaryStacksSavePath);
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "Failed to collect events from {ProcessId}", process.Id);
+      }
+      finally
+      {
+        var timeoutMs = context.CommonContext.ProcessWaitTimeoutMs;
+        if (!process.WaitForExit(timeoutMs))
+        {
+          logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", timeoutMs);
+          process.Kill();
+          process.WaitForExit();
+        }
+      }
+
+      if (context.CommonContext.PrintProcessOutput)
+      {
+        var output = process.StandardOutput.ReadToEnd();
+        logger.LogInformation("Process output:");
+        logger.LogInformation(output);
+      }
+
+      if (!process.HasExited)
+      {
+        logger.LogError("The process {Id} somehow didn't exit", process.Id);
+      }
+      else
+      {
+        const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
+        logger.LogInformation(Message, process.Id, commandName);
+      }
+
+      if (events.HasValue)
+      {
+        commandAction(events.Value);
+      }
     }
     finally
     {
-      var timeoutMs = context.CommonContext.ProcessWaitTimeoutMs;
-      if (!process.WaitForExit(timeoutMs))
+      if (launcherDto.BinaryStacksSavePath is { } binaryStacksSavePath)
       {
-        logger.LogWarning("Failed to wait ({Timeout}ms) until process terminates naturally, killing it", timeoutMs);
-        process.Kill();
-        process.WaitForExit();
+        PathUtils.ClearPathIfExists(binaryStacksSavePath, logger);
       }
-    }
-
-    if (context.CommonContext.PrintProcessOutput)
-    {
-      var output = process.StandardOutput.ReadToEnd();
-      logger.LogInformation("Process output:");
-      logger.LogInformation(output);
-    }
-
-    if (!process.HasExited)
-    {
-      logger.LogError("The process {Id} somehow didn't exit", process.Id);
-    }
-    else
-    {
-      const string Message = "The process {Id} ({Path}) which was created by Procfiler exited";
-      logger.LogInformation(Message, process.Id, commandName);
-    }
-
-    if (events.HasValue)
-    {
-      commandAction(events.Value);
     }
   }
 }
