@@ -113,5 +113,17 @@ void BinaryShadowStackSerializer::SerializeInSingleFile(ShadowStack* shadowStack
 }
 
 void BinaryShadowStackSerializer::SerializeInDifferentFiles(ShadowStack* shadowStack) {
-    myLogger->LogError("Serializing in different files is not yet supported");
+    myLogger->LogInformation("Started serializing shadow stack to several binary files");
+    std::set<FunctionID> filteredOutFunctions;
+    std::regex* regex = TryCreateMethodsFilterRegex();
+
+    for (auto& pair: *(shadowStack->GetAllStacks())) {
+        std::string filePath = mySavePath + "binstack_" + std::to_string(pair.first) + ".bin";
+        std::ofstream fout(filePath, std::ios::binary);
+        WriteThreadStack(pair.first, pair.second->Events, fout, filteredOutFunctions, regex);
+
+        fout.close();
+    }
+
+    delete regex;
 }
