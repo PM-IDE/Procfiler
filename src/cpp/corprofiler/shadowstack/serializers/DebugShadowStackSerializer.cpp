@@ -1,5 +1,5 @@
 #include <fstream>
-#include "ShadowStackSerializer.h"
+#include "DebugShadowStackSerializer.h"
 #include "../../../util/env_constants.h"
 
 DebugShadowStackSerializer::DebugShadowStackSerializer(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger) {

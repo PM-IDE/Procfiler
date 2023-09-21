@@ -1,6 +1,9 @@
 #include "ProcfilerCorProfilerCallback.h"
 #include "../util/performance_counter.h"
 #include "../util/env_constants.h"
+#include "shadowstack/serializers/BinaryShadowStackSerializer.h"
+#include "shadowstack/serializers/DebugShadowStackSerializer.h"
+#include "shadowstack/serializers/EventPipeShadowStackSerializer.h"
 
 ProcfilerCorProfilerCallback* ourCallback;
 
