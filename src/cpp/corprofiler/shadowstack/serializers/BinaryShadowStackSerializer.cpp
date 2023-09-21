@@ -9,18 +9,17 @@ BinaryShadowStackSerializer::BinaryShadowStackSerializer(ICorProfilerInfo12* pro
                                                          ProcfilerLogger* logger) {
     myProfilerInfo = profilerInfo;
     myLogger = logger;
-
-    std::string value;
-    TryGetEnvVar(useSeparateBinStacksFiles, value);
-
-    myUseSeparateBinstacksFiles = value == trueEnvVarValue;
 }
 
 void BinaryShadowStackSerializer::Init() {
     if (!TryGetEnvVar(binaryStackSavePath, this->mySavePath)) {
         myLogger->LogError("Binary shadow stack save path was not defined");
-        return;
     }
+
+    std::string value;
+    TryGetEnvVar(useSeparateBinStacksFiles, value);
+
+    myUseSeparateBinstacksFiles = value == trueEnvVarValue;
 }
 
 void BinaryShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
@@ -29,29 +28,11 @@ void BinaryShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
         return;
     }
 
-    std::string methodFilterRegex;
-    std::regex* regex = nullptr;
-    if (TryGetEnvVar(filterMethodsRegex, methodFilterRegex)) {
-        try {
-            myLogger->LogInformation("Creating regex from " + methodFilterRegex);
-            regex = new std::regex(methodFilterRegex);
-        }
-        catch (const std::regex_error& e) {
-            myLogger->LogError("Failed to create regex from " + methodFilterRegex);
-            regex = nullptr;
-        }
+    if (myUseSeparateBinstacksFiles) {
+        SerializeInDifferentFiles(shadowStack);
+    } else {
+        SerializeInSingleFile(shadowStack);
     }
-
-    myLogger->LogInformation("Started serializing shadow stack to binary file");
-    std::ofstream fout(mySavePath, std::ios::binary);
-
-    std::set<FunctionID> filteredOutFunctions;
-    for (auto& pair: *(shadowStack->GetAllStacks())) {
-        WriteThreadStack(pair.first, pair.second->Events, fout, filteredOutFunctions, regex);
-    }
-
-    fout.close();
-    delete regex;
 
     myLogger->LogInformation("Finished serializing shadow stack to binary file");
 }
@@ -98,4 +79,39 @@ void BinaryShadowStackSerializer::WriteThreadStack(ThreadID threadId,
     fout.seekp(countPos);
     fout.write((char*) &writtenFrames, sizeof(long long));
     fout.seekp(streamPos);
+}
+
+std::regex* BinaryShadowStackSerializer::TryCreateMethodsFilterRegex() {
+    std::string methodFilterRegex;
+    std::regex* regex = nullptr;
+    if (TryGetEnvVar(filterMethodsRegex, methodFilterRegex)) {
+        try {
+            myLogger->LogInformation("Creating regex from " + methodFilterRegex);
+            regex = new std::regex(methodFilterRegex);
+        }
+        catch (const std::regex_error& e) {
+            myLogger->LogError("Failed to create regex from " + methodFilterRegex);
+            regex = nullptr;
+        }
+    }
+
+    return regex;
+}
+
+void BinaryShadowStackSerializer::SerializeInSingleFile(ShadowStack* shadowStack) {
+    myLogger->LogInformation("Started serializing shadow stack to binary file");
+    std::ofstream fout(mySavePath, std::ios::binary);
+    std::set<FunctionID> filteredOutFunctions;
+    std::regex* regex = TryCreateMethodsFilterRegex();
+
+    for (auto& pair: *(shadowStack->GetAllStacks())) {
+        WriteThreadStack(pair.first, pair.second->Events, fout, filteredOutFunctions, regex);
+    }
+
+    fout.close();
+    delete regex;
+}
+
+void BinaryShadowStackSerializer::SerializeInDifferentFiles(ShadowStack* shadowStack) {
+    myLogger->LogError("Serializing in different files is not yet supported");
 }

@@ -9,13 +9,18 @@ private:
     std::string mySavePath;
     ICorProfilerInfo12* myProfilerInfo;
     ProcfilerLogger* myLogger;
-    bool myUseSeparateBinstacksFiles;
+    bool myUseSeparateBinstacksFiles{false};
+
+    void SerializeInSingleFile(ShadowStack* shadowStack);
+    void SerializeInDifferentFiles(ShadowStack* shadowStack);
 
     void WriteThreadStack(ThreadID threadId,
                           std::vector<FunctionEvent>* events,
                           std::ofstream& fout,
                           std::set<FunctionID>& filteredOutFunctions,
                           std::regex* methodsFilterRegex);
+
+    std::regex* TryCreateMethodsFilterRegex();
 public:
     explicit BinaryShadowStackSerializer(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
     ~BinaryShadowStackSerializer() override = default;
