@@ -9,19 +9,27 @@ using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Collector;
 
-public record ClrEventsCollectionContext(
+public abstract record ClrEventsCollectionContext(
   int Pid,
   int Duration,
   int Timeout,
   ProvidersCategoryKind ProvidersCategoryKind
 );
 
-public record ClrEventsCollectionContextWithBinaryStacks(
+public record FromEventsStacksClrEventsCollectionContext(
+  int Pid,
+  int Duration,
+  int Timeout,
+  ProvidersCategoryKind ProvidersCategoryKind
+) : ClrEventsCollectionContext(Pid, Duration, Timeout, ProvidersCategoryKind);
+
+public record BinaryStacksClrEventsCollectionContext(
   int Pid,
   int Duration,
   int Timeout,
   ProvidersCategoryKind ProvidersCategoryKind,
-  string? PathToBinaryStacks
+  CppProfilerMode CppProfilerMode,
+  string PathToBinaryStacks
 ) : ClrEventsCollectionContext(Pid, Duration, Timeout, ProvidersCategoryKind);
 
 public interface IClrEventsCollector
@@ -45,13 +53,8 @@ public class ClrEventsCollector(
       using var tempPathCookie = new TempFileCookie(logger);
       var (pid, duration, timeout, category) = context;
       ListenToProcessAndWriteToFile(pid, duration, timeout, category, tempPathCookie);
-      var binaryStacksPath = context switch
-      {
-        ClrEventsCollectionContextWithBinaryStacks ctx => ctx.PathToBinaryStacks,
-        _ => null
-      };
 
-      return ReadEventsFromFile(tempPathCookie, binaryStacksPath);
+      return ReadEventsFromFile(tempPathCookie, context);
     }
     catch (Exception ex)
     {
@@ -106,7 +109,7 @@ public class ClrEventsCollector(
     }
   }
 
-  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie, string? binaryStacks)
+  private CollectedEvents ReadEventsFromFile(TempFileCookie tempPathCookie, ClrEventsCollectionContext context)
   {
     var options = new TraceLogOptions
     {
@@ -116,10 +119,10 @@ public class ClrEventsCollector(
     var etlxFilePath = TraceLog.CreateFromEventPipeDataFile(tempPathCookie.FullFilePath, options: options);
     using var etlxCookie = new TempFileCookie(etlxFilePath, logger);
 
-    return ReadEventsFromFileInternal(etlxFilePath, binaryStacks);
+    return ReadEventsFromFileInternal(etlxFilePath, context);
   }
 
-  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, string? binaryStacksPath)
+  private CollectedEvents ReadEventsFromFileInternal(string etlxFilePath, ClrEventsCollectionContext collectionContext)
   {
     using var performanceCookie = new PerformanceCookie(nameof(ReadEventsFromFile), logger);
     using var traceLog = new TraceLog(etlxFilePath);
@@ -131,10 +134,11 @@ public class ClrEventsCollector(
     var statistics = new Statistics();
     var events = new EventRecordWithMetadata[traceLog.EventCount];
     var context = new CreatingEventContext(stackSource, traceLog);
-    var shadowStacks = binaryStacksPath switch
+    var shadowStacks = collectionContext switch
     {
-      { } => binaryShadowStacksReader.ReadStackEvents(binaryStacksPath),
-      null => new FromEventsShadowStacks(stackSource)
+      BinaryStacksClrEventsCollectionContext ctx => binaryShadowStacksReader.ReadStackEvents(ctx.PathToBinaryStacks, ctx.CppProfilerMode),
+      FromEventsStacksClrEventsCollectionContext => new FromEventsShadowStacks(stackSource),
+      _ => throw new ArgumentOutOfRangeException(nameof(collectionContext), collectionContext, null)
     };
 
     var globalData = new SessionGlobalData(shadowStacks);

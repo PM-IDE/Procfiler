@@ -27,11 +27,16 @@ public class FrameInfo
 
 public interface IBinaryShadowStacksReader
 {
-  IShadowStacks ReadStackEvents(string path);
+  IShadowStacks ReadStackEvents(string path, CppProfilerMode mode);
 }
 
 [AppComponent]
 public class BinaryShadowStacksReaderImpl(IProcfilerLogger logger) : IBinaryShadowStacksReader
 {
-  public IShadowStacks ReadStackEvents(string path) => new CppShadowStacksImplFromSingleFile(logger, path);
+  public IShadowStacks ReadStackEvents(string path, CppProfilerMode mode) => mode switch
+  {
+    CppProfilerMode.SingleFileBinStack => new CppShadowStacksImplFromSingleFile(logger, path),
+    CppProfilerMode.PerThreadBinStacksFiles => new CppShadowStackFromSeveralFiles(logger, path),
+    _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+  };
 }

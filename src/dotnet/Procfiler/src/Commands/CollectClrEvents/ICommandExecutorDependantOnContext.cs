@@ -115,13 +115,28 @@ public class CommandExecutorImpl(
   }
 
   private CollectedEvents CollectEventsFromProcess(
-    CollectClrEventsContext context, int processId, string? binaryStacksPath)
+    CollectClrEventsContext context, int processId, string? binStacksPath)
   {
-    var (_, _, _, _, category, _, duration, timeout, _, _, _, _, _) = context.CommonContext;
-    var collectionContext = new ClrEventsCollectionContextWithBinaryStacks(
-      processId, duration, timeout, category, binaryStacksPath);
+    return clrEventsCollector.CollectEvents(ToCollectionContext(context, processId, binStacksPath));
+  }
 
-    return clrEventsCollector.CollectEvents(collectionContext);
+  private ClrEventsCollectionContext ToCollectionContext(CollectClrEventsContext context, int processId, string? binStacksPath)
+  {
+    var ctx = context.CommonContext;
+    var (_, _, _, _, category, _, duration, timeout, _, _, _, cppProfilerMode, _) = ctx;
+
+    if (ctx.CppProfilerMode.IsDisabled())
+    {
+      return new FromEventsStacksClrEventsCollectionContext(processId, duration, timeout, category);
+    }
+
+    if (binStacksPath is not { })
+    {
+      logger.LogError("Bin stacks path was null when cpp profiler is enabled");
+      throw new ArgumentNullException(nameof(binStacksPath));
+    }
+      
+    return new BinaryStacksClrEventsCollectionContext(processId, duration, timeout, category, cppProfilerMode, binStacksPath);
   }
 
   private void ExecuteCommandWithLaunchingProcess(
