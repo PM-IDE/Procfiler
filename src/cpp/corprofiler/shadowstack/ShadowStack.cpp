@@ -94,6 +94,7 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
             break;
         }
 
+        //stack is popped in this function (AddFunctionEvent + FunctionEventKind::Finished)
         events->AddFunctionEvent(FunctionEvent(top, FunctionEventKind::Finished, timestamp));
     }
 }
