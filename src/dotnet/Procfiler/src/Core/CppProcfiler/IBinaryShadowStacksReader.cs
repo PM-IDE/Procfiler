@@ -33,5 +33,5 @@ public interface IBinaryShadowStacksReader
 [AppComponent]
 public class BinaryShadowStacksReaderImpl(IProcfilerLogger logger) : IBinaryShadowStacksReader
 {
-  public IShadowStacks ReadStackEvents(string path) => new CppShadowStacksImpl(logger, path);
+  public IShadowStacks ReadStackEvents(string path) => new CppShadowStacksImplFromSingleFile(logger, path);
 }

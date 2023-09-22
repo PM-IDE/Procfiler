@@ -1,8 +1,9 @@
+using System.Runtime.InteropServices;
 using Procfiler.Utils;
 
 namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 
-public class CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinaryStacksFile) : ICppShadowStacks
+public class CppShadowStacksImplFromSingleFile(IProcfilerLogger logger, string pathToBinaryStacksFile) : ICppShadowStacks
 {
   private readonly object mySync = new();
   private readonly Dictionary<long, long> myManagedThreadsToOffsets = new();
@@ -41,7 +42,7 @@ public class CppShadowStacksImpl(IProcfilerLogger logger, string pathToBinarySta
 
     if (!myManagedThreadsToOffsets.TryGetValue(managedThreadId, out var offset))
     {
-      logger.LogWarning("The shadow stack for {ManagedThreadId}", managedThreadId);
+      logger.LogWarning("The shadow stack for {ManagedThreadId} was not found in {Path}", managedThreadId, pathToBinaryStacksFile);
       return null;
     }
 
