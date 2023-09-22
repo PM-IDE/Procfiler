@@ -23,30 +23,29 @@ public readonly struct DotnetProcessLauncherDto
     CollectingClrEventsCommonContext context,
     BuildResult buildResult,
     ICppProcfilerLocator locator,
-    IBinaryStackSavePathCreator savePathCreator) => new()
+    IBinaryStackSavePathCreator savePathCreator)
   {
-    DefaultDiagnosticPortSuspend = true,
-    Arguments = $"{buildResult.BuiltDllPath} {context.Arguments}",
-    RedirectOutput = context.PrintProcessOutput,
-    PathToDotnetExecutable = "dotnet",
-    CppProcfilerPath = locator.FindCppProcfilerPath(),
-    MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
-    CppProfilerMode = context.CppProfilerMode,
-    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering,
-    CppProfilerUseConsoleLogging = context.CppProfilerUseConsoleLogging,
-    WorkingDirectory = Path.GetDirectoryName(buildResult.BuiltDllPath)!,
-    BinaryStacksSavePath = context.CppProfilerMode.IsEnabled() switch
+    var workingDirectory = Path.GetDirectoryName(buildResult.BuiltDllPath)!;
+    var patchedContext = context with
+    {
+      Arguments = $"{buildResult.BuiltDllPath} {context.Arguments}"
+    };
+
+    var binStacksSavePath = context.CppProfilerMode.IsEnabled() switch
     {
       true => savePathCreator.CreateSavePath(buildResult, context.CppProfilerMode),
       false => null
-    }
-  };
+    };
+    
+    return CreateInternal(patchedContext, locator, "dotnet", workingDirectory, binStacksSavePath);
+  }
 
-  public static DotnetProcessLauncherDto CreateFrom(
+  private static DotnetProcessLauncherDto CreateInternal(
     CollectingClrEventsCommonContext context,
-    string commandName,
     ICppProcfilerLocator locator,
-    IBinaryStackSavePathCreator savePathCreator) => new()
+    string commandName,
+    string workingDirectory,
+    string? binStacksSavePath) => new()
   {
     DefaultDiagnosticPortSuspend = true,
     Arguments = context.Arguments,
@@ -57,11 +56,22 @@ public readonly struct DotnetProcessLauncherDto
     CppProfilerMode = context.CppProfilerMode,
     UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering,
     CppProfilerUseConsoleLogging = context.CppProfilerUseConsoleLogging,
-    WorkingDirectory = string.Empty,
-    BinaryStacksSavePath = context.CppProfilerMode.IsEnabled() switch
+    WorkingDirectory = workingDirectory,
+    BinaryStacksSavePath = binStacksSavePath
+  };
+
+  public static DotnetProcessLauncherDto CreateFrom(
+    CollectingClrEventsCommonContext context,
+    string commandName,
+    ICppProcfilerLocator locator,
+    IBinaryStackSavePathCreator savePathCreator)
+  {
+    var binStacksSavePath = context.CppProfilerMode.IsEnabled() switch
     {
       true => savePathCreator.CreateTempSavePath(context.CppProfilerMode),
       false => null
-    }
-  };
+    };
+    
+    return CreateInternal(context, locator, commandName, string.Empty, binStacksSavePath);
+  }
 }
