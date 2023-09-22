@@ -17,10 +17,10 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
     var startInfo = new ProcessStartInfo
     {
       FileName = launcherDto.PathToDotnetExecutable,
-      WorkingDirectory = Path.GetDirectoryName(launcherDto.PathToDotnetExecutable),
+      WorkingDirectory = launcherDto.WorkingDirectory,
       RedirectStandardOutput = launcherDto.RedirectOutput,
       CreateNoWindow = true,
-      Arguments = $"{launcherDto.Arguments}"
+      Arguments = launcherDto.Arguments
     };
 
     startInfo.Environment[DotNetEnvs.DefaultDiagnosticPortSuspend] = launcherDto.DefaultDiagnosticPortSuspend switch
