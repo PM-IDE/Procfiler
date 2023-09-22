@@ -1,4 +1,5 @@
 using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.InstrumentalProfiler;
 using Procfiler.Utils;
 
@@ -18,7 +19,7 @@ public record struct CollectingClrEventsCommonContext(
   bool PrintProcessOutput,
   string? CppProcfilerMethodsFilterRegex,
   int ProcessWaitTimeoutMs,
-  bool UseCppProfiler,
+  CppProfilerMode CppProfilerMode,
   bool UseDuringRuntimeFiltering
 );
 

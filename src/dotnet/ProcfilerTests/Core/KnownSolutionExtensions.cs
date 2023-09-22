@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.InstrumentalProfiler;
 using Procfiler.Utils;
 using TestsUtil;
@@ -37,7 +38,7 @@ public static class KnownSolutionExtensions
     var serializationContext = new SerializationContext(FileFormat.Csv);
     return new CollectingClrEventsCommonContext(
       string.Empty, serializationContext, new TestParseResultsProvider(), string.Empty, ProvidersCategoryKind.All,
-      false, 10_000, 10_000, false, null, 10_000, true, false);
+      false, 10_000, 10_000, false, null, 10_000, CppProfilerMode.SingleFileBinStack, false);
   }
 }
 

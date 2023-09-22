@@ -1,4 +1,5 @@
-﻿using Procfiler.Utils;
+﻿using Procfiler.Core.CppProcfiler;
+using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
 namespace Procfiler.Core.Processes;
@@ -24,7 +25,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
 
     startInfo.Environment["DOTNET_DefaultDiagnosticPortSuspend"] = launcherDto.DefaultDiagnosticPortSuspend ? "1" : "0";
 
-    if (launcherDto.UseCppProfiler)
+    if (launcherDto.CppProfilerMode.IsEnabled())
     {
       startInfo.Environment["CORECLR_ENABLE_PROFILING"] = "1";
       startInfo.Environment["CORECLR_PROFILER"] = "{90684E90-99CE-4C99-A95A-AFE3B9E09E85}";
@@ -38,6 +39,11 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       
       logger.LogInformation("Binary stack save path {Path}", launcherDto.BinaryStacksSavePath);
       startInfo.Environment["PROCFILER_BINARY_SAVE_STACKS_PATH"] = launcherDto.BinaryStacksSavePath;
+
+      if (launcherDto.CppProfilerMode == CppProfilerMode.PerThreadBinStacksFiles)
+      {
+        startInfo.Environment["PROCFILER_USE_SEPARATE_BINSTACKS_FILES"] = "1";
+      }
       
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
       {

@@ -29,7 +29,7 @@ public abstract class CppBinStacksTestBase : ProcessTestBase
     Assert.That(process, Is.Not.Null);
     process!.WaitForExit();
 
-    var binStacksPath = binStacksSavePathCreator.CreateSavePath(result.Value);
+    var binStacksPath = binStacksSavePathCreator.CreateSavePath(result.Value, context.CommonContext.CppProfilerMode);
     testAction(binStacksPath);
   }
 

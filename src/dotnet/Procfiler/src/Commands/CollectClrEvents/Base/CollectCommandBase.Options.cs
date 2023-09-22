@@ -1,4 +1,5 @@
 ﻿using Procfiler.Core.Collector;
+using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.InstrumentalProfiler;
 using Procfiler.Utils;
 
@@ -103,8 +104,8 @@ public partial class CollectCommandBase
   protected Option<bool> MergeFromUndefinedThreadOption { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");
   
-  protected Option<bool> UseCppProfilerOption { get; } =
-    new("--use-cpp-profiler", static () => true, "Should we load cpp profiler");
+  protected Option<CppProfilerMode> UseCppProfilerOption { get; } =
+    new("--cpp-profiler-mode", static () => CppProfilerMode.SingleFileBinStack, "Should we load cpp profiler");
 
   private Option<bool> UseDuringRuntimeMethodsFiltering { get; } = 
     new("--use-during-runtime-filtering", static () => false, "Whether to use during runtime methods filtering");

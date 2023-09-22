@@ -13,7 +13,7 @@ public readonly struct DotnetProcessLauncherDto
   public required string? BinaryStacksSavePath { get; init; }
   public required string CppProcfilerPath { get; init; }
   public required string? MethodsFilterRegex { get; init; }
-  public required bool UseCppProfiler { get; init; }
+  public required CppProfilerMode CppProfilerMode { get; init; }
   public required bool UseDuringRuntimeFiltering { get; init; }
 
 
@@ -28,10 +28,14 @@ public readonly struct DotnetProcessLauncherDto
     RedirectOutput = context.PrintProcessOutput,
     PathToDotnetExecutable = "dotnet",
     CppProcfilerPath = locator.FindCppProcfilerPath(),
-    BinaryStacksSavePath = context.UseCppProfiler ? savePathCreator.CreateSavePath(buildResult) : null,
     MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
-    UseCppProfiler = context.UseCppProfiler,
-    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering
+    CppProfilerMode = context.CppProfilerMode,
+    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering,
+    BinaryStacksSavePath = context.CppProfilerMode.IsEnabled() switch
+    {
+      true => savePathCreator.CreateSavePath(buildResult, context.CppProfilerMode),
+      false => null
+    }
   };
 
   public static DotnetProcessLauncherDto CreateFrom(
@@ -45,9 +49,13 @@ public readonly struct DotnetProcessLauncherDto
     RedirectOutput = context.PrintProcessOutput,
     PathToDotnetExecutable = commandName,
     CppProcfilerPath = locator.FindCppProcfilerPath(),
-    BinaryStacksSavePath = context.UseCppProfiler ? savePathCreator.CreateTempSavePath() : null,
     MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
-    UseCppProfiler = context.UseCppProfiler,
-    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering
+    CppProfilerMode = context.CppProfilerMode,
+    UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering,
+    BinaryStacksSavePath = context.CppProfilerMode.IsEnabled() switch
+    {
+      true => savePathCreator.CreateTempSavePath(context.CppProfilerMode),
+      false => null
+    }
   };
 }
