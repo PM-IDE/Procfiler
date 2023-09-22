@@ -21,7 +21,8 @@ public record struct CollectingClrEventsCommonContext(
   int ProcessWaitTimeoutMs,
   CppProfilerMode CppProfilerMode,
   bool UseDuringRuntimeFiltering,
-  bool CppProfilerUseConsoleLogging
+  bool CppProfilerUseConsoleLogging,
+  bool ClearArtifacts
 );
 
 public record struct ProjectBuildInfo(
@@ -29,7 +30,7 @@ public record struct ProjectBuildInfo(
   string Tfm,
   BuildConfiguration Configuration,
   InstrumentationKind InstrumentationKind,
-  bool RemoveTempPath,
+  bool ClearArtifacts,
   string? TempPath,
   bool SelfContained,
   string? AdditionalBuildArgs

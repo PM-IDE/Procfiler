@@ -58,13 +58,15 @@ public abstract partial class CollectCommandBase
     var useCppProfiler = parseResult.GetValueForOption(UseCppProfilerOption);
     var useDuringRuntimeFiltering = parseResult.GetValueForOption(UseDuringRuntimeMethodsFiltering);
     var cppProfilerUseConsoleLogging = parseResult.GetValueForOption(UseCppProfilerConsoleLogging);
+    var clearArtifacts = parseResult.GetValueForOption(ClearArtifactsOption);
 
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
 
     return new CollectingClrEventsCommonContext(
       outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout,
-      printOutput, methodsFilterRegex, processWaitTimeoutMs, useCppProfiler, useDuringRuntimeFiltering, cppProfilerUseConsoleLogging);
+      printOutput, methodsFilterRegex, processWaitTimeoutMs, useCppProfiler, useDuringRuntimeFiltering, cppProfilerUseConsoleLogging,
+      clearArtifacts);
   }
 
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
@@ -174,9 +176,9 @@ public abstract partial class CollectCommandBase
       tempPath = null;
     }
 
-    var removeTemp = parseResult.GetValueForOption(RemoveTempFolderOption);
+    var clearActivities = parseResult.GetValueForOption(ClearArtifactsOption);
     return new ProjectBuildInfo(
-      pathToCsproj, tfm, buildConfiguration, instrumentationKind, removeTemp, tempPath, selfContained, additionalBuildArgs);
+      pathToCsproj, tfm, buildConfiguration, instrumentationKind, clearActivities, tempPath, selfContained, additionalBuildArgs);
   }
 
   private void CheckForPidOrExePathOrThrow(ParseResult parseResult)

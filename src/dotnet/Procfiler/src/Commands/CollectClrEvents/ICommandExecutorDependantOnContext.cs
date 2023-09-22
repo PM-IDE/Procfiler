@@ -123,7 +123,7 @@ public class CommandExecutorImpl(
   private ClrEventsCollectionContext ToCollectionContext(CollectClrEventsContext context, int processId, string? binStacksPath)
   {
     var ctx = context.CommonContext;
-    var (_, _, _, _, category, _, duration, timeout, _, _, _, cppProfilerMode, _, _) = ctx;
+    var (_, _, _, _, category, _, duration, timeout, _, _, _, cppProfilerMode, _, _, _) = ctx;
 
     if (ctx.CppProfilerMode.IsDisabled())
     {
@@ -143,7 +143,7 @@ public class CommandExecutorImpl(
     CollectClrEventsFromExeContext context,
     Action<CollectedEvents> commandAction)
   {
-    var (pathToCsproj, tfm, _, _, clearTemp, _, _, _) = context.ProjectBuildInfo;
+    var (pathToCsproj, tfm, _, _, _, _, _, _) = context.ProjectBuildInfo;
     var buildResultNullable = projectBuilder.TryBuildDotnetProject(context.ProjectBuildInfo);
     if (!buildResultNullable.HasValue)
     {
@@ -161,7 +161,7 @@ public class CommandExecutorImpl(
     }
     finally
     {
-      if (clearTemp)
+      if (context.CommonContext.ClearArtifacts)
       {
         buildResult.ClearUnderlyingFolder();
       }
@@ -226,7 +226,8 @@ public class CommandExecutorImpl(
     }
     finally
     {
-      if (launcherDto.BinaryStacksSavePath is { } binaryStacksSavePath)
+      if (context.CommonContext.ClearArtifacts && 
+          launcherDto.BinaryStacksSavePath is { } binaryStacksSavePath)
       {
         PathUtils.ClearPathIfExists(binaryStacksSavePath, logger);
       }

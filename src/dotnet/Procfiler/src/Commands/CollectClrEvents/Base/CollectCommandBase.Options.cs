@@ -24,7 +24,7 @@ public partial class CollectCommandBase
     command.AddOption(InstrumentCodeOption);
     command.AddOption(SelfContainedOption);
     command.AddOption(TempPathOption);
-    command.AddOption(RemoveTempFolderOption);
+    command.AddOption(ClearArtifactsOption);
     command.AddOption(ArgumentsOption);
     command.AddOption(ArgumentsFileOption);
     command.AddOption(PrintProcessOutputOption);
@@ -51,8 +51,8 @@ public partial class CollectCommandBase
   private Option<string> TempPathOption { get; } =
     new("--temp", static () => string.Empty, "Folder which will be used for temp artifacts of events collection");
 
-  private Option<bool> RemoveTempFolderOption { get; } =
-    new("--remove-temp", static () => true, "Whether to remove temp directory for artifacts after finishing work");
+  private Option<bool> ClearArtifactsOption { get; } =
+    new("--clear-artifacts", static () => true, "Whether to remove temp directory for artifacts after finishing work");
 
   private Option<InstrumentationKind> InstrumentCodeOption { get; } =
     new("--instrument", static () => InstrumentationKind.None, "Kind of instrumentation to be used");
