@@ -28,18 +28,30 @@ public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
       }
       case CppProfilerMode.PerThreadBinStacksFiles:
       {
-        return Path.GetDirectoryName(buildResult.BuiltDllPath) ??
-               throw new DirectoryNotFoundException(buildResult.BuiltDllPath);
+        var dirName = Path.GetDirectoryName(buildResult.BuiltDllPath) ?? 
+                      throw new DirectoryNotFoundException(buildResult.BuiltDllPath);
+
+        return AdjustBinStacksSavePath(dirName);
       }
       default:
         throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
     }
   }
 
+  private static string AdjustBinStacksSavePath(string path)
+  {
+    if (!Path.EndsInDirectorySeparator(path))
+    {
+      path += Path.DirectorySeparatorChar;
+    }
+
+    return path;
+  }
+
   public string CreateTempSavePath(CppProfilerMode mode) => mode switch
   {
     CppProfilerMode.SingleFileBinStack => Path.Combine(PathUtils.CreateTempFolderPath(), BinaryStacksFileName),
-    CppProfilerMode.PerThreadBinStacksFiles => PathUtils.CreateTempFolderPath(),
+    CppProfilerMode.PerThreadBinStacksFiles => AdjustBinStacksSavePath(PathUtils.CreateTempFolderPath()),
     _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
   };
 }
