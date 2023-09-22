@@ -23,13 +23,13 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       Arguments = $"{launcherDto.Arguments}"
     };
 
-    startInfo.Environment["DOTNET_DefaultDiagnosticPortSuspend"] = launcherDto.DefaultDiagnosticPortSuspend ? "1" : "0";
+    startInfo.Environment[DotNetEnvs.DefaultDiagnosticPortSuspend] = launcherDto.DefaultDiagnosticPortSuspend ? "1" : "0";
 
     if (launcherDto.CppProfilerMode.IsEnabled())
     {
-      startInfo.Environment["CORECLR_ENABLE_PROFILING"] = "1";
-      startInfo.Environment["CORECLR_PROFILER"] = "{90684E90-99CE-4C99-A95A-AFE3B9E09E85}";
-      startInfo.Environment["CORECLR_PROFILER_PATH"] = launcherDto.CppProcfilerPath;
+      startInfo.Environment[DotNetEnvs.CoreClrEnableProfiling] = "1";
+      startInfo.Environment[DotNetEnvs.CoreClrProfiler] = "{90684E90-99CE-4C99-A95A-AFE3B9E09E85}";
+      startInfo.Environment[DotNetEnvs.CoreClrProfilerPath] = launcherDto.CppProcfilerPath;
 
       if (launcherDto.BinaryStacksSavePath is null)
       {
@@ -38,20 +38,20 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       }
       
       logger.LogInformation("Binary stack save path {Path}", launcherDto.BinaryStacksSavePath);
-      startInfo.Environment["PROCFILER_BINARY_SAVE_STACKS_PATH"] = launcherDto.BinaryStacksSavePath;
+      startInfo.Environment[CppProfilerEnvs.BinaryStacksSavePath] = launcherDto.BinaryStacksSavePath;
 
       if (launcherDto.CppProfilerMode == CppProfilerMode.PerThreadBinStacksFiles)
       {
-        startInfo.Environment["PROCFILER_USE_SEPARATE_BINSTACKS_FILES"] = "1";
+        startInfo.Environment[CppProfilerEnvs.UseSeparateBinStacksFiles] = "1";
       }
       
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
       {
-        startInfo.Environment["PROCFILER_FILTER_METHODS_REGEX"] = methodsFilterRegex;
+        startInfo.Environment[CppProfilerEnvs.MethodsFilterRegex] = methodsFilterRegex;
 
         if (launcherDto.UseDuringRuntimeFiltering)
         {
-          startInfo.Environment["PROCFILER_FILTER_METHODS_DURING_RUNTIME"] = "1";
+          startInfo.Environment[CppProfilerEnvs.MethodsFilteringDuringRuntime] = "1";
         }
       }
     }
