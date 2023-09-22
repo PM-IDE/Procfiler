@@ -13,12 +13,15 @@ public abstract class ProcessTestBase : TestWithContainerBase
   protected void StartProcessAndDoTestWithDefaultContext(
     KnownSolution solution, Action<CollectedEvents> testAction)
   {
-    StartProcessAndDoTest(solution.CreateContext(), testAction);
+    StartProcessAndDoTest(solution.CreateContexts(), testAction);
   }
 
-  protected void StartProcessAndDoTest(CollectClrEventsContext context, Action<CollectedEvents> testAction)
+  protected void StartProcessAndDoTest(IEnumerable<CollectClrEventsContext> contexts, Action<CollectedEvents> testAction)
   {
-    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
+    foreach (var context in contexts)
+    {
+      Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
+    }
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(
@@ -26,8 +29,9 @@ public abstract class ProcessTestBase : TestWithContainerBase
   {
     StartProcessAndDoTestWithDefaultContext(solution, events =>
     {
-      var eventsByThreads = SplitEventsHelper.SplitByKey(
-        TestLogger.CreateInstance(), events.Events, SplitEventsHelper.ManagedThreadIdExtractor);
+      var extractor = SplitEventsHelper.ManagedThreadIdExtractor;
+      var eventsByThreads = SplitEventsHelper.SplitByKey(TestLogger.CreateInstance(), events.Events, extractor);
+
       testFunc(eventsByThreads, events.GlobalData);
     });
   }
