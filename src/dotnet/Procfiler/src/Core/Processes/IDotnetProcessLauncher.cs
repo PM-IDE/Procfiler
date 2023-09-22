@@ -40,9 +40,14 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       logger.LogInformation("Binary stack save path {Path}", launcherDto.BinaryStacksSavePath);
       startInfo.Environment[CppProfilerEnvs.BinaryStacksSavePath] = launcherDto.BinaryStacksSavePath;
 
-      if (launcherDto.CppProfilerMode == CppProfilerMode.PerThreadBinStacksFiles)
+      if (launcherDto.CppProfilerMode.ToFileMode() == CppProfilerBinStacksFileMode.PerThreadFiles)
       {
         startInfo.Environment[CppProfilerEnvs.UseSeparateBinStacksFiles] = "1";
+      }
+
+      if (launcherDto.CppProfilerMode.IsOnlineSerialization())
+      {
+        startInfo.Environment[CppProfilerEnvs.OnlineSerialization] = "1";
       }
       
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)

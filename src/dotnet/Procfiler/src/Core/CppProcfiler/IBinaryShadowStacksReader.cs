@@ -33,10 +33,10 @@ public interface IBinaryShadowStacksReader
 [AppComponent]
 public class BinaryShadowStacksReaderImpl(IProcfilerLogger logger) : IBinaryShadowStacksReader
 {
-  public IShadowStacks ReadStackEvents(string path, CppProfilerMode mode) => mode switch
+  public IShadowStacks ReadStackEvents(string path, CppProfilerMode mode) => mode.ToFileMode() switch
   {
-    CppProfilerMode.SingleFileBinStack => new CppShadowStacksImplFromSingleFile(logger, path),
-    CppProfilerMode.PerThreadBinStacksFiles => new CppShadowStackFromSeveralFiles(logger, path),
+    CppProfilerBinStacksFileMode.SingleFile => new CppShadowStacksImplFromSingleFile(logger, path),
+    CppProfilerBinStacksFileMode.PerThreadFiles => new CppShadowStackFromSeveralFiles(logger, path),
     _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
   };
 }

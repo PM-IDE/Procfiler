@@ -17,16 +17,16 @@ public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
 
   public string CreateSavePath(BuildResult buildResult, CppProfilerMode mode)
   {
-    switch (mode)
+    switch (mode.ToFileMode())
     {
-      case CppProfilerMode.SingleFileBinStack:
+      case CppProfilerBinStacksFileMode.SingleFile:
       {
         var directory = Path.GetDirectoryName(buildResult.BuiltDllPath);
         Debug.Assert(Directory.Exists(directory));
 
         return Path.Combine(directory, BinaryStacksFileName);
       }
-      case CppProfilerMode.PerThreadBinStacksFiles:
+      case CppProfilerBinStacksFileMode.PerThreadFiles:
       {
         var dirName = Path.GetDirectoryName(buildResult.BuiltDllPath) ?? 
                       throw new DirectoryNotFoundException(buildResult.BuiltDllPath);
@@ -48,10 +48,10 @@ public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
     return path;
   }
 
-  public string CreateTempSavePath(CppProfilerMode mode) => mode switch
+  public string CreateTempSavePath(CppProfilerMode mode) => mode.ToFileMode() switch
   {
-    CppProfilerMode.SingleFileBinStack => Path.Combine(PathUtils.CreateTempFolderPath(), BinaryStacksFileName),
-    CppProfilerMode.PerThreadBinStacksFiles => AdjustBinStacksSavePath(PathUtils.CreateTempFolderPath()),
+    CppProfilerBinStacksFileMode.SingleFile => Path.Combine(PathUtils.CreateTempFolderPath(), BinaryStacksFileName),
+    CppProfilerBinStacksFileMode.PerThreadFiles => AdjustBinStacksSavePath(PathUtils.CreateTempFolderPath()),
     _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
   };
 }
