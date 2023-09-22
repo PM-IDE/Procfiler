@@ -10,7 +10,7 @@ void EventsWithThreadId::AddFunctionEvent(const FunctionEvent& event) {
     }
 
     AddFunctionEventBypassStack(event);
-};
+}
 
 bool EventsWithThreadId::ShouldLog(FunctionID& id, bool* shouldLog) const {
     if (ShouldLogFuncs->find(id) == ShouldLogFuncs->end()) {

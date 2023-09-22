@@ -23,11 +23,15 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       Arguments = $"{launcherDto.Arguments}"
     };
 
-    startInfo.Environment[DotNetEnvs.DefaultDiagnosticPortSuspend] = launcherDto.DefaultDiagnosticPortSuspend ? "1" : "0";
+    startInfo.Environment[DotNetEnvs.DefaultDiagnosticPortSuspend] = launcherDto.DefaultDiagnosticPortSuspend switch
+    {
+      true => EnvVarsConstants.True,
+      false => EnvVarsConstants.False
+    };
 
     if (launcherDto.CppProfilerMode.IsEnabled())
     {
-      startInfo.Environment[DotNetEnvs.CoreClrEnableProfiling] = "1";
+      startInfo.Environment[DotNetEnvs.CoreClrEnableProfiling] = EnvVarsConstants.True;
       startInfo.Environment[DotNetEnvs.CoreClrProfiler] = "{90684E90-99CE-4C99-A95A-AFE3B9E09E85}";
       startInfo.Environment[DotNetEnvs.CoreClrProfilerPath] = launcherDto.CppProcfilerPath;
 
@@ -42,17 +46,17 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
 
       if (launcherDto.CppProfilerMode.ToFileMode() == CppProfilerBinStacksFileMode.PerThreadFiles)
       {
-        startInfo.Environment[CppProfilerEnvs.UseSeparateBinStacksFiles] = "1";
+        startInfo.Environment[CppProfilerEnvs.UseSeparateBinStacksFiles] = EnvVarsConstants.True;
       }
 
       if (launcherDto.CppProfilerMode.IsOnlineSerialization())
       {
-        startInfo.Environment[CppProfilerEnvs.OnlineSerialization] = "1";
+        startInfo.Environment[CppProfilerEnvs.OnlineSerialization] = EnvVarsConstants.True;
       }
 
       if (launcherDto.CppProfilerUseConsoleLogging)
       {
-        startInfo.Environment[CppProfilerEnvs.EnableConsoleLogging] = "1";
+        startInfo.Environment[CppProfilerEnvs.EnableConsoleLogging] = EnvVarsConstants.True;
       }
       
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
@@ -61,7 +65,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
 
         if (launcherDto.UseDuringRuntimeFiltering)
         {
-          startInfo.Environment[CppProfilerEnvs.MethodsFilteringDuringRuntime] = "1";
+          startInfo.Environment[CppProfilerEnvs.MethodsFilteringDuringRuntime] = EnvVarsConstants.True;
         }
       }
     }
