@@ -44,14 +44,14 @@ void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timest
 
     if (ShouldAddFunc(id, threadId)) {
         const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
-        GetOrCreatePerThreadEvents(threadId, myOnlineSerialization)->AddFunctionEvent(event);
+        GetOrCreatePerThreadEvents(myLogger, threadId, myOnlineSerialization)->AddFunctionEvent(event);
     }
 }
 
 bool ShadowStack::ShouldAddFunc(FunctionID& id, DWORD threadId) {
     if (myFilterRegex == nullptr) return true;
 
-    auto events = GetOrCreatePerThreadEvents(threadId, myOnlineSerialization);
+    auto events = GetOrCreatePerThreadEvents(myLogger, threadId, myOnlineSerialization);
 
     bool shouldLog;
     if (events->ShouldLog(id, &shouldLog)) {
@@ -75,7 +75,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t tim
 
     if (ShouldAddFunc(id, threadId)) {
         const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
-        GetOrCreatePerThreadEvents(threadId, myOnlineSerialization)->AddFunctionEvent(event);
+        GetOrCreatePerThreadEvents(myLogger, threadId, myOnlineSerialization)->AddFunctionEvent(event);
     }
 }
 
@@ -86,7 +86,7 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
 
     if (!CanProcessFunctionEvents()) return;
 
-    auto events = GetOrCreatePerThreadEvents(threadId, myOnlineSerialization);
+    auto events = GetOrCreatePerThreadEvents(myLogger, threadId, myOnlineSerialization);
     auto stack = events->CurrentStack;
     while (!stack->empty()) {
         auto top = stack->top();
@@ -98,16 +98,20 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
     }
 }
 
-EventsWithThreadId* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId, bool onlineSerialization) {
+EventsWithThreadId* ShadowStack::GetOrCreatePerThreadEvents(ProcfilerLogger* logger, DWORD threadId, bool onlineSerialization) {
     if (!ourIsInitialized) {
         std::unique_lock<std::mutex> lock{ourEventsPerThreadMutex};
         if (!ourIsInitialized) {
             if (onlineSerialization) {
                 std::string directory;
-                auto savePath = TryGetEnvVar(binaryStackSavePath, directory);
+                if (!TryGetEnvVar(binaryStackSavePath, directory)) {
+                    logger->LogError("The save path directory was not specified");
+                }
 
+                logger->LogInformation("Using online serialization");
                 ourEvents = new EventsWithThreadIdOnline(directory, threadId);
             } else {
+                logger->LogInformation("Using offline serialization");
                 ourEvents = new EventsWithThreadIdOffline();
             }
 

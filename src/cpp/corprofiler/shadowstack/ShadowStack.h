@@ -17,7 +17,7 @@
 
 class ShadowStack {
 private:
-    static EventsWithThreadId* GetOrCreatePerThreadEvents(DWORD threadId, bool onlineSerialization);
+    static EventsWithThreadId* GetOrCreatePerThreadEvents(ProcfilerLogger* logger, DWORD threadId, bool onlineSerialization);
 
     std::regex* myFilterRegex{nullptr};
 
