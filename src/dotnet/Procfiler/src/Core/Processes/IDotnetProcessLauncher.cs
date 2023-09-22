@@ -49,6 +49,11 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       {
         startInfo.Environment[CppProfilerEnvs.OnlineSerialization] = "1";
       }
+
+      if (launcherDto.CppProfilerUseConsoleLogging)
+      {
+        startInfo.Environment[CppProfilerEnvs.EnableConsoleLogging] = "1";
+      }
       
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
       {

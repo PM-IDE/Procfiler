@@ -20,7 +20,8 @@ public record struct CollectingClrEventsCommonContext(
   string? CppProcfilerMethodsFilterRegex,
   int ProcessWaitTimeoutMs,
   CppProfilerMode CppProfilerMode,
-  bool UseDuringRuntimeFiltering
+  bool UseDuringRuntimeFiltering,
+  bool CppProfilerUseConsoleLogging
 );
 
 public record struct ProjectBuildInfo(

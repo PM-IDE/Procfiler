@@ -15,6 +15,7 @@ public readonly struct DotnetProcessLauncherDto
   public required string? MethodsFilterRegex { get; init; }
   public required CppProfilerMode CppProfilerMode { get; init; }
   public required bool UseDuringRuntimeFiltering { get; init; }
+  public required bool CppProfilerUseConsoleLogging { get; init; }
 
 
   public static DotnetProcessLauncherDto CreateFrom(
@@ -31,6 +32,7 @@ public readonly struct DotnetProcessLauncherDto
     MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
     CppProfilerMode = context.CppProfilerMode,
     UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering,
+    CppProfilerUseConsoleLogging = context.CppProfilerUseConsoleLogging,
     BinaryStacksSavePath = context.CppProfilerMode.IsEnabled() switch
     {
       true => savePathCreator.CreateSavePath(buildResult, context.CppProfilerMode),
@@ -52,6 +54,7 @@ public readonly struct DotnetProcessLauncherDto
     MethodsFilterRegex = context.CppProcfilerMethodsFilterRegex,
     CppProfilerMode = context.CppProfilerMode,
     UseDuringRuntimeFiltering = context.UseDuringRuntimeFiltering,
+    CppProfilerUseConsoleLogging = context.CppProfilerUseConsoleLogging,
     BinaryStacksSavePath = context.CppProfilerMode.IsEnabled() switch
     {
       true => savePathCreator.CreateTempSavePath(context.CppProfilerMode),
