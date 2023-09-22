@@ -17,8 +17,12 @@ void EventPipeShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
     std::map<FunctionID, FunctionInfo> resolvedFunctions;
 
     for (const auto& pair: *events) {
+        auto offlineEvents = dynamic_cast<EventsWithThreadIdOffline*>(pair.second);
+        if (offlineEvents == nullptr) continue;
+
         auto threadId = pair.first;
-        for (const auto& event: *(pair.second->Events)) {
+
+        for (const auto& event: *(offlineEvents->Events)) {
             hr = FAILED(LogFunctionEvent(event, threadId, resolvedFunctions));
             if (hr) {
                 myLogger->LogError("Failed to send a method start or end event, error: " + std::to_string(hr));

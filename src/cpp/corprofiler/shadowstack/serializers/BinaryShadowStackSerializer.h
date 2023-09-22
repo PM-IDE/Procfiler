@@ -3,6 +3,7 @@
 
 #include <set>
 #include "ShadowStackSerializer.h"
+#include "../EventsWithThreadId.h"
 
 class BinaryShadowStackSerializer : public ShadowStackSerializer {
 private:

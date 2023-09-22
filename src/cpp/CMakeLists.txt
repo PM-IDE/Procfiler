@@ -34,7 +34,10 @@ set(SOURCES
     util/env_constants.cpp
     corprofiler/shadowstack/serializers/EventPipeShadowStackSerializer.h
     corprofiler/shadowstack/serializers/BinaryShadowStackSerializer.h
-    corprofiler/shadowstack/serializers/DebugShadowStackSerializer.h)
+    corprofiler/shadowstack/serializers/DebugShadowStackSerializer.h
+    corprofiler/shadowstack/utils.cpp
+    corprofiler/shadowstack/EventsWithThreadId.cpp
+)
 
 include_directories(./3rdparty/coreclr/pal/prebuilt/inc)
 include_directories(./3rdparty/coreclr/inc)

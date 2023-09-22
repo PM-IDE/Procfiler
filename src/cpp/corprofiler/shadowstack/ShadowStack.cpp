@@ -8,13 +8,12 @@ static thread_local EventsWithThreadId* ourEvents;
 static std::map<ThreadID, EventsWithThreadId*> ourEventsPerThreads;
 static std::mutex ourEventsPerThreadMutex;
 
-ShadowStack::ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger) {
+ShadowStack::ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger, bool onlineSerialization) {
     myProfilerInfo = profilerInfo;
+    myOnlineSerialization = onlineSerialization;
 
-    std::string value;
-    TryGetEnvVar(filterMethodsDuringRuntime, value);
-
-    if (value == "1") {
+    if (IsEnvVarTrue(filterMethodsDuringRuntime)) {
+        std::string value;
         if (TryGetEnvVar(filterMethodsRegex, value)) {
             try {
                 myFilterRegex = new std::regex(value);
@@ -31,7 +30,9 @@ ShadowStack::ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logg
 }
 
 ShadowStack::~ShadowStack() {
-    //TODO: proper destructor
+    for (auto& pair: *GetAllStacks()) {
+        delete pair.second;
+    }
 }
 
 void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp) {
@@ -43,14 +44,14 @@ void ShadowStack::AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timest
 
     if (ShouldAddFunc(id, threadId)) {
         const auto event = FunctionEvent(id, FunctionEventKind::Started, timestamp);
-        GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
+        GetOrCreatePerThreadEvents(threadId, myOnlineSerialization)->AddFunctionEvent(event);
     }
 }
 
 bool ShadowStack::ShouldAddFunc(FunctionID& id, DWORD threadId) {
     if (myFilterRegex == nullptr) return true;
 
-    auto events = GetOrCreatePerThreadEvents(threadId);
+    auto events = GetOrCreatePerThreadEvents(threadId, myOnlineSerialization);
 
     bool shouldLog;
     if (events->ShouldLog(id, &shouldLog)) {
@@ -74,7 +75,7 @@ void ShadowStack::AddFunctionFinished(FunctionID id, DWORD threadId, int64_t tim
 
     if (ShouldAddFunc(id, threadId)) {
         const auto event = FunctionEvent(id, FunctionEventKind::Finished, timestamp);
-        GetOrCreatePerThreadEvents(threadId)->AddFunctionEvent(event);
+        GetOrCreatePerThreadEvents(threadId, myOnlineSerialization)->AddFunctionEvent(event);
     }
 }
 
@@ -85,7 +86,7 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
 
     if (!CanProcessFunctionEvents()) return;
 
-    auto events = GetOrCreatePerThreadEvents(threadId);
+    auto events = GetOrCreatePerThreadEvents(threadId, myOnlineSerialization);
     auto stack = events->CurrentStack;
     while (!stack->empty()) {
         auto top = stack->top();
@@ -97,11 +98,19 @@ void ShadowStack::HandleExceptionCatchEnter(FunctionID catcherFunctionId, DWORD 
     }
 }
 
-EventsWithThreadId* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId) {
+EventsWithThreadId* ShadowStack::GetOrCreatePerThreadEvents(DWORD threadId, bool onlineSerialization) {
     if (!ourIsInitialized) {
         std::unique_lock<std::mutex> lock{ourEventsPerThreadMutex};
         if (!ourIsInitialized) {
-            ourEvents = new EventsWithThreadId(threadId);
+            if (onlineSerialization) {
+                std::string directory;
+                auto savePath = TryGetEnvVar(binaryStackSavePath, directory);
+
+                ourEvents = new EventsWithThreadIdOnline(directory, threadId);
+            } else {
+                ourEvents = new EventsWithThreadIdOffline();
+            }
+
             ourEventsPerThreads[threadId] = ourEvents;
             ourIsInitialized = true;
         }
@@ -120,29 +129,14 @@ void ShadowStack::AdjustShadowStacks() {
         return;
     }
 
-    std::stack<FunctionID> stack;
     for (const auto& pair : *GetAllStacks()) {
-        auto events = pair.second->Events;
-        int64_t timestamp;
-        for (const auto& event: *events) {
-            timestamp = event.Timestamp;
-            if (event.EventKind == FunctionEventKind::Started) {
-                stack.push(event.Id);
-                continue;
-            }
+        auto events = pair.second;
+        auto stack = events->CurrentStack;
 
-            if (stack.top() == event.Id) {
-                stack.pop();
-                continue;
-            }
-
-            myLogger->LogError("Encountered inconsistent stack");
-        }
-
-        while (!stack.empty()) {
-            const auto& top = stack.top();
-            events->push_back(FunctionEvent(top, FunctionEventKind::Finished, timestamp));
-            stack.pop();
+        while (!stack->empty()) {
+            const auto& top = stack->top();
+            events->AddFunctionEventBypassStack(FunctionEvent(top, FunctionEventKind::Finished, events->lastEventStamp));
+            stack->pop();
         }
     }
 }

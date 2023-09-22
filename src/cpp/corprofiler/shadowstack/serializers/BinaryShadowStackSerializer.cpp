@@ -68,10 +68,7 @@ void BinaryShadowStackSerializer::WriteThreadStack(ThreadID threadId,
             continue;
         }
 
-        char startOrEnd = event.EventKind == FunctionEventKind::Started ? 1 : 0;
-        fout.write((char*) &startOrEnd, sizeof(char));
-        fout.write((char*) &event.Timestamp, sizeof(long long));
-        fout.write((char*) &event.Id, sizeof(long long));
+        writeFunctionEvent(event, fout);
         ++writtenFrames;
     }
 
@@ -105,7 +102,10 @@ void BinaryShadowStackSerializer::SerializeInSingleFile(ShadowStack* shadowStack
     std::regex* regex = TryCreateMethodsFilterRegex();
 
     for (auto& pair: *(shadowStack->GetAllStacks())) {
-        WriteThreadStack(pair.first, pair.second->Events, fout, filteredOutFunctions, regex);
+        auto offlineEvents = dynamic_cast<EventsWithThreadIdOffline*>(pair.second);
+        if (offlineEvents != nullptr) {
+            WriteThreadStack(pair.first, offlineEvents->Events, fout, filteredOutFunctions, regex);
+        }
     }
 
     fout.close();
@@ -118,11 +118,15 @@ void BinaryShadowStackSerializer::SerializeInDifferentFiles(ShadowStack* shadowS
     std::regex* regex = TryCreateMethodsFilterRegex();
 
     for (auto& pair: *(shadowStack->GetAllStacks())) {
-        std::string filePath = mySavePath + "binstack_" + std::to_string(pair.first) + ".bin";
-        std::ofstream fout(filePath, std::ios::binary);
-        WriteThreadStack(pair.first, pair.second->Events, fout, filteredOutFunctions, regex);
+        auto offlineEvents = dynamic_cast<EventsWithThreadIdOffline*>(pair.second);
 
-        fout.close();
+        if (offlineEvents != nullptr) {
+            std::string filePath = createBinStackSavePath(mySavePath, pair.first);
+            std::ofstream fout(filePath, std::ios::binary);
+            WriteThreadStack(pair.first, offlineEvents->Events, fout, filteredOutFunctions, regex);
+
+            fout.close();
+        }
     }
 
     delete regex;

@@ -1,3 +1,6 @@
+#ifndef PROCFILERCORPROFILERCALLBACK_H
+#define PROCFILERCORPROFILERCALLBACK_H
+
 #include "cor.h"
 #include "corprof.h"
 #include "./shadowstack/ShadowStack.h"
@@ -149,3 +152,5 @@ public:
     ULONG STDMETHODCALLTYPE AddRef() override;
     ULONG STDMETHODCALLTYPE Release() override;
 };
+
+#endif

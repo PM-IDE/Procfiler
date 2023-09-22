@@ -10,3 +10,12 @@ bool TryGetEnvVar(const std::string& envVarName, std::string& value) {
     value = isEnvVarDefined ? std::string(envVar) : "";
     return isEnvVarDefined;
 }
+
+bool IsEnvVarTrue(const std::string& envVarName) {
+    std::string value;
+    if (!TryGetEnvVar(envVarName, value)) {
+        return false;
+    }
+
+    return value == trueEnvVarValue;
+}

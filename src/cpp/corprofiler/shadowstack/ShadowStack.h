@@ -1,3 +1,6 @@
+#ifndef PROCFILER_SHADOW_STACK_H
+#define PROCFILER_SHADOW_STACK_H
+
 #include "cor.h"
 #include "corprof.h"
 #include "../../util/types.h"
@@ -10,74 +13,15 @@
 #include <regex>
 #include "../../util/util.h"
 #include "../info/FunctionInfo.h"
-
-#ifndef PROCFILER_SHADOW_STACK_H
-#define PROCFILER_SHADOW_STACK_H
-
-enum FunctionEventKind {
-    Started,
-    Finished
-};
-
-struct FunctionEvent {
-    FunctionID Id;
-    FunctionEventKind EventKind;
-    int64_t Timestamp;
-
-    FunctionEvent(FunctionID id, FunctionEventKind eventKind, int64_t timestamp) :
-        Id(id),
-        EventKind(eventKind),
-        Timestamp(timestamp) {
-    }
-};
-
-struct EventsWithThreadId {
-    std::map<FunctionID, bool>* ShouldLogFuncs;
-    std::vector<FunctionEvent>* Events;
-    std::stack<FunctionID>* CurrentStack;
-    DWORD ThreadId;
-
-    explicit EventsWithThreadId(DWORD threadId) {
-        ShouldLogFuncs = new std::map<FunctionID, bool>;
-        Events = new std::vector<FunctionEvent>();
-        CurrentStack = new std::stack<FunctionID>();
-        ThreadId = threadId;
-    }
-
-    ~EventsWithThreadId() {
-        delete Events;
-    }
-
-    void AddFunctionEvent(FunctionEvent event) const {
-        Events->push_back(event);
-
-        if (event.EventKind == FunctionEventKind::Started) {
-            CurrentStack->push(event.Id);
-        } else {
-            CurrentStack->pop();
-        }
-    }
-
-    bool ShouldLog(FunctionID& id, bool* shouldLog) const {
-        if (ShouldLogFuncs->find(id) == ShouldLogFuncs->end()) {
-            return false;
-        } else {
-            *shouldLog = ShouldLogFuncs->at(id);
-            return true;
-        }
-    }
-
-    void PutFunctionShouldLogDecision(FunctionID& id, bool shouldLog) const {
-        ShouldLogFuncs->insert({id, shouldLog});
-    }
-};
+#include "EventsWithThreadId.h"
 
 class ShadowStack {
 private:
-    static EventsWithThreadId* GetOrCreatePerThreadEvents(DWORD threadId);
+    static EventsWithThreadId* GetOrCreatePerThreadEvents(DWORD threadId, bool onlineSerialization);
 
     std::regex* myFilterRegex{nullptr};
 
+    bool myOnlineSerialization{false};
     ICorProfilerInfo12* myProfilerInfo;
     ProcfilerLogger* myLogger;
     std::atomic<int> myCurrentAddition{0};
@@ -86,7 +30,7 @@ private:
     bool CanProcessFunctionEvents();
     bool ShouldAddFunc(FunctionID& id, DWORD threadId);
 public:
-    explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger);
+    explicit ShadowStack(ICorProfilerInfo12* profilerInfo, ProcfilerLogger* logger, bool onlineSerialization);
 
     ~ShadowStack();
     void AddFunctionEnter(FunctionID id, DWORD threadId, int64_t timestamp);

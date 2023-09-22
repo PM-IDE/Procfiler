@@ -25,11 +25,14 @@ void DebugShadowStackSerializer::Serialize(ShadowStack* shadowStack) {
     const std::string endPrefix = "[ END ]: ";
 
     for (const auto& pair: *(shadowStack->GetAllStacks())) {
+        auto offlineEvents = dynamic_cast<EventsWithThreadIdOffline*>(pair.second);
+        if (offlineEvents == nullptr) continue;
+
         auto threadFrame = "Thread(" + std::to_string(pair.first) + ")\n";
         fout << startPrefix << threadFrame;
         auto indent = 1;
 
-        for (auto event: *(pair.second->Events)) {
+        for (auto event: *(offlineEvents->Events)) {
             if (!resolvedFunctions.count(event.Id)) {
                 resolvedFunctions[event.Id] = FunctionInfo::GetFunctionInfo(myProfilerInfo, event.Id);
             }

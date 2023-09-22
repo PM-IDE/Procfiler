@@ -102,16 +102,21 @@ HRESULT ProcfilerCorProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 }
 
 void ProcfilerCorProfilerCallback::InitializeShadowStack() {
-    myShadowStack = new ShadowStack(this->myProfilerInfo, myLogger);
+    auto onlineSerialization = IsEnvVarTrue(onlineSerializationEnv);
+    myShadowStack = new ShadowStack(this->myProfilerInfo, myLogger, onlineSerialization);
 
-    if (IsEnvVarDefined(binaryStackSavePath)) {
-        myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
-    } else if (IsEnvVarDefined(shadowStackDebugSavePath)) {
-        myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo, myLogger);
-    } else if (IsEnvVarDefined(eventPipeSaveShadowStack)) {
-        myShadowStackSerializer = new EventPipeShadowStackSerializer(myProfilerInfo, myLogger);
-    } else {
+    if (onlineSerialization) {
         myShadowStackSerializer = new ShadowStackSerializerStub();
+    } else {
+        if (IsEnvVarDefined(binaryStackSavePath)) {
+            myShadowStackSerializer = new BinaryShadowStackSerializer(myProfilerInfo, myLogger);
+        } else if (IsEnvVarDefined(shadowStackDebugSavePath)) {
+            myShadowStackSerializer = new DebugShadowStackSerializer(myProfilerInfo, myLogger);
+        } else if (IsEnvVarDefined(eventPipeSaveShadowStack)) {
+            myShadowStackSerializer = new EventPipeShadowStackSerializer(myProfilerInfo, myLogger);
+        } else {
+            myShadowStackSerializer = new ShadowStackSerializerStub();
+        }
     }
 
     myShadowStackSerializer->Init();
@@ -128,7 +133,10 @@ HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myShadowStack->SuppressFurtherMethodsEvents();
     myShadowStack->WaitForPendingMethodsEvents();
     myShadowStack->AdjustShadowStacks();
+
     myShadowStackSerializer->Serialize(myShadowStack);
+
+    delete myShadowStack;
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
