@@ -9,6 +9,7 @@ open System.IO
 module ProcfilerScriptsUtils =
     let net7 = "net7.0"
     let net6 = "net6.0"
+    let net8 = "net8.0";
 
     type PathConfigBase =
         { CsprojPath: string
@@ -76,7 +77,7 @@ module ProcfilerScriptsUtils =
         let dir = findProperParentDirectory parentDirectory
         let dotnetSourcePath = Path.Combine(dir, "dotnet")
 
-        let framework = net7
+        let framework = net8
 
         printfn "Started building ProcfilerBuildTasks"
         buildProjectFromSolution dotnetSourcePath "ProcfilerBuildTasks"
