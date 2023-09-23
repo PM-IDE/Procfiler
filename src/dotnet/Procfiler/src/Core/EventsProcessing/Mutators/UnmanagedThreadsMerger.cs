@@ -61,6 +61,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
         while (!undefinedFinished)
         {
           yield return undefinedEnumerator.Current.Event;
+
           if (!undefinedEnumerator.MoveNext())
           {
             undefinedFinished = true;
@@ -75,6 +76,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
         while (!managedFinished)
         {
           yield return managedEnumerator.Current.Event;
+
           if (!managedEnumerator.MoveNext())
           {
             managedFinished = true;
@@ -90,6 +92,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
       if (managedEvent.Stamp < undefinedEvent.Stamp)
       {
         yield return managedEvent;
+
         if (!managedEnumerator.MoveNext())
         {
           managedFinished = true;
@@ -98,6 +101,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
       else
       {
         yield return undefinedEvent;
+
         if (!undefinedEnumerator.MoveNext())
         {
           undefinedFinished = true;

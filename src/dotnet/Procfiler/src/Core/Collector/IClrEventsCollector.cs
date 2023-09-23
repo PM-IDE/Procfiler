@@ -169,6 +169,7 @@ public class ClrEventsCollector(
       {
         if (first.Stamp > second.Stamp) return 1;
         if (first.Stamp < second.Stamp) return -1;
+
         return 0;
       });
     }

@@ -6,7 +6,7 @@ public partial class CppShadowStackFromSeveralFiles(IProcfilerLogger logger, str
 {
   [GeneratedRegex(@"binstack_[0-9]+\.bin")]
   private static partial Regex BinStacksFileRegex();
-  
+
 
   public IEnumerable<ICppShadowStack> EnumerateStacks()
   {

@@ -28,7 +28,7 @@ public class BinaryStackSavePathCreatorImpl : IBinaryStackSavePathCreator
       }
       case CppProfilerBinStacksFileMode.PerThreadFiles:
       {
-        var dirName = Path.GetDirectoryName(buildResult.BuiltDllPath) ?? 
+        var dirName = Path.GetDirectoryName(buildResult.BuiltDllPath) ??
                       throw new DirectoryNotFoundException(buildResult.BuiltDllPath);
 
         return AdjustBinStacksSavePath(dirName);

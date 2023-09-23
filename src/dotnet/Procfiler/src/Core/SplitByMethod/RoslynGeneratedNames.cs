@@ -112,7 +112,8 @@ internal static class RoslynGeneratedNamesParser
     return -1;
   }
 
-  internal static bool TryParseSourceMethodNameFromGeneratedName(string generatedName, RoslynGeneratedNameKind requiredKind,
+  internal static bool TryParseSourceMethodNameFromGeneratedName(
+    string generatedName, RoslynGeneratedNameKind requiredKind,
     [NotNullWhen(true)] out string? methodName)
   {
     if (!TryParseGeneratedName(generatedName, out var kind, out int openBracketOffset, out int closeBracketOffset))

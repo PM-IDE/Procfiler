@@ -47,7 +47,7 @@ public class SplitterImplementation(
             throw new ArgumentOutOfRangeException();
         }
       }).Split();
-    
+
     return myResult;
   }
 
@@ -80,7 +80,7 @@ public class SplitterImplementation(
       > 0 => currentTopmost.State[^1],
       _ => null
     };
-            
+
     var startEventCtx = contextEvent switch
     {
       { } => EventsCreationContext.CreateWithUndefinedStackTrace(contextEvent),

@@ -101,14 +101,14 @@ public partial class CollectCommandBase
 
   private Option<string> AdditionalBuildArgsOption { get; } =
     new("--additional-build-args", static () => string.Empty, "Additional arguments for an application build command");
-  
+
   protected Option<bool> MergeFromUndefinedThreadOption { get; } =
     new("--merge-undefined-events", static () => true, "Should we merge events from undefined thread to managed thread events");
 
   private Option<CppProfilerMode> UseCppProfilerOption { get; } =
     new("--cpp-profiler-mode", static () => CppProfilerMode.SingleFileBinStack, "Should we load cpp profiler");
 
-  private Option<bool> UseDuringRuntimeMethodsFiltering { get; } = 
+  private Option<bool> UseDuringRuntimeMethodsFiltering { get; } =
     new("--use-during-runtime-filtering", static () => false, "Whether to use during runtime methods filtering");
 
   private Option<bool> UseCppProfilerConsoleLogging { get; } =

@@ -97,6 +97,7 @@ public class EventPointersManager(long initialCount, InsertedEvents insertedEven
         if (current.IndexInInsertionMap == insertedEvents.FirstEvents.Count - 1)
         {
           if (initialCount == 0) return null;
+
           return EventPointer.ForInitialArray(0, owner);
         }
 
@@ -122,6 +123,7 @@ public class EventPointersManager(long initialCount, InsertedEvents insertedEven
 
     var nextArrayIndex = current.IndexInArray + 1;
     if (nextArrayIndex >= initialCount) return null;
+
     return EventPointer.ForInitialArray(nextArrayIndex, owner);
   }
 
@@ -133,6 +135,7 @@ public class EventPointersManager(long initialCount, InsertedEvents insertedEven
       {
         Debug.Assert(insertedEvents.FirstEvents is { });
         if (current.IndexInInsertionMap == 0) return null;
+
         return EventPointer.ForFirstEvent(current.IndexInInsertionMap - 1, owner);
       }
 
@@ -147,6 +150,7 @@ public class EventPointersManager(long initialCount, InsertedEvents insertedEven
     if (current.IndexInArray == 0)
     {
       if (insertedEvents.FirstEvents is null || insertedEvents.FirstEvents.Count == 0) return null;
+
       return EventPointer.ForFirstEvent(insertedEvents.FirstEvents.Count - 1, owner);
     }
 

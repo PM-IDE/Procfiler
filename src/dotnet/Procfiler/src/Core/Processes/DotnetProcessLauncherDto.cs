@@ -36,7 +36,7 @@ public readonly struct DotnetProcessLauncherDto
       true => savePathCreator.CreateSavePath(buildResult, context.CppProfilerMode),
       false => null
     };
-    
+
     return CreateInternal(patchedContext, locator, "dotnet", workingDirectory, binStacksSavePath);
   }
 
@@ -71,7 +71,7 @@ public readonly struct DotnetProcessLauncherDto
       true => savePathCreator.CreateTempSavePath(context.CppProfilerMode),
       false => null
     };
-    
+
     return CreateInternal(context, locator, commandName, string.Empty, binStacksSavePath);
   }
 }

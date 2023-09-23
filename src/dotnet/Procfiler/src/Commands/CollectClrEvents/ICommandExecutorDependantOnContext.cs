@@ -74,10 +74,10 @@ public class CommandExecutorImpl(
   {
     var laucnherDto = DotnetProcessLauncherDto.CreateFrom(
       context.CommonContext, context.CommandName, cppProcfilerLocator, binaryStackSavePathCreator);
-        
+
     ExecuteDotnetProcess(context, laucnherDto, context.CommandName, commandAction);
   }
-  
+
   private void ExecuteCommandWithArgumentsList(
     CollectClrEventsFromExeWithArguments context, Action<CollectedEvents> commandAction)
   {
@@ -135,7 +135,7 @@ public class CommandExecutorImpl(
       logger.LogError("Bin stacks path was null when cpp profiler is enabled");
       throw new ArgumentNullException(nameof(binStacksPath));
     }
-      
+
     return new BinaryStacksClrEventsCollectionContext(processId, duration, timeout, category, cppProfilerMode, binStacksPath);
   }
 
@@ -226,7 +226,7 @@ public class CommandExecutorImpl(
     }
     finally
     {
-      if (context.CommonContext.ClearArtifacts && 
+      if (context.CommonContext.ClearArtifacts &&
           launcherDto.BinaryStacksSavePath is { } binaryStacksSavePath)
       {
         PathUtils.ClearPathIfExists(binaryStacksSavePath, logger);

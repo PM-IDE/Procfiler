@@ -35,14 +35,14 @@ public static class KnownSolutionExtensions
   {
     var solutionsDir = TestPaths.CreatePathToSolutionsSource();
     var csprojPath = Path.Combine(solutionsDir, knownSolution.Name, knownSolution.Name + ".csproj");
-    
+
     foreach (var context in CreateCommonContexts())
     {
       var projectBuildInfo = new ProjectBuildInfo(
         csprojPath, knownSolution.Tfm, BuildConfiguration.Debug, InstrumentationKind.None,
         true, PathUtils.CreateTempFolderPath(), false, null);
 
-      yield return new CollectClrEventsFromExeContext(projectBuildInfo, context); 
+      yield return new CollectClrEventsFromExeContext(projectBuildInfo, context);
     }
   }
 

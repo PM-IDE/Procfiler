@@ -102,6 +102,7 @@ public abstract class EventsLifecycleMutatorBase : ISingleEventsLifecycleMutator
   {
     //todo: to state machine with "Stateless" nuget
     if (!myAllProcessableEvents.Contains(eventRecord.EventClass)) return;
+
     if (mutatorState is not EventsLifecycleMutatorState statesByActivities)
     {
       throw new NotExpectedStateException(StateType, mutatorState.GetType());

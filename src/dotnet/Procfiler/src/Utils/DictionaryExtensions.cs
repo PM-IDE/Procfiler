@@ -31,6 +31,7 @@ public static class DictionaryExtensions
     where TKey : notnull
   {
     if (map.TryGetValue(key, out var value)) return value;
+
     return default;
   }
 

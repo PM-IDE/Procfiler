@@ -40,7 +40,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
         logger.LogError("BinaryStacksSavePath was null even when UseCppProfiler was true");
         return null;
       }
-      
+
       logger.LogInformation("Binary stack save path {Path}", launcherDto.BinaryStacksSavePath);
       startInfo.Environment[CppProfilerEnvs.BinaryStacksSavePath] = launcherDto.BinaryStacksSavePath;
 
@@ -58,7 +58,7 @@ public class DotnetProcessLauncher(IProcfilerLogger logger) : IDotnetProcessLaun
       {
         startInfo.Environment[CppProfilerEnvs.EnableConsoleLogging] = EnvVarsConstants.True;
       }
-      
+
       if (launcherDto.MethodsFilterRegex is { } methodsFilterRegex)
       {
         startInfo.Environment[CppProfilerEnvs.MethodsFilterRegex] = methodsFilterRegex;

@@ -35,6 +35,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
     for (var i = 0; i < names.Length; i++)
     {
       if (IsDeletedAt(i)) continue;
+
       result[index++] = keyOrValue switch
       {
         KeyOrValue.Key => TraceEvent.PayloadNames[i],
@@ -208,6 +209,7 @@ public class EventMetadataBasedOnTraceEvent(TraceEvent traceEvent) : IEventMetad
     get
     {
       if (!TryGetValue(key, out var value)) throw new KeyNotFoundException(key);
+
       return value;
     }
     set

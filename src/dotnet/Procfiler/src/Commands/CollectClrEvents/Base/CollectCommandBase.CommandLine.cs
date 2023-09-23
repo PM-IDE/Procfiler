@@ -83,7 +83,7 @@ public abstract partial class CollectCommandBase
 
       return new CollectClrEventsFromCommandContext(command, TryGetArgumentsOrThrow(parseResult), commonContext);
     }
-    
+
     if (parseResult.HasOption(ProcessIdOption))
     {
       if (parseResult.HasOption(RepeatOption))

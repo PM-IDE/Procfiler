@@ -40,7 +40,7 @@ public partial class XesEventsSerializer(
     {
       WriteTrace(traceNum++, sessionInfo, writer);
     }
-    
+
     writer.WriteEndElement();
   }
 

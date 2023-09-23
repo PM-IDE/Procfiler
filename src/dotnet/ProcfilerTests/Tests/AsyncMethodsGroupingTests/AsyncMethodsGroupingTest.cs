@@ -37,6 +37,7 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
     {
       if (!eventRecord.IsGcSampledObjectAlloc(out var typeName)) continue;
       if (regex.Match(typeName).Length != typeName.Length) continue;
+
       sb.Append(typeName).AppendNewLine();
     }
 

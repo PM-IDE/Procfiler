@@ -14,7 +14,6 @@ public record MethodExecutionUpdate<T>(CurrentFrameInfo<T> FrameInfo, string Met
 
 public record NormalEventUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
 
-
 public enum EventKind
 {
   MethodStarted,
@@ -32,8 +31,8 @@ public readonly record struct CurrentFrameInfo<T>(
 );
 
 public class CallbackBasedSplitter<T>(
-  IEnumerable<EventRecordWithPointer> events, 
-  string filterPattern, 
+  IEnumerable<EventRecordWithPointer> events,
+  string filterPattern,
   InlineMode inlineMode,
   Func<T> stateFactory,
   Action<EventUpdateBase<T>> callback)
@@ -60,7 +59,7 @@ public class CallbackBasedSplitter<T>(
       ProcessNormalEvent(eventRecord);
     }
   }
-  
+
   private void ProcessStartOfMethod(string frame, EventRecordWithMetadata eventRecord)
   {
     var state = stateFactory();

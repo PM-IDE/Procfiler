@@ -133,6 +133,7 @@ public class EventMetadata : IEventMetadata
     get
     {
       if (!TryGetValue(key, out var value)) throw new KeyNotFoundException(key);
+
       return value;
     }
 
@@ -155,6 +156,7 @@ public class EventMetadata : IEventMetadata
     for (var i = 0; i < givenList.Count; i++)
     {
       if (givenList[i] is not { } value) continue;
+
       values[index++] = value;
     }
 

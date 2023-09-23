@@ -68,7 +68,8 @@ public class DotnetProjectBuilderImpl(
       {
         ["DOTNET_DefaultDiagnosticPortSuspend"] = "0"
       },
-      Arguments = $"build {pathToCsproj} -c {buildConfig} -f {tfm} -o {artifactsFolderCookie.FolderPath} --self-contained {selfContained} {args}"
+      Arguments =
+        $"build {pathToCsproj} -c {buildConfig} -f {tfm} -o {artifactsFolderCookie.FolderPath} --self-contained {selfContained} {args}"
     };
 
     var process = new Process
@@ -100,7 +101,7 @@ public class DotnetProjectBuilderImpl(
         process.Kill();
         process.WaitForExit();
       }
-      
+
       if (process.ExitCode != 0)
       {
         var output = process.StandardOutput.ReadToEnd();

@@ -23,6 +23,7 @@ public class TestModificationSource : ModificationSourceBase, IModificationSourc
     for (var i = 0; i < myInitialEvents.Length; i++)
     {
       if (PointersManager.IsRemoved(EventPointer.ForInitialArray(i, this))) continue;
+
       yield return myInitialEvents[i];
     }
   }

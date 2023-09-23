@@ -31,9 +31,9 @@ public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, I
     public required XmlWriter Writer { get; init; }
     public int TracesCount { get; set; }
   }
-  
+
   private readonly Dictionary<string, PathWriteState> myPathsToWriters = new();
-  
+
   public void WriteTrace(string path, EventSessionInfo sessionInfo)
   {
     using var _ = new PerformanceCookie($"{GetType()}::{nameof(WriteTrace)}", logger, LogLevel.Trace);
