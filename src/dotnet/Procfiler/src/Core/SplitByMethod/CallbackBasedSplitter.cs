@@ -6,13 +6,13 @@ namespace Procfiler.Core.SplitByMethod;
 
 public abstract record EventUpdateBase<T>(CurrentFrameInfo<T> FrameInfo);
 
-public record MethodStartedUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
+public sealed record MethodStartedUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
 
-public record MethodFinishedUpdate<T>(CurrentFrameInfo<T> FrameInfo) : EventUpdateBase<T>(FrameInfo);
+public sealed record MethodFinishedUpdate<T>(CurrentFrameInfo<T> FrameInfo) : EventUpdateBase<T>(FrameInfo);
 
-public record MethodExecutionUpdate<T>(CurrentFrameInfo<T> FrameInfo, string MethodName) : EventUpdateBase<T>(FrameInfo);
+public sealed record MethodExecutionUpdate<T>(CurrentFrameInfo<T> FrameInfo, string MethodName) : EventUpdateBase<T>(FrameInfo);
 
-public record NormalEventUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
+public sealed record NormalEventUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
 
 public enum EventKind
 {
@@ -22,19 +22,11 @@ public enum EventKind
   Normal
 }
 
-public readonly record struct CurrentFrameInfo<T>(
-  string Frame,
-  bool ShouldProcess,
-  long OriginalEventStamp,
-  long OriginalEventThreadId,
-  T State
-);
-
 public class CallbackBasedSplitter<T>(
   IEnumerable<EventRecordWithPointer> events,
   string filterPattern,
   InlineMode inlineMode,
-  Func<T> stateFactory,
+  Func<EventRecordWithMetadata, T> stateFactory,
   Action<EventUpdateBase<T>> callback)
 {
   private readonly Stack<CurrentFrameInfo<T>> myFramesStack = new();
@@ -62,7 +54,7 @@ public class CallbackBasedSplitter<T>(
 
   private void ProcessStartOfMethod(string frame, EventRecordWithMetadata eventRecord)
   {
-    var state = stateFactory();
+    var state = stateFactory(eventRecord);
     var frameInfo = new CurrentFrameInfo<T>(frame, ShouldProcess(frame), eventRecord.Stamp, eventRecord.ManagedThreadId, state);
 
     if (ShouldInline(frame))

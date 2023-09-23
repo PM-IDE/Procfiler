@@ -13,6 +13,8 @@ public interface IXesEventsSerializer
   void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
   void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum);
   void WriteHeader(XmlWriter writer);
+  void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer);
+  void WriteTraceStart(XmlWriter writer, int traceNum);
 }
 
 [AppComponent]
@@ -52,17 +54,26 @@ public partial class XesEventsSerializer(
     DoWriteHeader(writer);
   }
 
-  private static void WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
+  public void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer) => WriteEventNode(writer, eventRecord);
+  
+  public void WriteTraceStart(XmlWriter writer, int traceNum)
   {
-    using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, TraceTagName, null);
+    writer.WriteStartElement(null, TraceTagName, null);
     WriteStringValueTag(writer, ConceptName, traceNum.ToString());
+  }
 
+  private void WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
+  {
+    WriteTraceStart(writer, traceNum);
+    
     foreach (var (_, currentEvent) in new OrderedEventsEnumerator(sessionInfo.Events))
     {
       WriteEventNode(writer, currentEvent);
     }
+    
+    writer.WriteEndElement();
   }
-
+  
   private static void WriteEventNode(XmlWriter writer, EventRecordWithMetadata currentEvent)
   {
     using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, EventTag, null);

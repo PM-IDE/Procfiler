@@ -18,7 +18,7 @@ public class SplitterImplementation(
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split()
   {
     new CallbackBasedSplitter<List<EventRecordWithMetadata>>(events, filterPattern, inlineMode,
-      static () => new List<EventRecordWithMetadata>(),
+      static _ => new List<EventRecordWithMetadata>(),
       update =>
       {
         switch (update)
@@ -81,12 +81,9 @@ public class SplitterImplementation(
       _ => null
     };
 
-    var startEventCtx = contextEvent switch
-    {
-      { } => EventsCreationContext.CreateWithUndefinedStackTrace(contextEvent),
-      _ => new EventsCreationContext(currentTopmost.OriginalEventStamp, currentTopmost.OriginalEventThreadId)
-    };
-
-    currentTopmost.State.Add(eventsFactory.CreateMethodExecutionEvent(startEventCtx, methodExecutionUpdate.MethodName));
+    var executionEvent = CurrentFrameInfoUtil.CreateMethodExecutionEvent(
+        currentTopmost, eventsFactory, methodExecutionUpdate.MethodName, contextEvent);
+    
+    currentTopmost.State.Add(executionEvent);
   }
 }
