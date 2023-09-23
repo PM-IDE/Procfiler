@@ -12,125 +12,81 @@ public class SplitterImplementation(
   InlineMode inlineMode
 )
 {
-  private readonly record struct CurrentFrameInfo(
-    string Frame,
-    bool ShouldProcess,
-    List<EventRecordWithMetadata> Events,
-    long OriginalEventStamp,
-    long OriginalEventThreadId
-  );
-
-
-  private readonly Regex myFilterRegex = new(filterPattern);
   private readonly Dictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> myResult = new();
-  private readonly Stack<CurrentFrameInfo> myFramesStack = new();
 
 
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split()
   {
-    foreach (var (_, eventRecord) in events)
-    {
-      if (eventRecord.TryGetMethodStartEndEventInfo() is var (frame, isStartOfMethod))
+    new CallbackBasedSplitter<List<EventRecordWithMetadata>>(events, filterPattern, inlineMode,
+      static () => new List<EventRecordWithMetadata>(),
+      update =>
       {
-        if (isStartOfMethod)
+        switch (update)
         {
-          ProcessStartOfMethod(frame, eventRecord);
-          continue;
+          case MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate:
+          {
+            HandleMethodStartedUpdate(methodStartedUpdate);
+            break;
+          }
+          case NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate:
+          {
+            HandleNormalUpdate(normalEventUpdate);
+            return;
+          }
+          case MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate:
+          {
+            HandleMethodFinishedUpdate(methodFinishedUpdate);
+            return;
+          }
+          case MethodExecutionUpdate<List<EventRecordWithMetadata>> methodExecutionUpdate:
+          {
+            HandleMethodExecutionUpdate(methodExecutionUpdate);
+            return;
+          }
+          default:
+            throw new ArgumentOutOfRangeException();
         }
-
-        ProcessEndOfMethod(frame, eventRecord);
-        continue;
-      }
-
-      ProcessNormalEvent(eventRecord);
-    }
-
-    Debug.Assert(myFramesStack.Count == 0);
+      }).Split();
+    
     return myResult;
   }
 
-  private void ProcessStartOfMethod(string frame, EventRecordWithMetadata eventRecord)
+  private void HandleMethodStartedUpdate(MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate)
   {
-    var events = new List<EventRecordWithMetadata>();
-    if (ShouldInline(frame))
-    {
-      events.Add(eventRecord);
-      AddEventToAllFrames(eventRecord);
-    }
-
-    myFramesStack.Push(new CurrentFrameInfo(frame, ShouldProcess(frame), events, eventRecord.Stamp, eventRecord.ManagedThreadId));
+    methodStartedUpdate.FrameInfo.State.Add(methodStartedUpdate.Event);
   }
 
-  private bool ShouldInline(string frame) =>
-    inlineMode == InlineMode.EventsAndMethodsEvents ||
-    (inlineMode == InlineMode.EventsAndMethodsEventsWithFilter && ShouldProcess(frame));
-
-  private bool ShouldProcess(string frame) => myFilterRegex.IsMatch(frame);
-
-  private void ProcessEndOfMethod(string frame, EventRecordWithMetadata methodEndEvent)
+  private void HandleNormalUpdate(NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate)
   {
-    var topOfStack = myFramesStack.Pop();
-    var (topmostFrame, shouldProcess, methodEvents, _, _) = topOfStack;
-    if (!shouldProcess) return;
+    normalEventUpdate.FrameInfo.State.Add(normalEventUpdate.Event);
+  }
 
-    if (methodEvents.Count > 0)
+  private void HandleMethodFinishedUpdate(MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate)
+  {
+    var events = methodFinishedUpdate.FrameInfo.State;
+
+    if (events.Count <= 0) return;
+
+    var existingValue = myResult.GetOrCreate(methodFinishedUpdate.FrameInfo.Frame, static () => new List<List<EventRecordWithMetadata>>());
+    var listOfListOfEvents = (List<List<EventRecordWithMetadata>>)existingValue;
+    listOfListOfEvents.Add(events);
+  }
+
+  private void HandleMethodExecutionUpdate(MethodExecutionUpdate<List<EventRecordWithMetadata>> methodExecutionUpdate)
+  {
+    var currentTopmost = methodExecutionUpdate.FrameInfo;
+    var contextEvent = currentTopmost.State.Count switch
     {
-      var existingValue = myResult.GetOrCreate(topmostFrame, static () => new List<List<EventRecordWithMetadata>>());
-      var listOfListOfEvents = (List<List<EventRecordWithMetadata>>)existingValue;
-      listOfListOfEvents.Add(methodEvents);
-    }
-
-    if (ShouldInline(frame))
-    {
-      topOfStack.Events.Add(methodEndEvent);
-      AddEventToAllFrames(methodEndEvent);
-      return;
-    }
-
-    if (myFramesStack.Count <= 0) return;
-
-    var currentTopmost = myFramesStack.Peek();
-    var contextEvent = currentTopmost.Events.Count switch
-    {
-      > 0 => currentTopmost.Events[^1],
+      > 0 => currentTopmost.State[^1],
       _ => null
     };
-
+            
     var startEventCtx = contextEvent switch
     {
       { } => EventsCreationContext.CreateWithUndefinedStackTrace(contextEvent),
       _ => new EventsCreationContext(currentTopmost.OriginalEventStamp, currentTopmost.OriginalEventThreadId)
     };
 
-    currentTopmost.Events.Add(eventsFactory.CreateMethodExecutionEvent(startEventCtx, topmostFrame));
-  }
-
-  private void AddEventToAllFrames(EventRecordWithMetadata eventRecord)
-  {
-    foreach (var (_, frameShouldProcess, frameEvents, _, _) in myFramesStack)
-    {
-      if (frameShouldProcess)
-      {
-        frameEvents.Add(eventRecord);
-      }
-    }
-  }
-
-  private void ProcessNormalEvent(EventRecordWithMetadata eventRecord)
-  {
-    if (myFramesStack.Count <= 0) return;
-
-    if (inlineMode != InlineMode.NotInline)
-    {
-      AddEventToAllFrames(eventRecord);
-    }
-    else
-    {
-      var topmostFrame = myFramesStack.Peek();
-      if (topmostFrame.ShouldProcess)
-      {
-        topmostFrame.Events.Add(eventRecord);
-      }
-    }
+    currentTopmost.State.Add(eventsFactory.CreateMethodExecutionEvent(startEventCtx, methodExecutionUpdate.MethodName));
   }
 }
