@@ -7,7 +7,7 @@ public readonly record struct CurrentFrameInfo<T>(
   bool ShouldProcess,
   long OriginalEventStamp,
   long OriginalEventThreadId,
-  T State
+  T? State
 );
 
 public static class CurrentFrameInfoUtil

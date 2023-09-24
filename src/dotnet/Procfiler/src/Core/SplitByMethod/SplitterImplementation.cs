@@ -53,12 +53,12 @@ public class SplitterImplementation(
 
   private void HandleMethodStartedUpdate(MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate)
   {
-    methodStartedUpdate.FrameInfo.State.Add(methodStartedUpdate.Event);
+    methodStartedUpdate.FrameInfo.State!.Add(methodStartedUpdate.Event);
   }
 
   private void HandleNormalUpdate(NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate)
   {
-    normalEventUpdate.FrameInfo.State.Add(normalEventUpdate.Event);
+    normalEventUpdate.FrameInfo.State!.Add(normalEventUpdate.Event);
   }
 
   private void HandleMethodFinishedUpdate(MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate)
@@ -75,7 +75,7 @@ public class SplitterImplementation(
   private void HandleMethodExecutionUpdate(MethodExecutionUpdate<List<EventRecordWithMetadata>> methodExecutionUpdate)
   {
     var currentTopmost = methodExecutionUpdate.FrameInfo;
-    var contextEvent = currentTopmost.State.Count switch
+    var contextEvent = currentTopmost.State!.Count switch
     {
       > 0 => currentTopmost.State[^1],
       _ => null

@@ -4,6 +4,7 @@ using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
+using Procfiler.Core.Serialization.XES;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
@@ -11,6 +12,14 @@ namespace Procfiler.Core.SplitByMethod;
 
 public interface IByMethodsSplitter
 {
+  void SplitNonAlloc(
+    OnlineMethodsXesSerializer serializer,
+    CollectedEvents events,
+    string filterPattern,
+    InlineMode inlineMode,
+    bool mergeUndefinedThreadEvents,
+    bool addAsyncMethods);
+  
   Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
     string filterPattern,
@@ -29,6 +38,28 @@ public class ByMethodsSplitterImpl(
   IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger
 ) : IByMethodsSplitter
 {
+  public void SplitNonAlloc(
+    OnlineMethodsXesSerializer serializer,
+    CollectedEvents events,
+    string filterPattern,
+    InlineMode inlineMode,
+    bool mergeUndefinedThreadEvents,
+    bool addAsyncMethods)
+  {
+    SplitEventsByThreads(events, out var eventsByManagedThreads, out var undefinedThreadEvents);
+    undefinedThreadEvents = managedEventsExtractor.Extract(eventsByManagedThreads, undefinedThreadEvents);
+
+    foreach (var (key, threadEvents) in eventsByManagedThreads)
+    {
+      using var _ = new PerformanceCookie($"{GetType().Name}::{nameof(Split)}::PreparingTrace_{key}", logger);
+
+      ProcessManagedThreadEvents(threadEvents, events.GlobalData);
+
+      var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
+      serializer.SerializeThreadEvents(mergedEvents, filterPattern, inlineMode);
+    }
+  }
+  
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
     CollectedEvents events,
     string filterPattern,

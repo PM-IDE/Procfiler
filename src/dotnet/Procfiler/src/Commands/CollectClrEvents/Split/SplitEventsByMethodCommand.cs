@@ -35,7 +35,8 @@ public class SplitEventsByMethodCommand(
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerLogger logger,
   IManagedEventsFromUndefinedThreadExtractor managedEventsExtractor,
-  IAsyncMethodsGrouper asyncMethodsGrouper
+  IAsyncMethodsGrouper asyncMethodsGrouper,
+  IProcfilerEventsFactory eventsFactory
 ) : CollectCommandBase(logger, commandExecutor), ISplitEventsByMethodCommand
 {
   private Option<bool> GroupAsyncMethods { get; } =
@@ -62,7 +63,8 @@ public class SplitEventsByMethodCommand(
       _ => null
     };
 
-    using var xesSerializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, Logger);
+    using var xesSerializer = new OnlineMethodsXesSerializer(
+      directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger);
 
     ExecuteCommand(context, events =>
     {
@@ -74,21 +76,9 @@ public class SplitEventsByMethodCommand(
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
 
-      var tracesByMethods = splitter.Split(
-        events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
-
-      foreach (var (methodName, traces) in tracesByMethods)
-      {
-        if (methodName is TraceEventsConstants.UndefinedMethod) continue;
-        if (targetMethodsRegex is { } && !targetMethodsRegex.IsMatch(methodName)) continue;
-
-        var eventsByMethodsInvocation = PrepareEventSessionInfo(traces, globalData);
-        var filePath = GetFileNameForMethod(directory, methodName);
-        foreach (var (_, sessionInfo) in eventsByMethodsInvocation)
-        {
-          xesSerializer.WriteTrace(filePath, sessionInfo);
-        }
-      }
+      // ReSharper disable once AccessToDisposedClosure
+      splitter.SplitNonAlloc(
+        xesSerializer, events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
     });
   }
 

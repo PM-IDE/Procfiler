@@ -26,7 +26,7 @@ public class CallbackBasedSplitter<T>(
   IEnumerable<EventRecordWithPointer> events,
   string filterPattern,
   InlineMode inlineMode,
-  Func<EventRecordWithMetadata, T> stateFactory,
+  Func<EventRecordWithMetadata, T?> stateFactory,
   Action<EventUpdateBase<T>> callback)
 {
   private readonly Stack<CurrentFrameInfo<T>> myFramesStack = new();

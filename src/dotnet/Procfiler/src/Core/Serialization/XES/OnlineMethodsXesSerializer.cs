@@ -9,9 +9,12 @@ namespace Procfiler.Core.Serialization.XES;
 public class PathWriterStateWithLastEvent : PathWriteState
 {
   public EventRecordWithMetadata? LastWrittenEvent { get; set; }
+  public bool IsWritingTrace { get; set; }
 }
 
 public class OnlineMethodsXesSerializer(
+  string outputDirectory,
+  Regex? targetMethodsRegex,
   IXesEventsSerializer serializer, 
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerEventsFactory factory,
@@ -21,7 +24,6 @@ public class OnlineMethodsXesSerializer(
   private readonly Dictionary<string, PathWriterStateWithLastEvent> myWriters = new();
   
   public void SerializeThreadEvents(
-    string outputDirectory,
     IEnumerable<EventRecordWithPointer> events,
     string filterPattern,
     InlineMode inlineMode)
@@ -32,9 +34,14 @@ public class OnlineMethodsXesSerializer(
     splitter.Split();
   }
 
-  private PathWriterStateWithLastEvent CreateWriter(string outputDirectory, EventRecordWithMetadata contextEvent)
+  private PathWriterStateWithLastEvent? CreateWriter(string outputDirectory, EventRecordWithMetadata contextEvent)
   {
     var methodName = contextEvent.GetMethodStartEndEventInfo().Frame;
+    if (targetMethodsRegex is { } && !targetMethodsRegex.IsMatch(methodName))
+    {
+      return null;
+    }
+    
     var filePath = Path.Join(outputDirectory, methodNameBeautifier.Beautify(methodName));
 
     return myWriters.GetOrCreate(filePath, () =>
@@ -53,6 +60,8 @@ public class OnlineMethodsXesSerializer(
 
   private void HandleUpdate(EventUpdateBase<PathWriterStateWithLastEvent> update)
   {
+    if (update.FrameInfo.State is null) return;
+
     switch (update)
     {
       case MethodExecutionUpdate<PathWriterStateWithLastEvent> methodExecutionUpdate:
@@ -74,10 +83,15 @@ public class OnlineMethodsXesSerializer(
 
   private void HandleMethodStartEvent(MethodStartedUpdate<PathWriterStateWithLastEvent> methodStartedUpdate)
   {
-    var state = methodStartedUpdate.FrameInfo.State;
-    serializer.WriteTraceStart(state.Writer, state.TracesCount);
-    state.TracesCount++;
-    
+    var state = methodStartedUpdate.FrameInfo.State!;
+
+    if (!state.IsWritingTrace)
+    {
+      serializer.WriteTraceStart(state.Writer, state.TracesCount);
+      state.TracesCount++;
+      state.IsWritingTrace = true;
+    }
+
     WriteEvent(state, methodStartedUpdate.Event);
   }
 
@@ -89,7 +103,13 @@ public class OnlineMethodsXesSerializer(
 
   private void HandleMethodFinishedEvent(MethodFinishedUpdate<PathWriterStateWithLastEvent> methodFinishedUpdate)
   {
-    methodFinishedUpdate.FrameInfo.State.Writer.WriteEndElement();
+    var state = methodFinishedUpdate.FrameInfo.State!;
+
+    if (state.IsWritingTrace)
+    {
+      state.Writer.WriteEndElement();
+      state.IsWritingTrace = false;
+    }
   }
 
   private void HandleMethodExecutionEvent(MethodExecutionUpdate<PathWriterStateWithLastEvent> methodExecutionUpdate)
@@ -99,14 +119,14 @@ public class OnlineMethodsXesSerializer(
       methodExecutionUpdate.FrameInfo,
       factory,
       methodExecutionUpdate.MethodName,
-      state.LastWrittenEvent);
+      state!.LastWrittenEvent);
     
     WriteEvent(state, executionEvent);
   }
 
   private void HandleNormalEvent(NormalEventUpdate<PathWriterStateWithLastEvent> normalEventUpdate)
   {
-    WriteEvent(normalEventUpdate.FrameInfo.State, normalEventUpdate.Event);
+    WriteEvent(normalEventUpdate.FrameInfo.State!, normalEventUpdate.Event);
   }
 
   public void Dispose()
