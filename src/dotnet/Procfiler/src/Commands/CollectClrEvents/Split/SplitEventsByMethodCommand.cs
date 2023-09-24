@@ -75,8 +75,8 @@ public class SplitEventsByMethodCommand(
       using var xesSerializer = new OnlineMethodsXesSerializer(
         directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger);
 
-      var asyncMethods = splitter.SplitNonAlloc(
-        xesSerializer, events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
+      var splitContext = new SplitContext(events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
+      var asyncMethods = splitter.SplitNonAlloc(xesSerializer, splitContext);
 
       if (asyncMethods is { })
       {
