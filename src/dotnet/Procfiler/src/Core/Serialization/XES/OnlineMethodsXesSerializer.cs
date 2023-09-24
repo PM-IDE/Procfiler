@@ -55,6 +55,7 @@ public class OnlineMethodsXesSerializer(
       {
         ConformanceLevel = ConformanceLevel.Document,
         Indent = true,
+        CloseOutput = true
       });
 
       serializer.WriteHeader(writer);

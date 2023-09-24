@@ -23,6 +23,7 @@ public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, I
       {
         ConformanceLevel = ConformanceLevel.Document,
         Indent = true,
+        CloseOutput = true
       });
 
       serializer.WriteHeader(newWriter);
