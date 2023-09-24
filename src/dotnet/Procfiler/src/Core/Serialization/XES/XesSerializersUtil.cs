@@ -6,6 +6,8 @@ public static class XesSerializersUtil
 {
   public static void DisposeWriters(IEnumerable<(string, XmlWriter)> writers, IProcfilerLogger logger)
   {
+    using var _ = new PerformanceCookie(nameof(DisposeWriters), logger);
+    
     foreach (var (path, writer) in writers)
     {
       try

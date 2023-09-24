@@ -12,7 +12,7 @@ namespace Procfiler.Core.SplitByMethod;
 
 public interface IByMethodsSplitter
 {
-  void SplitNonAlloc(
+  Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>? SplitNonAlloc(
     OnlineMethodsXesSerializer serializer,
     CollectedEvents events,
     string filterPattern,
@@ -38,7 +38,7 @@ public class ByMethodsSplitterImpl(
   IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger
 ) : IByMethodsSplitter
 {
-  public void SplitNonAlloc(
+  public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>? SplitNonAlloc(
     OnlineMethodsXesSerializer serializer,
     CollectedEvents events,
     string filterPattern,
@@ -55,9 +55,24 @@ public class ByMethodsSplitterImpl(
 
       ProcessManagedThreadEvents(threadEvents, events.GlobalData);
 
-      var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
+      var mergedEvents = mergeUndefinedThreadEvents switch
+      {
+        true => MergeUndefinedThreadEvents(threadEvents, undefinedThreadEvents),
+        false => threadEvents
+      };
+      
       serializer.SerializeThreadEvents(mergedEvents, filterPattern, inlineMode);
     }
+
+    if (addAsyncMethods)
+    {
+      var result = new Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>();
+      AddAsyncMethods(serializer.AllMethodNames, result, eventsByManagedThreads);
+
+      return result;
+    }
+
+    return null;
   }
   
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(
@@ -77,7 +92,12 @@ public class ByMethodsSplitterImpl(
 
       ProcessManagedThreadEvents(threadEvents, events.GlobalData);
 
-      var mergedEvents = MergeUndefinedThreadEvents(mergeUndefinedThreadEvents, threadEvents, undefinedThreadEvents);
+      var mergedEvents = mergeUndefinedThreadEvents switch
+      {
+        true => MergeUndefinedThreadEvents(threadEvents, undefinedThreadEvents),
+        false => threadEvents
+      };
+
       var eventsTracesByMethods = splitter.Split(mergedEvents, filterPattern, inlineMode);
 
       foreach (var (methodName, traces) in eventsTracesByMethods)
@@ -90,17 +110,18 @@ public class ByMethodsSplitterImpl(
 
     if (addAsyncMethods)
     {
-      AddAsyncMethods(tracesByMethods, eventsByManagedThreads);
+      AddAsyncMethods(tracesByMethods.Keys, tracesByMethods, eventsByManagedThreads);
     }
 
     return tracesByMethods;
   }
 
   private void AddAsyncMethods(
-    IDictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> tracesByMethods,
-    IDictionary<long, IEventsCollection> eventsByManagedThreads)
+    IEnumerable<string> methodsNames,
+    Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> tracesByMethods,
+    Dictionary<long, IEventsCollection> eventsByManagedThreads)
   {
-    var asyncMethodsTraces = asyncMethodsGrouper.GroupAsyncMethods(tracesByMethods.Keys, eventsByManagedThreads);
+    var asyncMethodsTraces = asyncMethodsGrouper.GroupAsyncMethods(methodsNames, eventsByManagedThreads);
     foreach (var (asyncMethodName, collection) in asyncMethodsTraces)
     {
       var traces = new List<IReadOnlyList<EventRecordWithMetadata>>();
@@ -126,13 +147,8 @@ public class ByMethodsSplitterImpl(
     unitedEventsProcessor.ApplyMultipleMutators(threadEvents, globalData, EmptyCollections<Type>.EmptySet);
   }
 
-  private IEventsCollection MergeUndefinedThreadEvents(
-    bool mergeUndefinedThreadEvents,
-    IEventsCollection managedThreadEvents,
-    IEventsCollection undefinedThreadEvents)
+  private IEventsCollection MergeUndefinedThreadEvents(IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
   {
-    if (!mergeUndefinedThreadEvents) return managedThreadEvents;
-
     using var __ = new PerformanceCookie($"{GetType().Name}::{nameof(MergeUndefinedThreadEvents)}", logger);
     return undefinedThreadsEventsMerger.Merge(managedThreadEvents, undefinedThreadEvents);
   }

@@ -2,7 +2,6 @@ using Procfiler.Commands.CollectClrEvents.Base;
 using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core;
 using Procfiler.Core.Collector;
-using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
@@ -63,9 +62,6 @@ public class SplitEventsByMethodCommand(
       _ => null
     };
 
-    using var xesSerializer = new OnlineMethodsXesSerializer(
-      directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger);
-
     ExecuteCommand(context, events =>
     {
       var (allEvents, globalData) = events;
@@ -76,9 +72,26 @@ public class SplitEventsByMethodCommand(
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
 
-      // ReSharper disable once AccessToDisposedClosure
-      splitter.SplitNonAlloc(
+      using var xesSerializer = new OnlineMethodsXesSerializer(
+        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger);
+
+      var asyncMethods = splitter.SplitNonAlloc(
         xesSerializer, events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
+
+      if (asyncMethods is { })
+      {
+        using var serializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, logger);
+        foreach (var (methodName, traces) in asyncMethods)
+        {
+          var eventsByMethodsInvocation = PrepareEventSessionInfo(traces, globalData);
+          var filePath = GetFileNameForMethod(directory, methodName);
+          
+          foreach (var (_, sessionInfo) in eventsByMethodsInvocation)
+          {
+            serializer.WriteTrace(filePath, sessionInfo);
+          }
+        }
+      }
     });
   }
 

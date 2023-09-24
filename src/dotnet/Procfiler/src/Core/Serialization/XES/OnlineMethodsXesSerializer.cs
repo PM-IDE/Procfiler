@@ -21,7 +21,11 @@ public class OnlineMethodsXesSerializer(
   IProcfilerLogger logger
 ) : IDisposable
 {
+  private readonly List<string> myAllMethodsNames = new();
   private readonly Dictionary<string, PathWriterStateWithLastEvent> myWriters = new();
+
+  public IReadOnlyList<string> AllMethodNames => myAllMethodsNames;
+  
   
   public void SerializeThreadEvents(
     IEnumerable<EventRecordWithPointer> events,
@@ -87,6 +91,7 @@ public class OnlineMethodsXesSerializer(
 
     if (!state.IsWritingTrace)
     {
+      myAllMethodsNames.Add(methodStartedUpdate.FrameInfo.Frame);
       serializer.WriteTraceStart(state.Writer, state.TracesCount);
       state.TracesCount++;
       state.IsWritingTrace = true;
