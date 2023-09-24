@@ -109,7 +109,7 @@ public class BuildCppProcfiler : Task
 
   private bool LaunchProcessAndWaitForExit(Process process, string name)
   {
-    var timeout = (int)TimeSpan.FromSeconds(20).TotalMilliseconds;
+    var timeout = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
 
     if (!process.Start())
     {
