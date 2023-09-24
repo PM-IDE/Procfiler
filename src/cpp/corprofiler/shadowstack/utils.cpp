@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <string>
 
 void writeFunctionEvent(const FunctionEvent& event, std::ofstream& fout) {
     char startOrEnd = event.EventKind == FunctionEventKind::Started ? 1 : 0;
