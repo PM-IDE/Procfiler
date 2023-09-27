@@ -9,7 +9,6 @@ namespace Procfiler.Core.Serialization.XES;
 public class PathWriterStateWithLastEvent : PathWriteState
 {
   public EventRecordWithMetadata? LastWrittenEvent { get; set; }
-  public bool IsWritingTrace { get; set; }
 }
 
 public class OnlineMethodsXesSerializer(
@@ -89,16 +88,10 @@ public class OnlineMethodsXesSerializer(
   private void HandleMethodStartEvent(MethodStartedUpdate<PathWriterStateWithLastEvent> methodStartedUpdate)
   {
     var state = methodStartedUpdate.FrameInfo.State!;
-
-    if (!state.IsWritingTrace)
-    {
-      myAllMethodsNames.Add(methodStartedUpdate.FrameInfo.Frame);
-      serializer.WriteTraceStart(state.Writer, state.TracesCount);
-      state.TracesCount++;
-      state.IsWritingTrace = true;
-    }
-
-    WriteEvent(state, methodStartedUpdate.Event);
+    
+    myAllMethodsNames.Add(methodStartedUpdate.FrameInfo.Frame);
+    serializer.WriteTraceStart(state.Writer, state.TracesCount);
+    state.TracesCount++;
   }
 
   private void WriteEvent(PathWriterStateWithLastEvent state, EventRecordWithMetadata eventRecord)
@@ -110,12 +103,7 @@ public class OnlineMethodsXesSerializer(
   private void HandleMethodFinishedEvent(MethodFinishedUpdate<PathWriterStateWithLastEvent> methodFinishedUpdate)
   {
     var state = methodFinishedUpdate.FrameInfo.State!;
-
-    if (state.IsWritingTrace)
-    {
-      state.Writer.WriteEndElement();
-      state.IsWritingTrace = false;
-    }
+    state.Writer.WriteEndElement();
   }
 
   private void HandleMethodExecutionEvent(MethodExecutionUpdate<PathWriterStateWithLastEvent> methodExecutionUpdate)

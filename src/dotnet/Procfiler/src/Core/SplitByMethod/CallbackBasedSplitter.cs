@@ -8,7 +8,7 @@ public abstract record EventUpdateBase<T>(CurrentFrameInfo<T> FrameInfo);
 
 public sealed record MethodStartedUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
 
-public sealed record MethodFinishedUpdate<T>(CurrentFrameInfo<T> FrameInfo) : EventUpdateBase<T>(FrameInfo);
+public sealed record MethodFinishedUpdate<T>(CurrentFrameInfo<T> FrameInfo, EventRecordWithMetadata Event) : EventUpdateBase<T>(FrameInfo);
 
 public sealed record MethodExecutionUpdate<T>(CurrentFrameInfo<T> FrameInfo, string MethodName) : EventUpdateBase<T>(FrameInfo);
 
@@ -56,11 +56,12 @@ public class CallbackBasedSplitter<T>(
   {
     var state = stateFactory(eventRecord);
     var frameInfo = new CurrentFrameInfo<T>(frame, ShouldProcess(frame), eventRecord.Stamp, eventRecord.ManagedThreadId, state);
+    callback(new MethodStartedUpdate<T>(frameInfo, eventRecord));
+    callback(new NormalEventUpdate<T>(frameInfo, eventRecord));
 
     if (ShouldInline(frame))
     {
-      callback(new MethodStartedUpdate<T>(frameInfo, eventRecord));
-      ExecuteCallbackForAllFrames(EventKind.MethodStarted, eventRecord);
+      ExecuteCallbackForAllFrames(EventKind.Normal, eventRecord);
     }
 
     myFramesStack.Push(frameInfo);
@@ -77,11 +78,11 @@ public class CallbackBasedSplitter<T>(
     var topOfStack = myFramesStack.Pop();
     if (!topOfStack.ShouldProcess) return;
 
-    callback(new MethodFinishedUpdate<T>(topOfStack));
+    callback(new NormalEventUpdate<T>(topOfStack, methodEndEvent));
+    callback(new MethodFinishedUpdate<T>(topOfStack, methodEndEvent));
 
     if (ShouldInline(frame))
     {
-      callback(new NormalEventUpdate<T>(topOfStack, methodEndEvent));
       ExecuteCallbackForAllFrames(EventKind.Normal, methodEndEvent);
       return;
     }
@@ -100,7 +101,7 @@ public class CallbackBasedSplitter<T>(
         EventUpdateBase<T> update = eventKind switch
         {
           EventKind.MethodStarted => new MethodStartedUpdate<T>(frameInfo, eventRecord),
-          EventKind.MethodFinished => new MethodFinishedUpdate<T>(frameInfo),
+          EventKind.MethodFinished => new MethodFinishedUpdate<T>(frameInfo, eventRecord),
           EventKind.Normal => new NormalEventUpdate<T>(frameInfo, eventRecord),
           _ => throw new ArgumentOutOfRangeException(nameof(eventKind), eventKind, null)
         };
