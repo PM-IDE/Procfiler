@@ -24,10 +24,7 @@ public class SplitterImplementation(
         switch (update)
         {
           case MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate:
-          {
-            HandleMethodStartedUpdate(methodStartedUpdate);
             break;
-          }
           case NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate:
           {
             HandleNormalUpdate(normalEventUpdate);
@@ -51,25 +48,20 @@ public class SplitterImplementation(
     return myResult;
   }
 
-  private void HandleMethodStartedUpdate(MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate)
-  {
-    methodStartedUpdate.FrameInfo.State!.Add(methodStartedUpdate.Event);
-  }
-
-  private void HandleNormalUpdate(NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate)
+  private static void HandleNormalUpdate(NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate)
   {
     normalEventUpdate.FrameInfo.State!.Add(normalEventUpdate.Event);
   }
 
   private void HandleMethodFinishedUpdate(MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate)
   {
-    var events = methodFinishedUpdate.FrameInfo.State;
+    var stateEvents = methodFinishedUpdate.FrameInfo.State!;
 
-    if (events.Count <= 0) return;
+    if (stateEvents.Count <= 0) return;
 
     var existingValue = myResult.GetOrCreate(methodFinishedUpdate.FrameInfo.Frame, static () => new List<List<EventRecordWithMetadata>>());
     var listOfListOfEvents = (List<List<EventRecordWithMetadata>>)existingValue;
-    listOfListOfEvents.Add(events);
+    listOfListOfEvents.Add(stateEvents);
   }
 
   private void HandleMethodExecutionUpdate(MethodExecutionUpdate<List<EventRecordWithMetadata>> methodExecutionUpdate)
