@@ -12,7 +12,7 @@ public abstract class CppBinStacksTestBase : ProcessTestBase
 {
   protected abstract bool UseMethodsFilter { get; }
 
-  protected void DoTestWithPath(KnownSolution solution, Action<string> testAction)
+  protected void DoTestWithPath(KnownSolution solution, Action<string, CppProfilerMode> testAction)
   {
     foreach (var context in solution.CreateContextsWithMethodsFilter())
     {
@@ -31,7 +31,7 @@ public abstract class CppBinStacksTestBase : ProcessTestBase
       process!.WaitForExit();
 
       var binStacksPath = binStacksSavePathCreator.CreateSavePath(result.Value, context.CommonContext.CppProfilerMode);
-      testAction(binStacksPath);
+      testAction(binStacksPath, context.CommonContext.CppProfilerMode);
     }
   }
 

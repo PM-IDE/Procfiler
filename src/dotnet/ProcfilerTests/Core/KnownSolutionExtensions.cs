@@ -54,7 +54,7 @@ public static class KnownSolutionExtensions
       false, 10_000, 10_000, false, null, 10_000, CppProfilerMode.SingleFileBinStack, false, false, true);
 
     yield return ctx;
-    //yield return ctx with { CppProfilerMode = CppProfilerMode.PerThreadBinStacksFilesOnline };
+    yield return ctx with { CppProfilerMode = CppProfilerMode.PerThreadBinStacksFilesOnline, UseDuringRuntimeFiltering = true };
   }
 }
 
