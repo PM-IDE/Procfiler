@@ -22,7 +22,7 @@ module SplitByMethods =
                 let args = [ "split-by-methods" ]
 
                 this.Base.AddArguments args
-                @ [ $" --filter {this.FilterPattern}"
+                @ [ $" --methods-filter-regex {this.FilterPattern}"
                     $" --inline {this.Inline}"
                     $" --merge-undefined-events {this.MergeUndefinedThreadEvents}" ]
 

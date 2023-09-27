@@ -97,7 +97,7 @@ public partial class CollectCommandBase
     new("--clear-before", static () => true, "Clear (delete) output folder (file) before profiling session");
 
   protected Option<string> FilterOption { get; } =
-    new("--filter", static () => string.Empty, "Regex to filter methods");
+    new("--methods-filter-regex", static () => string.Empty, "Regex to filter methods");
 
   private Option<string> AdditionalBuildArgsOption { get; } =
     new("--additional-build-args", static () => string.Empty, "Additional arguments for an application build command");
