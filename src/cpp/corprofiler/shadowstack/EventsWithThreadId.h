@@ -18,7 +18,7 @@
 
 struct EventsWithThreadId {
     std::stack<FunctionID>* CurrentStack = new std::stack<FunctionID>();
-    std::map<FunctionID, bool>* ShouldLogFuncs{nullptr};
+    std::map<FunctionID, bool>* ShouldLogFuncs = new std::map<FunctionID, bool>();
     int64_t lastEventStamp{0};
 
     virtual ~EventsWithThreadId() = default;
