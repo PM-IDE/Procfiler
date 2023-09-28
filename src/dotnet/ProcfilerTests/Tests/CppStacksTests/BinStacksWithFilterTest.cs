@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Autofac;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.CppProcfiler.ShadowStacks;
 using Procfiler.Core.EventRecord;
 using ProcfilerTests.Core;
@@ -12,13 +13,13 @@ public class BinStacksWithFilterTest : CppBinStacksTestBase
   protected override bool UseMethodsFilter => true;
 
 
-  [TestCaseSource(nameof(Source))]
-  public void TestBinStacksWithFilter(KnownSolution solution) => DoTestWithCollectedEvents(solution, events =>
+  [TestCaseSource(nameof(DefaultContextsWithFilter))]
+  public void TestBinStacksWithFilter(ContextWithSolution dto) => DoTestWithCollectedEvents(dto.Context, events =>
   {
     var shadowStacks = events.GlobalData.Stacks;
     Assert.That(shadowStacks is ICppShadowStacks);
     var cppShadowStacks = (ICppShadowStacks)shadowStacks;
-    var regex = new Regex(solution.Name);
+    var regex = new Regex(dto.Solution.Name);
     var eventsFactory = Container.Resolve<IProcfilerEventsFactory>();
 
     foreach (var cppShadowStack in cppShadowStacks.EnumerateStacks())

@@ -1,3 +1,4 @@
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Commands.CollectClrEvents.Split;
 using ProcfilerTests.Core;
 using TestsUtil;
@@ -7,10 +8,10 @@ namespace ProcfilerTests.Tests;
 [TestFixture]
 public class SimpleTests : ProcessTestBase
 {
-  [TestCaseSource(nameof(Source))]
-  public void TestSimpleManagedThreadSplitAttributes(KnownSolution knownSolution)
+  [TestCaseSource(nameof(DefaultContexts))]
+  public void TestSimpleManagedThreadSplitAttributes(ContextWithSolution dto)
   {
-    StartProcessAndDoTestWithDefaultContext(knownSolution, events =>
+    StartProcessAndDoTestWithDefaultContext(dto.Context, events =>
     {
       Assert.That(events.Events, Has.Count.GreaterThan(KnownSolution.ConsoleApp1.ExpectedEventsCount));
       var eventsByThreads = SplitEventsHelper.SplitByKey(
@@ -21,10 +22,10 @@ public class SimpleTests : ProcessTestBase
     });
   }
 
-  [TestCaseSource(nameof(Source))]
-  public void TestSimpleSplitByNamesAttributes(KnownSolution knownSolution)
+  [TestCaseSource(nameof(DefaultContexts))]
+  public void TestSimpleSplitByNamesAttributes(ContextWithSolution dto)
   {
-    StartProcessAndDoTestWithDefaultContext(knownSolution, events =>
+    StartProcessAndDoTestWithDefaultContext(dto.Context, events =>
     {
       Assert.That(events.Events, Has.Count.GreaterThan(KnownSolution.ConsoleApp1.ExpectedEventsCount));
       var eventsByNames =

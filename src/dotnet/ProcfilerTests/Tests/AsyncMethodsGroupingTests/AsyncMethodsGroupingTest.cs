@@ -25,7 +25,7 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
   private void DoSimpleTest(KnownSolution solution)
   {
     ExecuteTestWithGold(
-      solution,
+      solution.CreateDefaultContext(),
       events => ExecuteAsyncGroupingTest(events, solution, DumpsAllocationsWith));
   }
 

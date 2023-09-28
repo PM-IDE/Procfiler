@@ -1,4 +1,5 @@
 using Autofac;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Utils;
@@ -10,13 +11,13 @@ namespace ProcfilerTests.Tests;
 [TestFixture]
 public class EventTimeStampsConsistencyTest : ProcessTestBase
 {
-  [TestCaseSource(nameof(Source))]
-  public void Test(KnownSolution knownSolution) => DoTest(knownSolution);
+  [TestCaseSource(nameof(DefaultContexts))]
+  public void Test(ContextWithSolution dto) => DoTest(dto);
 
 
-  private void DoTest(KnownSolution knownSolution)
+  private void DoTest(ContextWithSolution dto)
   {
-    StartProcessSplitEventsByThreadsAndDoTest(knownSolution, (eventsByThreads, globalData) =>
+    StartProcessSplitEventsByThreadsAndDoTest(dto.Context, (eventsByThreads, globalData) =>
     {
       foreach (var (_, events) in eventsByThreads)
       {

@@ -10,7 +10,7 @@ public class EventMetadataTestWithRealEventsTest : ProcessTestBase
   [Test]
   public void TestWithConsoleApp1()
   {
-    StartProcessAndDoTestWithDefaultContext(KnownSolution.ConsoleApp1, collectedEvents =>
+    StartProcessAndDoTestWithDefaultContext(KnownSolution.ConsoleApp1.CreateDefaultContext(), collectedEvents =>
     {
       foreach (var (_, eventRecord) in collectedEvents.Events)
       {

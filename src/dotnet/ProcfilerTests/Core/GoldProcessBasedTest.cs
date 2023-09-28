@@ -1,4 +1,5 @@
 using System.Text;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
 using Procfiler.Utils;
 using TestsUtil;
@@ -7,9 +8,9 @@ namespace ProcfilerTests.Core;
 
 public class GoldProcessBasedTest : ProcessTestBase
 {
-  protected void ExecuteTestWithGold(KnownSolution solution, Func<CollectedEvents, string> testFunc)
+  protected void ExecuteTestWithGold(CollectClrEventsFromExeContext context, Func<CollectedEvents, string> testFunc)
   {
-    StartProcessAndDoTestWithDefaultContext(solution, events =>
+    StartProcessAndDoTestWithDefaultContext(context, events =>
     {
       var testValue = testFunc(events).RemoveRn();
       var pathToGoldFile = CreateGoldFilePath();
@@ -46,9 +47,9 @@ public class GoldProcessBasedTest : ProcessTestBase
     var test = TestContext.CurrentContext.Test;
     var testName = test.Name;
 
-    if (test.Arguments.FirstOrDefault() is KnownSolution knownSolution)
+    if (test.Arguments.FirstOrDefault() is ContextWithSolution dto)
     {
-      testName = knownSolution.Name;
+      testName = dto.Solution.Name;
     }
 
     return testName;

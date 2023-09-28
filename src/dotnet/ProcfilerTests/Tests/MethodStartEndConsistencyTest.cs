@@ -1,4 +1,5 @@
 using Autofac;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Utils;
@@ -10,12 +11,12 @@ namespace ProcfilerTests.Tests;
 [TestFixture]
 public class MethodStartEndConsistencyTest : ProcessTestBase
 {
-  [TestCaseSource(nameof(Source))]
-  public void Test(KnownSolution knownSolution) => DoTest(knownSolution);
+  [TestCaseSource(nameof(DefaultContexts))]
+  public void Test(ContextWithSolution dto) => DoTest(dto);
 
-  private void DoTest(KnownSolution knownSolution)
+  private void DoTest(ContextWithSolution dto)
   {
-    StartProcessAndDoTestWithDefaultContext(knownSolution, events =>
+    StartProcessAndDoTestWithDefaultContext(dto.Context, events =>
     {
       var globalData = events.GlobalData;
       var eventsByThreads = SplitEventsHelper.SplitByKey(

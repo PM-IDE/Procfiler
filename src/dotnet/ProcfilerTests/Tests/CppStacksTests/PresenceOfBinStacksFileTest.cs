@@ -1,3 +1,4 @@
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.CppProcfiler;
 using ProcfilerTests.Core;
 using TestsUtil;
@@ -10,8 +11,8 @@ public class PresenceOfBinStacksFileTest : CppBinStacksTestBase
   protected override bool UseMethodsFilter => false;
 
 
-  [TestCaseSource(nameof(Source))]
-  public void TestPresenceOfBinStacks(KnownSolution solution) => DoTestWithPath(solution, (binStacksPath, mode) =>
+  [TestCaseSource(nameof(DefaultContexts))]
+  public void TestPresenceOfBinStacks(ContextWithSolution dto) => DoTestWithPath(dto.Context, (binStacksPath, mode) =>
   {
     Assert.Multiple(() =>
     {

@@ -10,24 +10,20 @@ namespace ProcfilerTests.Core;
 
 public abstract class ProcessTestBase : TestWithContainerBase
 {
-  protected void StartProcessAndDoTestWithDefaultContext(
-    KnownSolution solution, Action<CollectedEvents> testAction)
+  protected void StartProcessAndDoTestWithDefaultContext(CollectClrEventsFromExeContext context, Action<CollectedEvents> testAction)
   {
-    StartProcessAndDoTest(solution.CreateContexts(), testAction);
+    StartProcessAndDoTest(context, testAction);
   }
 
-  protected void StartProcessAndDoTest(IEnumerable<CollectClrEventsContext> contexts, Action<CollectedEvents> testAction)
-  {
-    foreach (var context in contexts)
-    {
-      Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
-    }
+  protected void StartProcessAndDoTest(CollectClrEventsContext context, Action<CollectedEvents> testAction)
+  { 
+    Container.Resolve<ICommandExecutorDependantOnContext>().Execute(context, testAction);
   }
 
   protected void StartProcessSplitEventsByThreadsAndDoTest(
-    KnownSolution solution, Action<Dictionary<long, IEventsCollection>, SessionGlobalData> testFunc)
+    CollectClrEventsFromExeContext context, Action<Dictionary<long, IEventsCollection>, SessionGlobalData> testFunc)
   {
-    StartProcessAndDoTestWithDefaultContext(solution, events =>
+    StartProcessAndDoTestWithDefaultContext(context, events =>
     {
       var extractor = SplitEventsHelper.ManagedThreadIdExtractor;
       var eventsByThreads = SplitEventsHelper.SplitByKey(TestLogger.CreateInstance(), events.Events, extractor);

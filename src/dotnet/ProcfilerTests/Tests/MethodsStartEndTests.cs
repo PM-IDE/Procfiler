@@ -1,4 +1,5 @@
 using Autofac;
+using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Utils;
@@ -10,14 +11,14 @@ namespace ProcfilerTests.Tests;
 [TestFixture]
 public class MethodsStartEndTests : GoldProcessBasedTest
 {
-  [TestCaseSource(nameof(Source))]
-  public void Test(KnownSolution knownSolution) => DoTest(knownSolution);
+  [TestCaseSource(nameof(DefaultContexts))]
+  public void Test(ContextWithSolution dto) => DoTest(dto);
 
 
-  private void DoTest(KnownSolution knownSolution)
+  private void DoTest(ContextWithSolution dto)
   {
     ExecuteTestWithGold(
-      knownSolution, events => DumpMethodCallTree(knownSolution.NamespaceFilterPattern, events));
+      dto.Context, events => DumpMethodCallTree(dto.Solution.NamespaceFilterPattern, events));
   }
 
   private string DumpMethodCallTree(string filterPattern, CollectedEvents events)
