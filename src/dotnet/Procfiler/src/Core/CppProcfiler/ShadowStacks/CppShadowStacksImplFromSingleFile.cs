@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Procfiler.Utils;
 
 namespace Procfiler.Core.CppProcfiler.ShadowStacks;

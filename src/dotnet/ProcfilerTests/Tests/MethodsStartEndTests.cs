@@ -1,10 +1,8 @@
 using Autofac;
-using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Utils;
 using ProcfilerTests.Core;
-using TestsUtil;
 
 namespace ProcfilerTests.Tests;
 

@@ -1,7 +1,5 @@
-using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.CppProcfiler;
 using ProcfilerTests.Core;
-using TestsUtil;
 
 namespace ProcfilerTests.Tests.CppStacksTests;
 

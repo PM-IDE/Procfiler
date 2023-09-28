@@ -4,7 +4,6 @@ using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler;
 using Procfiler.Core.Processes;
 using Procfiler.Core.Processes.Build;
-using TestsUtil;
 
 namespace ProcfilerTests.Core;
 

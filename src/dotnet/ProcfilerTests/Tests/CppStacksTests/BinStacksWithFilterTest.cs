@@ -1,10 +1,8 @@
 using System.Text.RegularExpressions;
 using Autofac;
-using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Core.CppProcfiler.ShadowStacks;
 using Procfiler.Core.EventRecord;
 using ProcfilerTests.Core;
-using TestsUtil;
 
 namespace ProcfilerTests.Tests.CppStacksTests;
 

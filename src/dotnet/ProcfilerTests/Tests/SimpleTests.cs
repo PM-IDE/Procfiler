@@ -1,4 +1,3 @@
-using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Commands.CollectClrEvents.Split;
 using ProcfilerTests.Core;
 using TestsUtil;
