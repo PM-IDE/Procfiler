@@ -23,8 +23,25 @@ public static class ExtensionsForICppShadowStack
         ManagedThreadId = shadowStack.ManagedThreadId
       };
 
-      var createdMethodEvent = eventsFactory.CreateMethodEvent(creationContext);
-      yield return createdMethodEvent;
+      yield return eventsFactory.CreateMethodEvent(creationContext);
+    }
+  }
+
+  public static IEnumerable<EventRecordWithMetadata> EnumerateMethodsAggressiveReuse(
+    this ICppShadowStack shadowStack, IProcfilerEventsFactory eventsFactory, SessionGlobalData globalData)
+  {
+    var sharedEvent = EventRecordWithMetadata.CreateUninitialized();
+    foreach (var frameInfo in shadowStack)
+    {
+      var creationContext = new FromFrameInfoCreationContext
+      {
+        FrameInfo = frameInfo,
+        GlobalData = globalData,
+        ManagedThreadId = shadowStack.ManagedThreadId
+      };
+
+      eventsFactory.FillExistingEventWith(creationContext, sharedEvent);
+      yield return sharedEvent;
     }
   }
 }

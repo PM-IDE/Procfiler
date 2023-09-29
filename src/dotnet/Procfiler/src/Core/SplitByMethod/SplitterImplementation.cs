@@ -17,35 +17,37 @@ public class SplitterImplementation(
 
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split()
   {
-    new CallbackBasedSplitter<List<EventRecordWithMetadata>>(events, filterPattern, inlineMode,
-      static _ => new List<EventRecordWithMetadata>(),
-      update =>
-      {
-        switch (update)
-        {
-          case MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate:
-            break;
-          case NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate:
-          {
-            HandleNormalUpdate(normalEventUpdate);
-            return;
-          }
-          case MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate:
-          {
-            HandleMethodFinishedUpdate(methodFinishedUpdate);
-            return;
-          }
-          case MethodExecutionUpdate<List<EventRecordWithMetadata>> methodExecutionUpdate:
-          {
-            HandleMethodExecutionUpdate(methodExecutionUpdate);
-            return;
-          }
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
-      }).Split();
+    var splitter = new CallbackBasedSplitter<List<EventRecordWithMetadata>>(
+      events, filterPattern, inlineMode, static _ => new List<EventRecordWithMetadata>(), HandleUpdate);
 
+    splitter.Split();
     return myResult;
+  }
+
+  private void HandleUpdate(EventUpdateBase<List<EventRecordWithMetadata>> update)
+  {
+    switch (update)
+    {
+      case MethodStartedUpdate<List<EventRecordWithMetadata>> methodStartedUpdate:
+        break;
+      case NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate:
+      {
+        HandleNormalUpdate(normalEventUpdate);
+        return;
+      }
+      case MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate:
+      {
+        HandleMethodFinishedUpdate(methodFinishedUpdate);
+        return;
+      }
+      case MethodExecutionUpdate<List<EventRecordWithMetadata>> methodExecutionUpdate:
+      {
+        HandleMethodExecutionUpdate(methodExecutionUpdate);
+        return;
+      }
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
   }
 
   private static void HandleNormalUpdate(NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate)

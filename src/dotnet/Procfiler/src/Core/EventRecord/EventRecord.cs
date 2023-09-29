@@ -54,6 +54,9 @@ public class EventRecord
 
 public class EventRecordWithMetadata : EventRecord
 {
+  public static EventRecordWithMetadata CreateUninitialized() => new(0, string.Empty, -1, -1, new EventMetadata());
+
+
   public IEventMetadata Metadata { get; }
 
 

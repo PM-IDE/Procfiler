@@ -13,7 +13,7 @@ public readonly record struct EventsCreationContext(long Stamp, long ManagedThre
     new(record.Stamp, record.ManagedThreadId);
 }
 
-public readonly struct FromFrameInfoCreationContext
+public readonly ref struct FromFrameInfoCreationContext
 {
   public required FrameInfo FrameInfo { get; init; }
   public required SessionGlobalData GlobalData { get; init; }
