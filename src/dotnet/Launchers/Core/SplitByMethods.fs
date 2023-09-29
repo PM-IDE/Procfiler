@@ -15,35 +15,46 @@ module SplitByMethods =
         { Base: ConfigBase
           Inline: InlineMode
           FilterPattern: string
-          MergeUndefinedThreadEvents: bool }
+          TargetMethodsRegex: string
+          MergeUndefinedThreadEvents: bool
+          OnlineSerialization: bool
+          DuringRuntimeFiltering: bool }
 
         interface ICommandConfig with
             member this.CreateArguments() =
                 let args = [ "split-by-methods" ]
+                let onlineMode = "PerThreadBinStacksFilesOnline"
+                let offlineMode = "SingleFileBinStack"
 
                 this.Base.AddArguments args
                 @ [ $" --methods-filter-regex {this.FilterPattern}"
+                    $" --target-methods-regex {this.TargetMethodsRegex}"
                     $" --inline {this.Inline}"
-                    $" --merge-undefined-events {this.MergeUndefinedThreadEvents}" ]
+                    $" --merge-undefined-events {this.MergeUndefinedThreadEvents}"
+                    $" --cpp-profiler-mode {if this.OnlineSerialization then onlineMode else offlineMode}"
+                    $" --use-during-runtime-filtering {this.DuringRuntimeFiltering}"]
 
 
-    let private createConfigInternal csprojPath outputPath doInline merge =
+    let private createConfigInternal csprojPath outputPath doInline merge onlineSerialization runtimeFiltering targetMethodsRegex =
         { Base = createDefaultConfigBase csprojPath outputPath
           Inline = doInline
+          TargetMethodsRegex = targetMethodsRegex 
           FilterPattern = applicationNameFromCsproj csprojPath
-          MergeUndefinedThreadEvents = merge }
+          MergeUndefinedThreadEvents = merge
+          OnlineSerialization = onlineSerialization
+          DuringRuntimeFiltering = runtimeFiltering }
 
     let private createInlineMerge solutionPath outputPath : ICommandConfig =
-        createConfigInternal solutionPath outputPath InlineMode.EventsAndMethodsEventsWithFilter true
+        createConfigInternal solutionPath outputPath InlineMode.EventsAndMethodsEventsWithFilter true false false ".*"
 
     let private createNoInlineMerge solutionPath outputPath : ICommandConfig =
-        createConfigInternal solutionPath outputPath InlineMode.NotInline true
+        createConfigInternal solutionPath outputPath InlineMode.NotInline true false true ".*"
 
     let private createInlineNoMerge solutionPath outputPath : ICommandConfig =
-        createConfigInternal solutionPath outputPath InlineMode.EventsAndMethodsEventsWithFilter false
+        createConfigInternal solutionPath outputPath InlineMode.EventsAndMethodsEventsWithFilter false true false ".*"
 
     let private createNoInlineNoMerge solutionPath outputPath : ICommandConfig =
-        createConfigInternal solutionPath outputPath InlineMode.NotInline false
+        createConfigInternal solutionPath outputPath InlineMode.NotInline false true true ".*"
 
     let private allConfigs =
         [ ("inline_merge", createInlineMerge)
