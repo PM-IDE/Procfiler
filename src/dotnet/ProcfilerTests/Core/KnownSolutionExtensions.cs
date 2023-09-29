@@ -10,14 +10,17 @@ namespace ProcfilerTests.Core;
 
 public static class KnownSolutionExtensions
 {
-  public static CollectClrEventsFromExeContext CreateContextWithFilter(this KnownSolution solution) 
-    => CreateContextInternal(solution, CreateDefaultContextWithFilter(solution));
+  public static CollectClrEventsFromExeContext CreateContextWithFilter(this KnownSolution solution) => 
+    CreateContextInternal(solution, CreateDefaultContextWithFilter(solution));
 
-  public static CollectClrEventsFromExeContext CreateDefaultContext(this KnownSolution solution)
-    => CreateContextInternal(solution, CreateDefaultCommonContext());
+  public static CollectClrEventsFromExeContext CreateDefaultContext(this KnownSolution solution) => 
+    CreateContextInternal(solution, CreateDefaultCommonContext());
 
-  public static CollectClrEventsFromExeContext CreateOnlineSerializationContext(this KnownSolution solution)
-    => CreateContextInternal(solution, CreateOnlineSerializationCommonContext());
+  public static CollectClrEventsFromExeContext CreateOnlineSerializationContext(this KnownSolution solution) => 
+    CreateContextInternal(solution, CreateOnlineSerializationCommonContext());
+
+  public static CollectClrEventsFromExeContext CreateOnlineSerializationContextWithFilter(this KnownSolution solution) => 
+    CreateContextInternal(solution, CreateOnlineSerializationCommonContextWithFilter(solution));
   
   private static CollectClrEventsFromExeContext CreateContextInternal(
     KnownSolution knownSolution, CollectingClrEventsCommonContext context)
@@ -51,6 +54,14 @@ public static class KnownSolutionExtensions
   private static CollectingClrEventsCommonContext CreateDefaultContextWithFilter(KnownSolution solution)
   {
     return CreateDefaultCommonContext() with
+    {
+      CppProcfilerMethodsFilterRegex = solution.Name
+    };
+  }
+
+  private static CollectingClrEventsCommonContext CreateOnlineSerializationCommonContextWithFilter(KnownSolution solution)
+  {
+    return CreateOnlineSerializationCommonContext() with
     {
       CppProcfilerMethodsFilterRegex = solution.Name
     };

@@ -10,6 +10,7 @@ namespace ProcfilerTests.Tests;
 public class MethodStartEndConsistencyTest : ProcessTestBase
 {
   [TestCaseSource(nameof(DefaultContexts))]
+  [TestCaseSource(nameof(OnlineSerializationContexts))]
   public void Test(ContextWithSolution dto) => DoTest(dto);
 
   private void DoTest(ContextWithSolution dto)

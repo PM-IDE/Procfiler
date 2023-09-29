@@ -1,3 +1,4 @@
+using System.Collections;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Procfiler.Commands.CollectClrEvents.Context;
@@ -20,6 +21,9 @@ public abstract class TestWithContainerBase
 
   protected static IEnumerable<ContextWithSolution> DefaultContextsWithFilter() => 
     KnownSolution.AllSolutions.Select(s => new ContextWithSolution(s, s.CreateContextWithFilter()));
+
+  protected static IEnumerable<ContextWithSolution> OnlineSerializationContextsWithFilter() =>
+    KnownSolution.AllSolutions.Select(s => new ContextWithSolution(s, s.CreateOnlineSerializationContextWithFilter()));
 
 
   protected readonly IContainer Container;

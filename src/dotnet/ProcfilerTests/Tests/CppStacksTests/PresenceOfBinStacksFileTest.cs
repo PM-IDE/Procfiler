@@ -10,6 +10,7 @@ public class PresenceOfBinStacksFileTest : CppBinStacksTestBase
 
 
   [TestCaseSource(nameof(DefaultContexts))]
+  [TestCaseSource(nameof(OnlineSerializationContexts))]
   public void TestPresenceOfBinStacks(ContextWithSolution dto) => DoTestWithPath(dto.Context, (binStacksPath, mode) =>
   {
     Assert.Multiple(() =>

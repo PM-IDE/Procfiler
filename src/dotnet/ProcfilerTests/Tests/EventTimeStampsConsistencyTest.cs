@@ -10,6 +10,7 @@ namespace ProcfilerTests.Tests;
 public class EventTimeStampsConsistencyTest : ProcessTestBase
 {
   [TestCaseSource(nameof(DefaultContexts))]
+  [TestCaseSource(nameof(OnlineSerializationContexts))]
   public void Test(ContextWithSolution dto) => DoTest(dto);
 
 

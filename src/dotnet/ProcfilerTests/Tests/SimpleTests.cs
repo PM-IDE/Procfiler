@@ -8,6 +8,7 @@ namespace ProcfilerTests.Tests;
 public class SimpleTests : ProcessTestBase
 {
   [TestCaseSource(nameof(DefaultContexts))]
+  [TestCaseSource(nameof(OnlineSerializationContexts))]
   public void TestSimpleManagedThreadSplitAttributes(ContextWithSolution dto)
   {
     StartProcessAndDoTestWithDefaultContext(dto.Context, events =>
@@ -22,6 +23,7 @@ public class SimpleTests : ProcessTestBase
   }
 
   [TestCaseSource(nameof(DefaultContexts))]
+  [TestCaseSource(nameof(OnlineSerializationContexts))]
   public void TestSimpleSplitByNamesAttributes(ContextWithSolution dto)
   {
     StartProcessAndDoTestWithDefaultContext(dto.Context, events =>

@@ -12,6 +12,7 @@ public class BinStacksWithFilterTest : CppBinStacksTestBase
 
 
   [TestCaseSource(nameof(DefaultContextsWithFilter))]
+  [TestCaseSource(nameof(OnlineSerializationContextsWithFilter))]
   public void TestBinStacksWithFilter(ContextWithSolution dto) => DoTestWithCollectedEvents(dto.Context, events =>
   {
     var shadowStacks = events.GlobalData.Stacks;

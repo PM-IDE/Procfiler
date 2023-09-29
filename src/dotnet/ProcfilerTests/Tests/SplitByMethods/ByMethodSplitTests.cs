@@ -9,6 +9,7 @@ namespace ProcfilerTests.Tests.SplitByMethods;
 public class ByMethodSplitTests : GoldProcessBasedTest
 {
   [TestCaseSource(nameof(DefaultContexts))]
+  [TestCaseSource(nameof(OnlineSerializationContexts))]
   public void Test(ContextWithSolution dto) => DoTest(dto);
 
   private void DoTest(ContextWithSolution dto)
