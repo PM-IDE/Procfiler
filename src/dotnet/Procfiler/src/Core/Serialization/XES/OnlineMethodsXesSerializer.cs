@@ -1,4 +1,5 @@
 using Procfiler.Commands.CollectClrEvents.Split;
+using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.SplitByMethod;
@@ -44,8 +45,14 @@ public class OnlineMethodsXesSerializer(
     {
       return null;
     }
+
+    var name = methodNameBeautifier.Beautify(methodName);
+    if (!name.EndsWith(XesSerializersUtil.XesExtension))
+    {
+      name += XesSerializersUtil.XesExtension;
+    }
     
-    var filePath = Path.Join(outputDirectory, methodNameBeautifier.Beautify(methodName));
+    var filePath = Path.Join(outputDirectory, name);
 
     return myWriters.GetOrCreate(filePath, () =>
     {
