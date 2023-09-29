@@ -21,6 +21,7 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   private readonly IProcfilerEventsFactory myEventsFactory;
   private readonly SessionGlobalData myGlobalData;
   private readonly ICppShadowStack myShadowStack;
+  private readonly bool myAggressiveReuse;
 
 
   public override long Count => PointersManager.Count;
@@ -29,10 +30,12 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   public MethodStartEndModificationSource(
     IProcfilerEventsFactory eventsFactory,
     SessionGlobalData globalData,
-    ICppShadowStack shadowStack) : base(shadowStack.FramesCount)
+    ICppShadowStack shadowStack,
+    bool aggressiveReuse) : base(shadowStack.FramesCount)
   {
     Debug.Assert(shadowStack.FramesCount > 0);
 
+    myAggressiveReuse = aggressiveReuse;
     myGlobalData = globalData;
     myShadowStack = shadowStack;
     myEventsFactory = eventsFactory;
@@ -40,5 +43,9 @@ public class MethodStartEndModificationSource : ModificationSourceBase
 
 
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() =>
-    myShadowStack.EnumerateMethods(myEventsFactory, myGlobalData);
+    myAggressiveReuse switch
+    {
+      true => myShadowStack.EnumerateMethods(myEventsFactory, myGlobalData),
+      false => myShadowStack.EnumerateMethodsAggressiveReuse(myEventsFactory, myGlobalData)
+    };
 }

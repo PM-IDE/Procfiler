@@ -8,7 +8,7 @@ using Procfiler.Utils;
 namespace Procfiler.Core.EventsProcessing.Mutators.MultipleEventsMutators;
 
 public class CppStacksMethodsStartEndMutator(
-  IProcfilerEventsFactory factory, IProcfilerLogger logger) : IMethodsStartEndProcessor
+  IProcfilerEventsFactory factory, IProcfilerLogger logger, bool aggressiveReuse) : IMethodsStartEndProcessor
 {
   public void Process(IEventsCollection events, SessionGlobalData context)
   {
@@ -39,7 +39,7 @@ public class CppStacksMethodsStartEndMutator(
       return;
     }
 
-    var modificationSource = new MethodStartEndModificationSource(factory, context, foundShadowStack);
+    var modificationSource = new MethodStartEndModificationSource(factory, context, foundShadowStack, aggressiveReuse);
     events.InjectModificationSource(modificationSource);
   }
 }
