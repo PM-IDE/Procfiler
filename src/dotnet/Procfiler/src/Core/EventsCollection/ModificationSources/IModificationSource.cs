@@ -45,7 +45,7 @@ public class MethodStartEndModificationSource : ModificationSourceBase
   protected override IEnumerable<EventRecordWithMetadata> EnumerateInitialEvents() =>
     myAggressiveReuse switch
     {
-      true => myShadowStack.EnumerateMethods(myEventsFactory, myGlobalData),
-      false => myShadowStack.EnumerateMethodsAggressiveReuse(myEventsFactory, myGlobalData)
+      true => myShadowStack.EnumerateMethodsAggressiveReuse(myEventsFactory, myGlobalData),
+      false => myShadowStack.EnumerateMethods(myEventsFactory, myGlobalData),
     };
 }
