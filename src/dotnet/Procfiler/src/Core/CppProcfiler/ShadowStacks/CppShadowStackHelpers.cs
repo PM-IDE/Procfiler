@@ -8,15 +8,14 @@ public static class CppShadowStackHelpers
     framesCount = reader.ReadInt64();
   }
 
-  public static long CalculateByteLength(long framesCount)
-  {
-    //start or end indicator + timestamp + function id
-    const long OneFrameLength = 1 + 8 + 8;
-    //managed thread id + framesCount
-    const long HeaderSize = 8 + 8;
+  //start or end indicator + timestamp + function id
+  public const long OneFrameLength = 1 + 8 + 8;
 
-    return framesCount * OneFrameLength + HeaderSize;
-  }
+  //managed thread id + framesCount
+  public const long HeaderSize = 8 + 8;
+  
+
+  public static long CalculateByteLength(long framesCount) => framesCount * OneFrameLength + HeaderSize;
 
   public static void SeekToPositionAndSkipHeader(BinaryReader reader, long position)
   {

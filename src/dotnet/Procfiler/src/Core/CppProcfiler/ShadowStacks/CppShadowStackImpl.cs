@@ -31,24 +31,13 @@ public class CppShadowStackImpl : ICppShadowStack
 
   public IEnumerator<FrameInfo> GetEnumerator()
   {
-    using var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
-    using var reader = new BinaryReader(fs);
+    var fs = PathUtils.OpenReadWithRetryOrThrow(myLogger, myBinStackFilePath);
+    var reader = new BinaryReader(fs);
 
     CppShadowStackHelpers.SeekToPositionAndSkipHeader(reader, myStartPosition);
 
-    var frameInfo = new FrameInfo();
-    for (long i = 0; i < FramesCount; i++)
-    {
-      frameInfo.IsStart = reader.ReadByte() == 1;
-      frameInfo.TimeStamp = reader.ReadInt64();
-      frameInfo.FunctionId = reader.ReadInt64();
-
-      yield return frameInfo;
-    }
+    return new CppShadowStackEnumerator(reader);
   }
 
-  IEnumerator IEnumerable.GetEnumerator()
-  {
-    return GetEnumerator();
-  }
+  IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
