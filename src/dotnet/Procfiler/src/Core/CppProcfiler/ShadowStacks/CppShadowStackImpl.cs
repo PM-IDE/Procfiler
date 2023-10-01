@@ -36,7 +36,7 @@ public class CppShadowStackImpl : ICppShadowStack
 
     CppShadowStackHelpers.SeekToPositionAndSkipHeader(reader, myStartPosition);
 
-    return new CppShadowStackEnumerator(reader);
+    return new CppShadowStackEnumerator(reader, FramesCount);
   }
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

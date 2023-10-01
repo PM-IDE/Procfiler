@@ -1,6 +1,6 @@
 namespace Procfiler.Core.CppProcfiler.ShadowStacks;
 
-internal class CppShadowStackEnumerator(BinaryReader reader) : IEnumerator<FrameInfo>
+internal class CppShadowStackEnumerator(BinaryReader reader, long framesCount) : IEnumerator<FrameInfo>
 {
   private const int FramesToRead = 5000;
 
@@ -9,6 +9,7 @@ internal class CppShadowStackEnumerator(BinaryReader reader) : IEnumerator<Frame
   private int myNextIndexInBuffer = -1;
   private int myFramesCountInBuffer;
   private int myReadFramesForCurrentBuffer;
+  private long myTotalReadFrames;
 
   
   object IEnumerator.Current => Current;
@@ -24,7 +25,7 @@ internal class CppShadowStackEnumerator(BinaryReader reader) : IEnumerator<Frame
       myNextIndexInBuffer = 0;
     }
     
-    if (myReadFramesForCurrentBuffer >= myFramesCountInBuffer)
+    if (myReadFramesForCurrentBuffer >= myFramesCountInBuffer || myTotalReadFrames >= framesCount)
     {
       return false;
     }
@@ -38,6 +39,7 @@ internal class CppShadowStackEnumerator(BinaryReader reader) : IEnumerator<Frame
     myNextIndexInBuffer += sizeof(long);
 
     myReadFramesForCurrentBuffer++;
+    myTotalReadFrames++;
     
     return true;
   }
