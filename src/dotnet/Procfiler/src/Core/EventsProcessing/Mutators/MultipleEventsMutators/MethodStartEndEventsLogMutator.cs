@@ -35,7 +35,7 @@ public class MethodStartEndEventsLogMutator(
     IMethodsStartEndProcessor processor = context.Stacks switch
     {
       IFromEventsShadowStacks => new FromEventsMethodsStartEndMutator(factory, logger),
-      ICppShadowStacks => new CppStacksMethodsStartEndMutator(factory, logger, false),
+      ICppShadowStacks => new CppStacksMethodsStartEndMutator(factory, logger, true),
       _ => throw new ArgumentOutOfRangeException(context.Stacks.GetType().Name)
     };
 

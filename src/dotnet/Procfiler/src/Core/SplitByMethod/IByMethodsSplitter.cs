@@ -48,7 +48,7 @@ public class ByMethodsSplitterImpl(
 
       var mergedEvents = mergeUndefinedThreadEvents switch
       {
-        true => MergeUndefinedThreadEvents(threadEvents, undefinedThreadEvents),
+        true => MergeUndefinedThreadEventsLazy(threadEvents, undefinedThreadEvents),
         false => threadEvents
       };
       
@@ -140,5 +140,10 @@ public class ByMethodsSplitterImpl(
   {
     using var __ = new PerformanceCookie($"{GetType().Name}::{nameof(MergeUndefinedThreadEvents)}", logger);
     return undefinedThreadsEventsMerger.Merge(managedThreadEvents, undefinedThreadEvents);
+  }
+  
+  private IEnumerable<EventRecordWithPointer> MergeUndefinedThreadEventsLazy(IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
+  {
+    return undefinedThreadsEventsMerger.MergeLazy(managedThreadEvents, undefinedThreadEvents);
   }
 }

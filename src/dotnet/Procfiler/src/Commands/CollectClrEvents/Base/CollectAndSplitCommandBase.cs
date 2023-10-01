@@ -82,7 +82,7 @@ public abstract class CollectAndSplitCommandBase<TKey>(
 
     if (correspondingEvents.Count == 0) return;
 
-    IEnumerable<EventRecordWithMetadata> mergedEvents = correspondingEvents.Select(pair => pair.Event);
+    IEnumerable<EventRecordWithPointer> mergedEvents = correspondingEvents;
     if (undefinedThreadEvents is { })
     {
       using (new PerformanceCookie($"{GetType().Name}::MergingEvents", Logger))
@@ -95,7 +95,7 @@ public abstract class CollectAndSplitCommandBase<TKey>(
     var extension = outputFormat.GetExtension();
     var filePath = Path.Combine(context.CommonContext.OutputPath, $"{key.ToString()}.{extension}");
 
-    delegatingEventsSerializer.SerializeEvents(mergedEvents, filePath, outputFormat);
+    delegatingEventsSerializer.SerializeEvents(mergedEvents.Select(ptr => ptr.Event), filePath, outputFormat);
   }
 
   private void SerializeStacks(CollectClrEventsContext context, SessionGlobalData globalData)

@@ -11,7 +11,7 @@ public interface IUndefinedThreadsEventsMerger
   IEventsCollection Merge(IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents);
 
   [Pure]
-  IEnumerable<EventRecordWithMetadata> MergeLazy(
+  IEnumerable<EventRecordWithPointer> MergeLazy(
     IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents);
 }
 
@@ -28,14 +28,14 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
     var index = 0;
     foreach (var eventRecord in MergeLazyInternal(managedThreadEvents, undefinedThreadEvents))
     {
-      mergedArray[index++] = eventRecord;
+      mergedArray[index++] = eventRecord.Event;
     }
 
     Array.Resize(ref mergedArray, index);
     return new EventsCollectionImpl(mergedArray, logger);
   }
 
-  public IEnumerable<EventRecordWithMetadata> MergeLazy(
+  public IEnumerable<EventRecordWithPointer> MergeLazy(
     IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
   {
     managedThreadEvents.Freeze();
@@ -43,7 +43,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
     return MergeLazyInternal(managedThreadEvents, undefinedThreadEvents);
   }
 
-  private IEnumerable<EventRecordWithMetadata> MergeLazyInternal(
+  private IEnumerable<EventRecordWithPointer> MergeLazyInternal(
     IEventsCollection managedThreadEvents, IEventsCollection undefinedThreadEvents)
   {
     var managedFinished = false;
@@ -60,7 +60,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
       {
         while (!undefinedFinished)
         {
-          yield return undefinedEnumerator.Current.Event;
+          yield return undefinedEnumerator.Current;
 
           if (!undefinedEnumerator.MoveNext())
           {
@@ -75,7 +75,7 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
       {
         while (!managedFinished)
         {
-          yield return managedEnumerator.Current.Event;
+          yield return managedEnumerator.Current;
 
           if (!managedEnumerator.MoveNext())
           {
@@ -86,10 +86,10 @@ public class UndefinedThreadsEventsMerger(IProcfilerLogger logger) : IUndefinedT
         break;
       }
 
-      var managedEvent = managedEnumerator.Current.Event;
-      var undefinedEvent = undefinedEnumerator.Current.Event;
+      var managedEvent = managedEnumerator.Current;
+      var undefinedEvent = undefinedEnumerator.Current;
 
-      if (managedEvent.Stamp < undefinedEvent.Stamp)
+      if (managedEvent.Event.Stamp < undefinedEvent.Event.Stamp)
       {
         yield return managedEvent;
 

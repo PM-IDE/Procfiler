@@ -61,8 +61,6 @@ public class DotnetProjectBuilderImpl(
     {
       FileName = "dotnet",
       WorkingDirectory = projectDirectory,
-      RedirectStandardOutput = true,
-      RedirectStandardError = true,
       CreateNoWindow = true,
       Environment =
       {
