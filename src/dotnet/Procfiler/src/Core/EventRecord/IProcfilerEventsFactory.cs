@@ -33,12 +33,16 @@ public interface IProcfilerEventsFactory
 [AppComponent]
 public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsFactory
 {
+  private readonly Dictionary<string, string> myStartMethodsNames = new();
+  private readonly Dictionary<string, string> myEndMethodsNames = new();
+
+
   public EventRecordWithMetadata CreateMethodStartEvent(EventsCreationContext context, string methodName)
   {
     return CreateMethodStartOrEndEvent(context, TraceEventsConstants.ProcfilerMethodStart, methodName);
   }
 
-  private static EventRecordWithMetadata CreateMethodStartOrEndEvent(
+  private EventRecordWithMetadata CreateMethodStartOrEndEvent(
     EventsCreationContext context, string eventClass, string methodName)
   {
     var (stamp, managedThreadId) = context;
@@ -50,9 +54,16 @@ public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsF
     };
   }
 
-  private static string CreateMethodStartOrEndEventName(string eventName, string fqn)
+  private string CreateMethodStartOrEndEventName(string eventClass, string fqn)
   {
-    return eventName + "_{" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(fqn) + "}";
+    var map = eventClass switch
+    {
+      TraceEventsConstants.ProcfilerMethodStart => myStartMethodsNames,
+      TraceEventsConstants.ProcfilerMethodEnd => myEndMethodsNames,
+      _ => throw new ArgumentOutOfRangeException(nameof(eventClass), eventClass, null)
+    };
+
+    return map.GetOrCreate(fqn, () => eventClass + "_{" + MutatorsUtil.TransformMethodLikeNameForEventNameConcatenation(fqn) + "}");
   }
 
   private static void SetMethodNameInMetadata(IEventMetadata metadata, string fqn)
@@ -99,7 +110,7 @@ public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsF
     var methodId = context.FrameInfo.FunctionId;
     if (!context.GlobalData.MethodIdToFqn.TryGetValue(methodId, out var fqn))
     {
-      logger.LogWarning("Failed to get fqn for {FunctionId}", methodId);
+      logger.LogTrace("Failed to get fqn for {FunctionId}", methodId);
       fqn = $"System.Undefined.{methodId}[instance.void..()]";
     }
 
