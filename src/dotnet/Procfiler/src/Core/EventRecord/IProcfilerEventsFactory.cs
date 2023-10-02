@@ -35,6 +35,7 @@ public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsF
 {
   private readonly Dictionary<string, string> myStartMethodsNames = new();
   private readonly Dictionary<string, string> myEndMethodsNames = new();
+  private readonly Dictionary<string, string> myMethodExecutionNames = new();
 
 
   public EventRecordWithMetadata CreateMethodStartEvent(EventsCreationContext context, string methodName)
@@ -91,8 +92,8 @@ public class ProcfilerEventsFactory(IProcfilerLogger logger) : IProcfilerEventsF
     return new EventRecordWithMetadata(stamp, name, managedThreadId, -1, metadata);
   }
 
-  private static string CreateEventNameForMethodExecutionEvent(string fqn) =>
-    $"{TraceEventsConstants.ProcfilerMethodExecution}_{fqn}";
+  private string CreateEventNameForMethodExecutionEvent(string fqn) =>
+     myMethodExecutionNames.GetOrCreate(fqn, () => $"{TraceEventsConstants.ProcfilerMethodExecution}_{fqn}");
 
   public EventRecordWithMetadata CreateMethodEvent(FromFrameInfoCreationContext context)
   {
