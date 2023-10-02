@@ -182,6 +182,17 @@ public class CommandExecutorImpl(
         return;
       }
 
+      var sb = new StringBuilder();
+      if (context.CommonContext.PrintProcessOutput)
+      {
+        process.OutputDataReceived += (_, args) =>
+        {
+          sb.Append(args.Data);
+        };
+      }
+
+      process.BeginOutputReadLine();
+
       CollectedEvents? events = null;
       try
       {
@@ -204,9 +215,8 @@ public class CommandExecutorImpl(
 
       if (context.CommonContext.PrintProcessOutput)
       {
-        var output = process.StandardOutput.ReadToEnd();
         logger.LogInformation("Process output:");
-        logger.LogInformation(output);
+        logger.LogInformation(sb.ToString());
       }
 
       if (!process.HasExited)
