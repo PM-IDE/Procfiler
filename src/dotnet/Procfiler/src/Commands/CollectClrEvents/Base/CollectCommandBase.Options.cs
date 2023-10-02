@@ -109,7 +109,7 @@ public partial class CollectCommandBase
     new("--cpp-profiler-mode", static () => CppProfilerMode.SingleFileBinStack, "Should we load cpp profiler");
 
   private Option<bool> UseDuringRuntimeMethodsFiltering { get; } =
-    new("--use-during-runtime-filtering", static () => false, "Whether to use during runtime methods filtering");
+    new("--use-during-runtime-filtering", static () => true, "Whether to use during runtime methods filtering");
 
   private Option<bool> UseCppProfilerConsoleLogging { get; } =
     new("--cpp-profiler-use-console-logging", static () => false, "Enable console logging in cpp profiler");
