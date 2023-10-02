@@ -53,7 +53,7 @@ public class SplitterImplementation(
 
   private static void HandleNormalUpdate(NormalEventUpdate<List<EventRecordWithMetadata>> normalEventUpdate)
   {
-    normalEventUpdate.FrameInfo.State!.Add(normalEventUpdate.Event);
+    normalEventUpdate.FrameInfo.State!.Add(normalEventUpdate.Event.DeepClone());
   }
 
   private void HandleMethodFinishedUpdate(MethodFinishedUpdate<List<EventRecordWithMetadata>> methodFinishedUpdate)

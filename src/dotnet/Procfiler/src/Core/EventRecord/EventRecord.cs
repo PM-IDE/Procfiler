@@ -77,6 +77,8 @@ public class EventRecordWithMetadata : EventRecord
   {
     Metadata = new EventMetadata(other.Metadata);
   }
+
+  public EventRecordWithMetadata DeepClone() => new(this);
 }
 
 public static class EventRecordExtensions
