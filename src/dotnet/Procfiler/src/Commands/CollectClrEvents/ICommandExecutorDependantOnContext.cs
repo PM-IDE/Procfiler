@@ -189,9 +189,9 @@ public class CommandExecutorImpl(
         {
           sb.Append(args.Data);
         };
-      }
 
-      process.BeginOutputReadLine();
+        process.BeginOutputReadLine();
+      }
 
       CollectedEvents? events = null;
       try
