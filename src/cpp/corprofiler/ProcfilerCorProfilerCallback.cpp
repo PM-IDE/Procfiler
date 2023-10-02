@@ -131,18 +131,26 @@ HRESULT ProcfilerCorProfilerCallback::Shutdown() {
     myLogger->LogInformation("Shutting down profiler");
 
     myShadowStack->SuppressFurtherMethodsEvents();
+    myLogger->LogInformation("Suppressed further events");
+
     myShadowStack->WaitForPendingMethodsEvents();
+    myLogger->LogInformation("Finished wait for events");
+
     myShadowStack->AdjustShadowStacks();
+    myLogger->LogInformation("Adjusted shadow-stacks");
 
     myShadowStackSerializer->Serialize(myShadowStack);
+    myLogger->LogInformation("Serialized shadow-stack");
 
     delete myShadowStack;
+    myLogger->LogInformation("Deleted shadow-stack");
 
     if (myProfilerInfo != nullptr) {
         myProfilerInfo->Release();
         myProfilerInfo = nullptr;
     }
 
+    myLogger->LogInformation("Shutted down profiler");
     return S_OK;
 }
 
