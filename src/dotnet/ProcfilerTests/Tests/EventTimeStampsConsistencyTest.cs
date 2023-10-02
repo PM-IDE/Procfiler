@@ -23,24 +23,30 @@ public class EventTimeStampsConsistencyTest : ProcessTestBase
         var processor = Container.Resolve<IUnitedEventsProcessor>();
         processor.ApplyMultipleMutators(events, globalData, EmptyCollections<Type>.EmptySet);
 
-        EventRecordWithMetadata? prev = null;
+        long? prevStamp = null;
+        long? prevThreadId = null;
+
         foreach (var (_, currentEvent) in events)
         {
-          if (prev is null)
+          if (prevStamp is null)
           {
-            prev = currentEvent;
+            prevStamp = currentEvent.Stamp;
+            prevThreadId = currentEvent.ManagedThreadId;
           }
           else
           {
-            if (prev.ManagedThreadId != currentEvent.ManagedThreadId)
+            if (prevThreadId != currentEvent.ManagedThreadId)
             {
               Assert.Fail("Managed thread ids were not equal");
             }
 
-            if (prev.Stamp > currentEvent.Stamp)
+            if (prevStamp > currentEvent.Stamp)
             {
               Assert.Fail("first.Value.Stamp > second.Value.Stamp");
             }
+
+            prevStamp = currentEvent.Stamp;
+            prevThreadId = currentEvent.ManagedThreadId;
           }
         }
       }
