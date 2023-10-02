@@ -1,6 +1,7 @@
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsCollection.ModificationSources;
+using Procfiler.Utils;
 
 namespace ProcfilerTests.Tests.EventsCollection;
 
@@ -12,7 +13,7 @@ public class TestModificationSource : ModificationSourceBase, IModificationSourc
   public override long Count => PointersManager.Count;
 
 
-  public TestModificationSource(EventRecordWithMetadata[] initialEvents) : base(initialEvents.Length)
+  public TestModificationSource(IProcfilerLogger logger, EventRecordWithMetadata[] initialEvents) : base(logger, initialEvents.Length)
   {
     myInitialEvents = initialEvents;
   }

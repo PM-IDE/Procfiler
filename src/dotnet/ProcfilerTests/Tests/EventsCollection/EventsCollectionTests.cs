@@ -298,7 +298,7 @@ public class EventsCollectionTests
     var events = CreateInitialArrayOfRandomEvents();
     var modificationSourceEvents = CreateInitialArrayOfRandomEvents();
     var collection = CreateNewCollection(events);
-    var modificationSource = new TestModificationSource(modificationSourceEvents);
+    var modificationSource = new TestModificationSource(TestLogger.CreateInstance(), modificationSourceEvents);
     collection.InjectModificationSource(modificationSource);
 
     var concatenation = events.Concat(modificationSourceEvents).OrderBy(x => x.Stamp);
@@ -318,7 +318,7 @@ public class EventsCollectionTests
     {
       var modificationEvents = CreateInitialArrayOfRandomEvents();
       additionalLength += modificationEvents.Length;
-      collection.InjectModificationSource(new TestModificationSource(modificationEvents));
+      collection.InjectModificationSource(new TestModificationSource(TestLogger.CreateInstance(), modificationEvents));
     }
 
     Assert.That(collection.Count, Is.EqualTo(events.Length + additionalLength));
@@ -337,7 +337,7 @@ public class EventsCollectionTests
     {
       var modificationEvents = CreateInitialArrayOfRandomEvents();
       modifications.Add(modificationEvents);
-      collection.InjectModificationSource(new TestModificationSource(modificationEvents));
+      collection.InjectModificationSource(new TestModificationSource(TestLogger.CreateInstance(), modificationEvents));
     }
 
     var concatenation = events.Concat(modifications.SelectMany(source => source)).OrderBy(e => e.Stamp);

@@ -39,7 +39,7 @@ public class CppStacksMethodsStartEndMutator(
       return;
     }
 
-    var modificationSource = new MethodStartEndModificationSource(factory, context, foundShadowStack, aggressiveReuse);
+    var modificationSource = new MethodStartEndModificationSource(logger, factory, context, foundShadowStack, aggressiveReuse);
     events.InjectModificationSource(modificationSource);
   }
 }

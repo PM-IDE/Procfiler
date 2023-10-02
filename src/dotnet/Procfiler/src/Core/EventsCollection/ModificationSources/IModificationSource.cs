@@ -1,13 +1,14 @@
 using Procfiler.Core.Collector;
 using Procfiler.Core.CppProcfiler.ShadowStacks;
 using Procfiler.Core.EventRecord;
+using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsCollection.ModificationSources;
 
 public interface IModificationSource : IEventsOwner;
 
-public abstract class ModificationSourceBase(long initialEventsCount)
-  : EventsOwnerBase(initialEventsCount), IModificationSource
+public abstract class ModificationSourceBase(IProcfilerLogger logger, long initialEventsCount)
+  : EventsOwnerBase(logger, initialEventsCount), IModificationSource
 {
   public override bool Remove(EventPointer pointer)
   {
@@ -28,10 +29,11 @@ public class MethodStartEndModificationSource : ModificationSourceBase
 
 
   public MethodStartEndModificationSource(
+    IProcfilerLogger logger,
     IProcfilerEventsFactory eventsFactory,
     SessionGlobalData globalData,
     ICppShadowStack shadowStack,
-    bool aggressiveReuse) : base(shadowStack.FramesCount)
+    bool aggressiveReuse) : base(logger, shadowStack.FramesCount)
   {
     Debug.Assert(shadowStack.FramesCount > 0);
 

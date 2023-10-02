@@ -15,7 +15,7 @@ public class EventsCollectionImpl : EventsOwnerBase, IEventsCollection
 
 
   public EventsCollectionImpl(EventRecordWithMetadata[] initialEvents, IProcfilerLogger logger)
-    : base(initialEvents.Length)
+    : base(logger, initialEvents.Length)
   {
     if (initialEvents.Length == 0) throw new IndexOutOfRangeException();
 

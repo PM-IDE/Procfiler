@@ -1,9 +1,11 @@
 using Procfiler.Core.EventRecord;
+using Procfiler.Utils;
 
 namespace Procfiler.Core.EventsCollection;
 
 public abstract class EventsOwnerBase : IEventsOwner
 {
+  private readonly IProcfilerLogger myLogger;
   protected readonly EventPointersManager PointersManager;
 
   private bool myIsFrozen;
@@ -12,8 +14,9 @@ public abstract class EventsOwnerBase : IEventsOwner
   public abstract long Count { get; }
 
 
-  protected EventsOwnerBase(long initialEventsCount)
+  protected EventsOwnerBase(IProcfilerLogger logger, long initialEventsCount)
   {
+    myLogger = logger;
     PointersManager = new EventPointersManager(initialEventsCount, new InsertedEvents(), this);
   }
 
@@ -23,7 +26,12 @@ public abstract class EventsOwnerBase : IEventsOwner
   protected IEnumerable<EventRecordWithPointer> EnumerateInternal()
   {
     using var initialEventsEnumerator = EnumerateInitialEvents().GetEnumerator();
-    initialEventsEnumerator.MoveNext();
+    if (!initialEventsEnumerator.MoveNext())
+    {
+      myLogger.LogWarning("The enumerator is empty for {Type}", GetType().Name);
+      yield break;
+    }
+    
     var currentIndex = 0;
 
     var current = PointersManager.First;
@@ -45,7 +53,12 @@ public abstract class EventsOwnerBase : IEventsOwner
         Debug.Assert(current.Value.IsInInitialArray);
         while (currentIndex != current.Value.IndexInArray)
         {
-          initialEventsEnumerator.MoveNext();
+          if (!initialEventsEnumerator.MoveNext())
+          {
+            myLogger.LogWarning("The enumerator finished before pointer, maybe corrupted stacks in {Type}", GetType().Name);
+            yield break;
+          }
+
           ++currentIndex;
         }
 
