@@ -1,6 +1,7 @@
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
+using Procfiler.Utils;
 
 namespace Procfiler.Core.SplitByMethod;
 
@@ -23,6 +24,7 @@ public enum EventKind
 }
 
 public class CallbackBasedSplitter<T>(
+  IProcfilerLogger logger,
   IEnumerable<EventRecordWithPointer> events,
   string filterPattern,
   InlineMode inlineMode,
@@ -75,6 +77,12 @@ public class CallbackBasedSplitter<T>(
 
   private void ProcessEndOfMethod(string frame, EventRecordWithMetadata methodEndEvent)
   {
+    if (myFramesStack.Count == 0)
+    {
+      logger.LogWarning("Broken stacks: method {Name} ended without starting", frame);
+      return;
+    }
+
     var topOfStack = myFramesStack.Pop();
     if (!topOfStack.ShouldProcess) return;
 

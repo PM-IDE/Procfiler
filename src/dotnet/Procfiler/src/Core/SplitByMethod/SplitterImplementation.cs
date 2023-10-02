@@ -6,6 +6,7 @@ using Procfiler.Utils;
 namespace Procfiler.Core.SplitByMethod;
 
 public class SplitterImplementation(
+  IProcfilerLogger logger,
   IProcfilerEventsFactory eventsFactory,
   IEnumerable<EventRecordWithPointer> events,
   string filterPattern,
@@ -18,7 +19,7 @@ public class SplitterImplementation(
   public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyList<EventRecordWithMetadata>>> Split()
   {
     var splitter = new CallbackBasedSplitter<List<EventRecordWithMetadata>>(
-      events, filterPattern, inlineMode, static _ => new List<EventRecordWithMetadata>(), HandleUpdate);
+      logger, events, filterPattern, inlineMode, static _ => new List<EventRecordWithMetadata>(), HandleUpdate);
 
     splitter.Split();
     return myResult;

@@ -33,7 +33,7 @@ public class OnlineMethodsXesSerializer(
     InlineMode inlineMode)
   {
     var splitter = new CallbackBasedSplitter<PathWriterStateWithLastEvent>(
-      events, filterPattern, inlineMode, @event => CreateWriter(outputDirectory, @event), HandleUpdate);
+      logger, events, filterPattern, inlineMode, @event => CreateWriter(outputDirectory, @event), HandleUpdate);
     
     splitter.Split();
   }
