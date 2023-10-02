@@ -22,14 +22,7 @@ public class NotNeededMethodsCallsRemover : IMultipleEventsMutator
 
   public void Process(IEventsCollection events, SessionGlobalData context)
   {
-    foreach (var (ptr, eventRecord) in events)
-    {
-      if (eventRecord.TryGetMethodStartEndEventInfo() is var (frameName, _) &&
-          ShouldSkipFrame(frameName))
-      {
-        events.Remove(ptr);
-      }
-    }
+    events.AddFilter(eventRecord => eventRecord.TryGetMethodStartEndEventInfo() is var (frameName, _) && ShouldSkipFrame(frameName));
   }
 
   private static bool ShouldSkipFrame(string frameName)

@@ -6,6 +6,8 @@ namespace Procfiler.Core.EventsCollection;
 public abstract class EventsOwnerBase : IEventsOwner
 {
   private readonly IProcfilerLogger myLogger;
+  private readonly List<Predicate<EventRecordWithMetadata>> myFilters = new();
+
   protected readonly EventPointersManager PointersManager;
 
   private bool myIsFrozen;
@@ -39,7 +41,7 @@ public abstract class EventsOwnerBase : IEventsOwner
     {
       if (PointersManager.TryGetInsertedEvent(current.Value) is { } insertedEvent)
       {
-        if (!PointersManager.IsRemoved(current.Value))
+        if (!PointersManager.IsRemoved(current.Value) && !ShouldFilter(insertedEvent))
         {
           yield return new EventRecordWithPointer
           {
@@ -62,7 +64,7 @@ public abstract class EventsOwnerBase : IEventsOwner
           ++currentIndex;
         }
 
-        if (!PointersManager.IsRemoved(current.Value))
+        if (!PointersManager.IsRemoved(current.Value) && !ShouldFilter(initialEventsEnumerator.Current))
         {
           yield return new EventRecordWithPointer
           {
@@ -82,6 +84,22 @@ public abstract class EventsOwnerBase : IEventsOwner
   public virtual EventPointer InsertBefore(EventPointer pointer, EventRecordWithMetadata eventToInsert) =>
     PointersManager.InsertBefore(pointer, eventToInsert);
 
+  public void AddFilter(Predicate<EventRecordWithMetadata> filter)
+  {
+    myFilters.Add(filter);
+  }
+
+  private bool ShouldFilter(EventRecordWithMetadata eventRecord)
+  {
+    if (myFilters.Count == 0) return false;
+
+    foreach (var predicate in myFilters)
+    {
+      if (predicate(eventRecord)) return true;
+    }
+
+    return false;
+  }
 
   public abstract bool Remove(EventPointer pointer);
 

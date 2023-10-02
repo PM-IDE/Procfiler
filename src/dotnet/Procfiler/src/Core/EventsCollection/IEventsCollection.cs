@@ -23,7 +23,10 @@ public interface IRemovableEventsCollection
   bool Remove(EventPointer pointer);
 }
 
-public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection;
+public interface IMutableEventsCollection : IRemovableEventsCollection, IInsertableEventsCollection
+{
+  void AddFilter(Predicate<EventRecordWithMetadata> filter);
+}
 
 public interface IEventsOwner : IMutableEventsCollection, IFreezableCollection, IEnumerable<EventRecordWithPointer>
 {
