@@ -6,14 +6,14 @@ serialize
 obtained event logs into different formats, in particular into XES. XES event logs can be then analyzed with different
 Process Mining tools, such as `ProM` or `pm4py`.
 
-Procfiler is a console application which supports following commands:
-
 ## Sources
 
 - https://github.com/ABaboshin/DotNetCoreProfiler
 - https://github.com/dotnet/runtime/tree/main/src/tests/profiler
 - https://github.com/dotnet/runtime/tree/main/docs/design/coreclr/profiling
 - https://github.com/Microsoft/perfview
+
+Procfiler is a console application which supports following commands:
 
 ## Top level commands:
 
