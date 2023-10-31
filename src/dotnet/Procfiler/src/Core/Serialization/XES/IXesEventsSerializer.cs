@@ -10,10 +10,10 @@ namespace Procfiler.Core.Serialization.XES;
 
 public interface IXesEventsSerializer
 {
-  void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream);
-  void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum);
+  void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream, bool writeAllMetadata);
+  void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum, bool writeAllMetadata);
   void WriteHeader(XmlWriter writer);
-  void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer);
+  void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer, bool writeAllMetadata);
   void WriteTraceStart(XmlWriter writer, int traceNum);
 }
 
@@ -26,7 +26,7 @@ public partial class XesEventsSerializer(
   [ThreadStatic] private static int ourNextEventId;
 
 
-  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream)
+  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream, bool writeAllMetadata)
   {
     using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", logger);
 
@@ -40,13 +40,13 @@ public partial class XesEventsSerializer(
     var traceNum = 0;
     foreach (var sessionInfo in eventsTraces)
     {
-      WriteTrace(traceNum++, sessionInfo, writer);
+      WriteTrace(traceNum++, sessionInfo, writer, writeAllMetadata);
     }
 
     writer.WriteEndElement();
   }
 
-  public void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum) => WriteTrace(traceNum, session, writer);
+  public void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum, bool writeAllMetadata) => WriteTrace(traceNum, session, writer, writeAllMetadata);
 
   public void WriteHeader(XmlWriter writer)
   {
@@ -54,7 +54,7 @@ public partial class XesEventsSerializer(
     DoWriteHeader(writer);
   }
 
-  public void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer) => WriteEventNode(writer, eventRecord);
+  public void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer, bool writeAllMetadata) => WriteEventNode(writer, eventRecord, writeAllMetadata);
   
   public void WriteTraceStart(XmlWriter writer, int traceNum)
   {
@@ -62,19 +62,19 @@ public partial class XesEventsSerializer(
     WriteStringValueTag(writer, ConceptName, traceNum.ToString());
   }
 
-  private void WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer)
+  private void WriteTrace(int traceNum, EventSessionInfo sessionInfo, XmlWriter writer, bool writeAllMetadata)
   {
     WriteTraceStart(writer, traceNum);
     
     foreach (var (_, currentEvent) in new OrderedEventsEnumerator(sessionInfo.Events))
     {
-      WriteEventNode(writer, currentEvent);
+      WriteEventNode(writer, currentEvent, writeAllMetadata);
     }
     
     writer.WriteEndElement();
   }
   
-  private static void WriteEventNode(XmlWriter writer, EventRecordWithMetadata currentEvent)
+  private static void WriteEventNode(XmlWriter writer, EventRecordWithMetadata currentEvent, bool writeAllMetadata)
   {
     using var _ = StartEndElementCookie.CreateStartEndElement(writer, null, EventTag, null);
 
@@ -88,10 +88,13 @@ public partial class XesEventsSerializer(
 
     WriteAndRemoveMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
-    
-    foreach (var key in currentEvent.Metadata.Keys)
+
+    if (writeAllMetadata)
     {
-      WriteAndRemoveMetadataValue(writer, currentEvent, key, key);
+      foreach (var key in currentEvent.Metadata.Keys)
+      {
+        WriteAndRemoveMetadataValue(writer, currentEvent, key, key);
+      } 
     }
   }
 

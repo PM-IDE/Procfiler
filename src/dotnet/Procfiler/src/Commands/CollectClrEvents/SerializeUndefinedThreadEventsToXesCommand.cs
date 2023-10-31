@@ -19,7 +19,7 @@ public class SerializeUndefinedThreadEventsToXesCommand(
 {
   public override void Execute(CollectClrEventsContext context)
   {
-    var mergingSerializer = new MergingTracesXesSerializer(serializer, Logger);
+    var mergingSerializer = new MergingTracesXesSerializer(serializer, Logger, context.CommonContext.WriteAllEventMetadata);
     var outputPath = Path.Combine(context.CommonContext.OutputPath, "UndefinedEvents.xes");
 
     ExecuteCommand(context, collectedEvents =>

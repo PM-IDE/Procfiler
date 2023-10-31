@@ -22,7 +22,8 @@ public record struct CollectingClrEventsCommonContext(
   CppProfilerMode CppProfilerMode,
   bool UseDuringRuntimeFiltering,
   bool CppProfilerUseConsoleLogging,
-  bool ClearArtifacts
+  bool ClearArtifacts,
+  bool WriteAllEventMetadata
 );
 
 public record struct ProjectBuildInfo(

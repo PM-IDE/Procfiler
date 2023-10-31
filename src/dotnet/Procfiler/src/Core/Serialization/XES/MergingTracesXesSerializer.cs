@@ -3,7 +3,7 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.Serialization.XES;
 
-public class MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger)
+public class MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger, bool writeAllEventData)
 {
   private readonly Dictionary<string, List<EventSessionInfo>> myDocuments = new();
 
@@ -19,7 +19,7 @@ public class MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfi
     foreach (var (path, sessions) in myDocuments)
     {
       using var fs = File.OpenWrite(path);
-      serializer.SerializeEvents(sessions, fs);
+      serializer.SerializeEvents(sessions, fs, writeAllEventData);
     }
   }
 }

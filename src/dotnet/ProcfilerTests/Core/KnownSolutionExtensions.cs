@@ -39,7 +39,7 @@ public static class KnownSolutionExtensions
     var serializationContext = new SerializationContext(FileFormat.Csv);
     return new CollectingClrEventsCommonContext(
       string.Empty, serializationContext, new TestParseResultsProvider(), string.Empty, ProvidersCategoryKind.All,
-      false, 10_000, 10_000, false, null, 10_000, CppProfilerMode.SingleFileBinStack, false, false, true);
+      false, 10_000, 10_000, false, null, 10_000, CppProfilerMode.SingleFileBinStack, false, false, true, false);
   }
 
   private static CollectingClrEventsCommonContext CreateOnlineSerializationCommonContext()

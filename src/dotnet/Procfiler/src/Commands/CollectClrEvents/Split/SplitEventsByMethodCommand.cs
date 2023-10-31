@@ -71,16 +71,17 @@ public class SplitEventsByMethodCommand(
       var filterPattern = GetFilterPattern(context.CommonContext);
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
+      var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
 
       using var xesSerializer = new OnlineMethodsXesSerializer(
-        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger);
+        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData);
 
       var splitContext = new SplitContext(events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
       var asyncMethods = splitter.SplitNonAlloc(xesSerializer, splitContext);
 
       if (asyncMethods is { })
       {
-        using var serializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, logger);
+        using var serializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, logger, writeAllEventData);
         foreach (var (methodName, traces) in asyncMethods)
         {
           var eventsByMethodsInvocation = PrepareEventSessionInfo(traces, globalData);

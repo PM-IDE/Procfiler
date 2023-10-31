@@ -34,6 +34,7 @@ public partial class CollectCommandBase
     command.AddOption(UseCppProfilerOption);
     command.AddOption(UseDuringRuntimeMethodsFiltering);
     command.AddOption(UseCppProfilerConsoleLogging);
+    command.AddOption(WriteAllEventMetadata);
   }
 
   private Option<bool> SelfContainedOption { get; } =
@@ -113,4 +114,7 @@ public partial class CollectCommandBase
 
   private Option<bool> UseCppProfilerConsoleLogging { get; } =
     new("--cpp-profiler-use-console-logging", static () => false, "Enable console logging in cpp profiler");
+
+  private Option<bool> WriteAllEventMetadata { get; } =
+    new("--write-all-event-metadata", static () => false, "Whether to write all metadata of an event");
 }

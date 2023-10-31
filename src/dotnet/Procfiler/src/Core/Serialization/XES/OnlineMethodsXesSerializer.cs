@@ -18,7 +18,8 @@ public class OnlineMethodsXesSerializer(
   IXesEventsSerializer serializer, 
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerEventsFactory factory,
-  IProcfilerLogger logger
+  IProcfilerLogger logger,
+  bool writeAllEventMetadata
 ) : IDisposable
 {
   private readonly List<string> myAllMethodsNames = new();
@@ -104,7 +105,7 @@ public class OnlineMethodsXesSerializer(
   private void WriteEvent(PathWriterStateWithLastEvent state, EventRecordWithMetadata eventRecord)
   {
     state.LastWrittenEvent = eventRecord;
-    serializer.WriteEvent(eventRecord, state.Writer);
+    serializer.WriteEvent(eventRecord, state.Writer, writeAllEventMetadata);
   }
 
   private void HandleMethodFinishedEvent(MethodFinishedUpdate<PathWriterStateWithLastEvent> methodFinishedUpdate)

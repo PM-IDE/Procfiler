@@ -9,7 +9,7 @@ public class PathWriteState
   public int TracesCount { get; set; }
 }
 
-public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger) : IDisposable
+public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, IProcfilerLogger logger, bool writeAllEventData) : IDisposable
 {
   private readonly Dictionary<string, PathWriteState> myPathsToWriters = new();
 
@@ -32,7 +32,7 @@ public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, I
       existingState = newState;
     }
 
-    serializer.AppendTrace(sessionInfo, existingState.Writer, existingState.TracesCount);
+    serializer.AppendTrace(sessionInfo, existingState.Writer, existingState.TracesCount, writeAllEventData);
     existingState.TracesCount += 1;
     existingState.Writer.Flush();
   }

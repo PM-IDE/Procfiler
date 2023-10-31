@@ -36,7 +36,9 @@ public class CollectEventsFromSeveralLaunchesCommand(
 
     var path = context.CommonContext.OutputPath;
     using var fs = File.OpenWrite(path);
-    xesEventsSerializer.SerializeEvents(sessionInfos, fs);
+
+    var writeAllEventMetadata = context.CommonContext.WriteAllEventMetadata;
+    xesEventsSerializer.SerializeEvents(sessionInfos, fs, writeAllEventMetadata);
   }
 
   protected override Command CreateCommandInternal()
