@@ -83,14 +83,19 @@ public partial class XesEventsSerializer(
     WriteStringValueTag(writer, EventId, (ourNextEventId++).ToString());
     WriteStringValueTag(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
 
-    AddMetadataValueIfPresentAndRemoveFromMetadata(
+    WriteAndRemoveMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
 
-    AddMetadataValueIfPresentAndRemoveFromMetadata(
+    WriteAndRemoveMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
+    
+    foreach (var key in currentEvent.Metadata.Keys)
+    {
+      WriteAndRemoveMetadataValue(writer, currentEvent, key, key);
+    }
   }
 
-  private static void AddMetadataValueIfPresentAndRemoveFromMetadata(
+  private static void WriteAndRemoveMetadataValue(
     XmlWriter writer, EventRecordWithMetadata eventRecord, string metadataKey, string attributeName)
   {
     if (eventRecord.Metadata.TryGetValue(metadataKey, out var value))
