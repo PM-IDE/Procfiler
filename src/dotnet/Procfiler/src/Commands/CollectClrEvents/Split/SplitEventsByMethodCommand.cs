@@ -47,7 +47,7 @@ public class SplitEventsByMethodCommand(
 
   private Option<string?> TargetMethodsRegex { get; } =
     new("--target-methods-regex", static () => null, "Target methods regex ");
-
+  
 
   public override void Execute(CollectClrEventsContext context)
   {
@@ -74,8 +74,14 @@ public class SplitEventsByMethodCommand(
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
       var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
 
-      using var xesSerializer = new OnlineMethodsXesSerializer(
-        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData);
+      using IOnlineMethodsSerializer xesSerializer = context.CommonContext.LogSerializationFormat switch
+      {
+        LogFormat.Bxes => new OnlineBxesMethodsSerializer(
+          directory, targetMethodsRegex, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+        LogFormat.Xes => new OnlineMethodsXesSerializer(
+          directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+        _ => throw new ArgumentOutOfRangeException()
+      };
 
       var splitContext = new SplitContext(events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
       var asyncMethods = splitter.SplitNonAlloc(xesSerializer, splitContext);
@@ -96,6 +102,7 @@ public class SplitEventsByMethodCommand(
       }
     });
   }
+
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)
   {

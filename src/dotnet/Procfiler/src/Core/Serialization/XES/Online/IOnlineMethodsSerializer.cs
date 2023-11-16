@@ -3,7 +3,7 @@ using Procfiler.Core.EventsCollection;
 
 namespace Procfiler.Core.Serialization.XES.Online;
 
-public interface IOnlineMethodsSerializer
+public interface IOnlineMethodsSerializer : IDisposable
 {
   IReadOnlyList<string> AllMethodNames { get; }
 

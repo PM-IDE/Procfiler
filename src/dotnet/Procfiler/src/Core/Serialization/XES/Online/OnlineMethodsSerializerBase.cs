@@ -12,7 +12,7 @@ public abstract class OnlineMethodsSerializerBase<TState>(
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerEventsFactory factory,
   IProcfilerLogger logger,
-  bool writeAllEventMetadata) : IOnlineMethodsSerializer, IDisposable where TState : class
+  bool writeAllEventMetadata) : IOnlineMethodsSerializer where TState : class
 {
   protected readonly string OutputDirectory = outputDirectory;
   protected readonly Regex? TargetMethodsRegex = targetMethodsRegex;

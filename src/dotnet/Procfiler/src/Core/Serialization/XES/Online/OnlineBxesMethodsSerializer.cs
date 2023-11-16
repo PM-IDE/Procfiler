@@ -14,16 +14,20 @@ public class BxesEvent : IEvent
   public IEventAttributes Attributes { get; }
 
 
-  public BxesEvent(EventRecordWithMetadata eventRecord)
+  public BxesEvent(EventRecordWithMetadata eventRecord, bool writeAllEventMetadata)
   {
     Timestamp = eventRecord.Stamp;
     Name = eventRecord.EventName;
     Lifecycle = new BrafLifecycle(BrafLifecycleValues.Unspecified);
-
+    
     var attributes = new EventAttributesImpl();
-    foreach (var (key, value) in eventRecord.Metadata)
+
+    if (writeAllEventMetadata)
     {
-      attributes[new BXesStringValue(key)] = new BXesStringValue(value);
+      foreach (var (key, value) in eventRecord.Metadata)
+      {
+        attributes[new BXesStringValue(key)] = new BXesStringValue(value);
+      } 
     }
 
     Attributes = attributes;
@@ -45,11 +49,11 @@ public class BxesWriteState
   public SingleFileBxesStreamWriterImpl<BxesEvent> Writer { get; init; }
 }
 
-public class OnlineBxesSerializer : OnlineMethodsSerializerBase<BxesWriteState>
+public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWriteState>
 {
   private const string BxesExtesnsion = ".bxes";
   
-  public OnlineBxesSerializer(
+  public OnlineBxesMethodsSerializer(
     string outputDirectory, 
     Regex? targetMethodsRegex, 
     IFullMethodNameBeautifier methodNameBeautifier, 
@@ -105,10 +109,10 @@ public class OnlineBxesSerializer : OnlineMethodsSerializerBase<BxesWriteState>
     }
   }
   
-  private static void WriteEvent(BxesWriteState state, EventRecordWithMetadata eventRecord)
+  private void WriteEvent(BxesWriteState state, EventRecordWithMetadata eventRecord)
   {
     state.LastWrittenEvent = eventRecord;
-    state.Writer.HandleEvent(new BxesEventEvent<BxesEvent>(new BxesEvent(eventRecord)));
+    state.Writer.HandleEvent(new BxesEventEvent<BxesEvent>(new BxesEvent(eventRecord, WriteAllEventMetadata)));
   }
 
   public override void Dispose()

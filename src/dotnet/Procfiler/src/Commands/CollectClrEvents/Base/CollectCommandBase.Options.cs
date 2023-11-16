@@ -35,6 +35,7 @@ public partial class CollectCommandBase
     command.AddOption(UseDuringRuntimeMethodsFiltering);
     command.AddOption(UseCppProfilerConsoleLogging);
     command.AddOption(WriteAllEventMetadata);
+    command.AddOption(LogSerializationFormatOption);
   }
 
   private Option<bool> SelfContainedOption { get; } =
@@ -117,4 +118,7 @@ public partial class CollectCommandBase
 
   private Option<bool> WriteAllEventMetadata { get; } =
     new("--write-all-event-metadata", static () => false, "Whether to write all metadata of an event");
+
+  private Option<LogFormat> LogSerializationFormatOption { get; } =
+    new("--log-serialization-format", static () => LogFormat.Xes, "The format which will be used to store event logs");
 }

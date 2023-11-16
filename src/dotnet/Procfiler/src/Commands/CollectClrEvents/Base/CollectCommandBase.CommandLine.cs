@@ -60,6 +60,7 @@ public abstract partial class CollectCommandBase
     var cppProfilerUseConsoleLogging = parseResult.GetValueForOption(UseCppProfilerConsoleLogging);
     var clearArtifacts = parseResult.GetValueForOption(ClearArtifactsOption);
     var writeAllEventMetadata = parseResult.GetValueForOption(WriteAllEventMetadata);
+    var logSerializationFormat = parseResult.GetValueForOption(LogSerializationFormatOption);
 
     var serializationCtx = new SerializationContext(fileFormat);
     var parseResultInfoProvider = new ParseResultInfoProviderImpl(parseResult);
@@ -67,7 +68,7 @@ public abstract partial class CollectCommandBase
     return new CollectingClrEventsCommonContext(
       outputPath, serializationCtx, parseResultInfoProvider, arguments, category, clearBefore, duration, timeout,
       printOutput, methodsFilterRegex, processWaitTimeoutMs, useCppProfiler, useDuringRuntimeFiltering, cppProfilerUseConsoleLogging,
-      clearArtifacts, writeAllEventMetadata);
+      clearArtifacts, writeAllEventMetadata, logSerializationFormat);
   }
 
   private CollectClrEventsContext CreateCollectClrContextFrom(ParseResult parseResult)
