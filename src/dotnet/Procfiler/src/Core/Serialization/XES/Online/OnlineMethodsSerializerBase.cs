@@ -12,7 +12,7 @@ public abstract class OnlineMethodsSerializerBase<TState>(
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerEventsFactory factory,
   IProcfilerLogger logger,
-  bool writeAllEventMetadata) : IOnlineMethodsSerializer, IDisposable
+  bool writeAllEventMetadata) : IOnlineMethodsSerializer, IDisposable where TState : class
 {
   protected readonly string OutputDirectory = outputDirectory;
   protected readonly Regex? TargetMethodsRegex = targetMethodsRegex;
@@ -22,7 +22,7 @@ public abstract class OnlineMethodsSerializerBase<TState>(
   protected readonly bool WriteAllEventMetadata = writeAllEventMetadata;
 
   protected readonly List<string> MethodNames = new();
-  protected readonly Dictionary<string, PathWriterStateWithLastEvent> States = new();
+  protected readonly Dictionary<string, TState> States = new();
 
 
   public IReadOnlyList<string> AllMethodNames => MethodNames; 
@@ -36,7 +36,18 @@ public abstract class OnlineMethodsSerializerBase<TState>(
     splitter.Split();
   }
 
-  protected abstract TState? TryCreateState(EventRecordWithMetadata contextEvent);
+  private TState? TryCreateState(EventRecordWithMetadata contextEvent)
+  {
+    var methodName = contextEvent.GetMethodStartEndEventInfo().Frame;
+    if (TargetMethodsRegex is { } && !TargetMethodsRegex.IsMatch(methodName))
+    {
+      return null;
+    }
+
+    return TryCreateStateInternal(contextEvent);
+  }
+
+  protected abstract TState? TryCreateStateInternal(EventRecordWithMetadata contextEvent);
   protected abstract void HandleUpdate(EventUpdateBase<TState> update);
 
   public abstract void Dispose();

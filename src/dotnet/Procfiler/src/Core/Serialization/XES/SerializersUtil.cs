@@ -2,12 +2,13 @@ using Procfiler.Utils;
 
 namespace Procfiler.Core.Serialization.XES;
 
-public static class XesSerializersUtil
+public static class SerializersUtil
 {
   public const string XesExtension = ".xes";
 
 
-  public static void DisposeWriters(IEnumerable<(string, XmlWriter)> writers, IProcfilerLogger logger)
+  public static void DisposeWriters<TWriter>(
+    IEnumerable<(string, TWriter)> writers, IProcfilerLogger logger, Action<TWriter> beforeDisposeAction) where TWriter : IDisposable
   {
     using var _ = new PerformanceCookie(nameof(DisposeWriters), logger);
     
@@ -15,7 +16,7 @@ public static class XesSerializersUtil
     {
       try
       {
-        writer.WriteEndElement();
+        beforeDisposeAction(writer);
         writer.Dispose();
       }
       catch (Exception ex)
@@ -24,4 +25,7 @@ public static class XesSerializersUtil
       }
     }
   }
+
+  public static void DisposeXesWriters(IEnumerable<(string, XmlWriter)> writers, IProcfilerLogger logger) =>
+    DisposeWriters(writers, logger, writer => writer.WriteEndElement());
 }

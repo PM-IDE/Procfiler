@@ -28,18 +28,13 @@ public class OnlineMethodsXesSerializer : OnlineMethodsSerializerBase<PathWriter
   }
 
 
-  protected override PathWriterStateWithLastEvent? TryCreateState(EventRecordWithMetadata contextEvent)
+  protected override PathWriterStateWithLastEvent? TryCreateStateInternal(EventRecordWithMetadata contextEvent)
   {
     var methodName = contextEvent.GetMethodStartEndEventInfo().Frame;
-    if (TargetMethodsRegex is { } && !TargetMethodsRegex.IsMatch(methodName))
-    {
-      return null;
-    }
-
     var name = FullMethodNameBeautifier.Beautify(methodName);
-    if (!name.EndsWith(XesSerializersUtil.XesExtension))
+    if (!name.EndsWith(SerializersUtil.XesExtension))
     {
-      name += XesSerializersUtil.XesExtension;
+      name += SerializersUtil.XesExtension;
     }
     
     var filePath = Path.Join(OutputDirectory, name);
@@ -122,6 +117,6 @@ public class OnlineMethodsXesSerializer : OnlineMethodsSerializerBase<PathWriter
 
   public override void Dispose()
   {
-    XesSerializersUtil.DisposeWriters(States.Select(pair => (pair.Key, pair.Value.Writer)), Logger);
+    SerializersUtil.DisposeXesWriters(States.Select(pair => (pair.Key, pair.Value.Writer)), Logger);
   }
 }

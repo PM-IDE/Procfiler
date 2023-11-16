@@ -39,6 +39,6 @@ public class NotStoringMergingTraceSerializer(IXesEventsSerializer serializer, I
 
   public void Dispose()
   {
-    XesSerializersUtil.DisposeWriters(myPathsToWriters.Select(pair => (pair.Key, pair.Value.Writer)), logger);
+    SerializersUtil.DisposeXesWriters(myPathsToWriters.Select(pair => (pair.Key, pair.Value.Writer)), logger);
   }
 }
