@@ -17,7 +17,8 @@ public class CollectEventsFromSeveralLaunchesCommand(
   IProcfilerLogger logger,
   ICommandExecutorDependantOnContext commandExecutor,
   IUnitedEventsProcessor unitedEventsProcessor,
-  IXesEventsSerializer xesEventsSerializer
+  IXesEventsSerializer xesEventsSerializer,
+  IBxesEventsSerializer bxesEventsSerializer
 ) : CollectCommandBase(logger, commandExecutor), ICollectEventsFromSeveralLaunchesCommand
 {
   public override void Execute(CollectClrEventsContext context)
@@ -35,10 +36,18 @@ public class CollectEventsFromSeveralLaunchesCommand(
     });
 
     var path = context.CommonContext.OutputPath;
-    using var fs = File.OpenWrite(path);
-
     var writeAllEventMetadata = context.CommonContext.WriteAllEventMetadata;
-    xesEventsSerializer.SerializeEvents(sessionInfos, fs, writeAllEventMetadata);
+    GetSerializer(context).SerializeEvents(sessionInfos, path, writeAllEventMetadata);
+  }
+
+  private IEventsSerializer GetSerializer(CollectClrEventsContext context)
+  {
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Xes => xesEventsSerializer,
+      LogFormat.Bxes => bxesEventsSerializer,
+      _ => throw new ArgumentOutOfRangeException()
+    };
   }
 
   protected override Command CreateCommandInternal()

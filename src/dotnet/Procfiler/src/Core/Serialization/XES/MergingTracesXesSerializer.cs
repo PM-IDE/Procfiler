@@ -18,8 +18,7 @@ public class MergingTracesXesSerializer(IXesEventsSerializer serializer, IProcfi
     using var _ = new PerformanceCookie($"{GetType()}::{nameof(SerializeAll)}", logger);
     foreach (var (path, sessions) in myDocuments)
     {
-      using var fs = File.OpenWrite(path);
-      serializer.SerializeEvents(sessions, fs, writeAllEventData);
+      serializer.SerializeEvents(sessions, path, writeAllEventData);
     }
   }
 }

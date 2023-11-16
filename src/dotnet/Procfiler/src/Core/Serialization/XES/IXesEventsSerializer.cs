@@ -8,9 +8,8 @@ using Procfiler.Utils.Xml;
 
 namespace Procfiler.Core.Serialization.XES;
 
-public interface IXesEventsSerializer
+public interface IXesEventsSerializer : IEventsSerializer
 {
-  void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream, bool writeAllMetadata);
   void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum, bool writeAllMetadata);
   void WriteHeader(XmlWriter writer);
   void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer, bool writeAllMetadata);
@@ -26,11 +25,12 @@ public partial class XesEventsSerializer(
   [ThreadStatic] private static int ourNextEventId;
 
 
-  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream, bool writeAllMetadata)
+  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, string path, bool writeAllMetadata)
   {
     using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", logger);
 
-    using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+    using var fs = File.OpenWrite(path);
+    using var writer = XmlWriter.Create(fs, new XmlWriterSettings
     {
       Indent = true,
     });

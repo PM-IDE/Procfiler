@@ -12,14 +12,14 @@ namespace Procfiler.Commands.CollectClrEvents;
 [CommandLineCommand]
 public class SerializeUndefinedThreadEventsToXesCommand(
   IProcfilerLogger logger,
-  IXesEventsSerializer serializer,
+  IXesEventsSerializer xesSerializer,
   IUnitedEventsProcessor unitedEventsProcessor,
   ICommandExecutorDependantOnContext commandExecutor
 ) : CollectCommandBase(logger, commandExecutor)
 {
   public override void Execute(CollectClrEventsContext context)
   {
-    var mergingSerializer = new MergingTracesXesSerializer(serializer, Logger, context.CommonContext.WriteAllEventMetadata);
+    var serializer = CreateSerializer(context);
     var outputPath = Path.Combine(context.CommonContext.OutputPath, "UndefinedEvents.xes");
 
     ExecuteCommand(context, collectedEvents =>
@@ -33,10 +33,20 @@ public class SerializeUndefinedThreadEventsToXesCommand(
       unitedEventsProcessor.ProcessFullEventLog(processingContext);
       var sessionInfo = new EventSessionInfo(new[] { undefinedThreadEvents }, globalData);
 
-      mergingSerializer.AddTrace(outputPath, sessionInfo);
+      serializer.WriteTrace(outputPath, sessionInfo);
     });
+  }
 
-    mergingSerializer.SerializeAll();
+  private INotStoringMergingTraceSerializer CreateSerializer(CollectClrEventsContext context)
+  {
+    var writeAllMetadata = context.CommonContext.WriteAllEventMetadata;
+
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesSerializer, Logger, writeAllMetadata),
+      LogFormat.Bxes => new NotStoringMergingTraceBxesSerializer(Logger, writeAllMetadata),
+      _ => throw new ArgumentOutOfRangeException()
+    };
   }
 
   protected override Command CreateCommandInternal()
