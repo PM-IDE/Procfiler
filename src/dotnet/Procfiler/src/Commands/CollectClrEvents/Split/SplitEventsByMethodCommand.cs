@@ -7,6 +7,7 @@ using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Core.Serialization.XES;
+using Procfiler.Core.Serialization.XES.Online;
 using Procfiler.Core.SplitByMethod;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;

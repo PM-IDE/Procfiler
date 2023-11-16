@@ -1,61 +1,50 @@
-using Procfiler.Commands.CollectClrEvents.Split;
-using Procfiler.Core.Constants.TraceEvents;
 using Procfiler.Core.EventRecord;
-using Procfiler.Core.EventsCollection;
 using Procfiler.Core.SplitByMethod;
 using Procfiler.Utils;
 
-namespace Procfiler.Core.Serialization.XES;
+namespace Procfiler.Core.Serialization.XES.Online;
 
 public class PathWriterStateWithLastEvent : PathWriteState
 {
   public EventRecordWithMetadata? LastWrittenEvent { get; set; }
 }
 
-public class OnlineMethodsXesSerializer(
-  string outputDirectory,
-  Regex? targetMethodsRegex,
-  IXesEventsSerializer serializer, 
-  IFullMethodNameBeautifier methodNameBeautifier,
-  IProcfilerEventsFactory factory,
-  IProcfilerLogger logger,
-  bool writeAllEventMetadata
-) : IDisposable
+public class OnlineMethodsXesSerializer : OnlineMethodsSerializerBase<PathWriterStateWithLastEvent>
 {
-  private readonly List<string> myAllMethodsNames = new();
-  private readonly Dictionary<string, PathWriterStateWithLastEvent> myWriters = new();
+  private readonly IXesEventsSerializer mySerializer;
+  
 
-  public IReadOnlyList<string> AllMethodNames => myAllMethodsNames;
-  
-  
-  public void SerializeThreadEvents(
-    IEnumerable<EventRecordWithPointer> events,
-    string filterPattern,
-    InlineMode inlineMode)
+  public OnlineMethodsXesSerializer(
+    string outputDirectory,
+    Regex? targetMethodsRegex,
+    IXesEventsSerializer serializer, 
+    IFullMethodNameBeautifier methodNameBeautifier,
+    IProcfilerEventsFactory factory,
+    IProcfilerLogger logger,
+    bool writeAllEventMetadata) 
+    : base(outputDirectory, targetMethodsRegex, methodNameBeautifier, factory, logger, writeAllEventMetadata)
   {
-    var splitter = new CallbackBasedSplitter<PathWriterStateWithLastEvent>(
-      logger, events, filterPattern, inlineMode, @event => CreateWriter(outputDirectory, @event), HandleUpdate);
-    
-    splitter.Split();
+    mySerializer = serializer;
   }
 
-  private PathWriterStateWithLastEvent? CreateWriter(string outputDirectory, EventRecordWithMetadata contextEvent)
+
+  protected override PathWriterStateWithLastEvent? TryCreateState(EventRecordWithMetadata contextEvent)
   {
     var methodName = contextEvent.GetMethodStartEndEventInfo().Frame;
-    if (targetMethodsRegex is { } && !targetMethodsRegex.IsMatch(methodName))
+    if (TargetMethodsRegex is { } && !TargetMethodsRegex.IsMatch(methodName))
     {
       return null;
     }
 
-    var name = methodNameBeautifier.Beautify(methodName);
+    var name = FullMethodNameBeautifier.Beautify(methodName);
     if (!name.EndsWith(XesSerializersUtil.XesExtension))
     {
       name += XesSerializersUtil.XesExtension;
     }
     
-    var filePath = Path.Join(outputDirectory, name);
+    var filePath = Path.Join(OutputDirectory, name);
 
-    return myWriters.GetOrCreate(filePath, () =>
+    return States.GetOrCreate(filePath, () =>
     {
       var outputStream = File.OpenWrite(filePath);
       var writer = XmlWriter.Create(outputStream, new XmlWriterSettings
@@ -65,12 +54,12 @@ public class OnlineMethodsXesSerializer(
         CloseOutput = true
       });
 
-      serializer.WriteHeader(writer);
+      mySerializer.WriteHeader(writer);
       return new PathWriterStateWithLastEvent { Writer = writer };
     });
   }
 
-  private void HandleUpdate(EventUpdateBase<PathWriterStateWithLastEvent> update)
+  protected override void HandleUpdate(EventUpdateBase<PathWriterStateWithLastEvent> update)
   {
     if (update.FrameInfo.State is null) return;
 
@@ -97,15 +86,15 @@ public class OnlineMethodsXesSerializer(
   {
     var state = methodStartedUpdate.FrameInfo.State!;
     
-    myAllMethodsNames.Add(methodStartedUpdate.FrameInfo.Frame);
-    serializer.WriteTraceStart(state.Writer, state.TracesCount);
+    MethodNames.Add(methodStartedUpdate.FrameInfo.Frame);
+    mySerializer.WriteTraceStart(state.Writer, state.TracesCount);
     state.TracesCount++;
   }
 
   private void WriteEvent(PathWriterStateWithLastEvent state, EventRecordWithMetadata eventRecord)
   {
     state.LastWrittenEvent = eventRecord;
-    serializer.WriteEvent(eventRecord, state.Writer, writeAllEventMetadata);
+    mySerializer.WriteEvent(eventRecord, state.Writer, WriteAllEventMetadata);
   }
 
   private void HandleMethodFinishedEvent(MethodFinishedUpdate<PathWriterStateWithLastEvent> methodFinishedUpdate)
@@ -119,7 +108,7 @@ public class OnlineMethodsXesSerializer(
     var state = methodExecutionUpdate.FrameInfo.State;
     var executionEvent = CurrentFrameInfoUtil.CreateMethodExecutionEvent(
       methodExecutionUpdate.FrameInfo,
-      factory,
+      Factory,
       methodExecutionUpdate.MethodName,
       state!.LastWrittenEvent);
     
@@ -131,8 +120,8 @@ public class OnlineMethodsXesSerializer(
     WriteEvent(normalEventUpdate.FrameInfo.State!, normalEventUpdate.Event);
   }
 
-  public void Dispose()
+  public override void Dispose()
   {
-    XesSerializersUtil.DisposeWriters(myWriters.Select(pair => (pair.Key, pair.Value.Writer)), logger);
+    XesSerializersUtil.DisposeWriters(States.Select(pair => (pair.Key, pair.Value.Writer)), Logger);
   }
 }
