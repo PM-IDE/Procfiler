@@ -55,10 +55,10 @@ public class SplitEventsByMethodCommand(
 
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption);
-    var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
     var directory = context.CommonContext.OutputPath;
     
-    using var serializer = CreateSerializer(context);
+    using var onlineSerializer = CreateOnlineSerializer(context);
+    using var notStoringSerializer = CreateNotStoringSerializer(context);
 
     ExecuteCommand(context, events =>
     {
@@ -72,11 +72,10 @@ public class SplitEventsByMethodCommand(
 
       var splitContext = new SplitContext(events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
       // ReSharper disable once AccessToDisposedClosure
-      var asyncMethods = splitter.SplitNonAlloc(serializer, splitContext);
+      var asyncMethods = splitter.SplitNonAlloc(onlineSerializer, splitContext);
 
       if (asyncMethods is { })
       {
-        using var serializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, logger, writeAllEventData);
         foreach (var (methodName, traces) in asyncMethods)
         {
           var eventsByMethodsInvocation = PrepareEventSessionInfo(traces, globalData);
@@ -84,14 +83,27 @@ public class SplitEventsByMethodCommand(
           
           foreach (var (_, sessionInfo) in eventsByMethodsInvocation)
           {
-            serializer.WriteTrace(filePath, sessionInfo);
+            // ReSharper disable once AccessToDisposedClosure
+            notStoringSerializer.WriteTrace(filePath, sessionInfo);
           }
         }
       }
     });
   }
+
+  private INotStoringMergingTraceSerializer CreateNotStoringSerializer(CollectClrEventsContext context)
+  {
+    var writeAllMetadata = context.CommonContext.WriteAllEventMetadata;
+
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesEventsSerializer, logger, writeAllMetadata),
+      LogFormat.Bxes => new NotStoringMergingTraceBxesSerializer(logger, writeAllMetadata),
+      _ => throw new ArgumentOutOfRangeException()
+    };
+  }
   
-  private IOnlineMethodsSerializer CreateSerializer(CollectClrEventsContext context)
+  private IOnlineMethodsSerializer CreateOnlineSerializer(CollectClrEventsContext context)
   {
     var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
     var directory = context.CommonContext.OutputPath;

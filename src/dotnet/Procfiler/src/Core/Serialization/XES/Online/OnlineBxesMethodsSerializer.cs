@@ -43,13 +43,12 @@ public class BxesEvent : IEvent
   }
 }
 
-public class BxesWriteState
+public class BxesWriteStateWithLastEvent : BxesWriteState
 {
   public EventRecordWithMetadata? LastWrittenEvent { get; set; }
-  public SingleFileBxesStreamWriterImpl<BxesEvent> Writer { get; init; }
 }
 
-public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWriteState>
+public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWriteStateWithLastEvent>
 {
   private const string BxesExtesnsion = ".bxes";
   
@@ -64,7 +63,7 @@ public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWrite
   {
   }
 
-  protected override BxesWriteState? TryCreateStateInternal(EventRecordWithMetadata contextEvent)
+  protected override BxesWriteStateWithLastEvent? TryCreateStateInternal(EventRecordWithMetadata contextEvent)
   {
     var methodName = contextEvent.GetMethodStartEndEventInfo().Frame;
     var name = FullMethodNameBeautifier.Beautify(methodName);
@@ -76,16 +75,16 @@ public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWrite
     var filePath = Path.Join(OutputDirectory, name);
 
     return States.GetOrCreate(
-      filePath, () => new BxesWriteState { Writer = new SingleFileBxesStreamWriterImpl<BxesEvent>(filePath, 0) });
+      filePath, () => new BxesWriteStateWithLastEvent { Writer = new SingleFileBxesStreamWriterImpl<BxesEvent>(filePath, 0) });
   }
 
-  protected override void HandleUpdate(EventUpdateBase<BxesWriteState> update)
+  protected override void HandleUpdate(EventUpdateBase<BxesWriteStateWithLastEvent> update)
   {
     if (update.FrameInfo.State is null) return;
 
     switch (update)
     {
-      case MethodExecutionUpdate<BxesWriteState> methodExecutionUpdate:
+      case MethodExecutionUpdate<BxesWriteStateWithLastEvent> methodExecutionUpdate:
         var state = update.FrameInfo.State;
         var executionEvent = CurrentFrameInfoUtil.CreateMethodExecutionEvent(
           methodExecutionUpdate.FrameInfo,
@@ -96,12 +95,12 @@ public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWrite
         
         WriteEvent(state, executionEvent);
         break;
-      case MethodFinishedUpdate<BxesWriteState>:
+      case MethodFinishedUpdate<BxesWriteStateWithLastEvent>:
         break;
-      case MethodStartedUpdate<BxesWriteState>:
+      case MethodStartedUpdate<BxesWriteStateWithLastEvent>:
         update.FrameInfo.State.Writer.HandleEvent(new BxesTraceVariantStartEvent(1));
         break;
-      case NormalEventUpdate<BxesWriteState> normalEventUpdate:
+      case NormalEventUpdate<BxesWriteStateWithLastEvent> normalEventUpdate:
         WriteEvent(update.FrameInfo.State, normalEventUpdate.Event);
         break;
       default:
@@ -109,7 +108,7 @@ public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWrite
     }
   }
   
-  private void WriteEvent(BxesWriteState state, EventRecordWithMetadata eventRecord)
+  private void WriteEvent(BxesWriteStateWithLastEvent state, EventRecordWithMetadata eventRecord)
   {
     state.LastWrittenEvent = eventRecord;
     state.Writer.HandleEvent(new BxesEventEvent<BxesEvent>(new BxesEvent(eventRecord, WriteAllEventMetadata)));
