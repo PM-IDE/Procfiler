@@ -53,15 +53,12 @@ public class SplitEventsByMethodCommand(
   {
     using var _ = new PerformanceCookie("SplittingEventsByMethods", Logger);
 
-    var directory = context.CommonContext.OutputPath;
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption);
-    var targetMethodsRegexString = parseResult.TryGetOptionValue(TargetMethodsRegex);
-    var targetMethodsRegex = targetMethodsRegexString switch
-    {
-      { } => new Regex(targetMethodsRegexString),
-      _ => null
-    };
+    var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
+    var directory = context.CommonContext.OutputPath;
+    
+    using var serializer = CreateSerializer(context);
 
     ExecuteCommand(context, events =>
     {
@@ -72,19 +69,10 @@ public class SplitEventsByMethodCommand(
       var filterPattern = GetFilterPattern(context.CommonContext);
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
-      var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
-
-      using IOnlineMethodsSerializer xesSerializer = context.CommonContext.LogSerializationFormat switch
-      {
-        LogFormat.Bxes => new OnlineBxesMethodsSerializer(
-          directory, targetMethodsRegex, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
-        LogFormat.Xes => new OnlineMethodsXesSerializer(
-          directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
-        _ => throw new ArgumentOutOfRangeException()
-      };
 
       var splitContext = new SplitContext(events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
-      var asyncMethods = splitter.SplitNonAlloc(xesSerializer, splitContext);
+      // ReSharper disable once AccessToDisposedClosure
+      var asyncMethods = splitter.SplitNonAlloc(serializer, splitContext);
 
       if (asyncMethods is { })
       {
@@ -102,7 +90,27 @@ public class SplitEventsByMethodCommand(
       }
     });
   }
+  
+  private IOnlineMethodsSerializer CreateSerializer(CollectClrEventsContext context)
+  {
+    var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
+    var directory = context.CommonContext.OutputPath;
+    var targetMethodsRegexString = context.CommonContext.CommandParseResult.TryGetOptionValue(TargetMethodsRegex);
+    var targetMethodsRegex = targetMethodsRegexString switch
+    {
+      { } => new Regex(targetMethodsRegexString),
+      _ => null
+    };
 
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Bxes => new OnlineBxesMethodsSerializer(
+        directory, targetMethodsRegex, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+      LogFormat.Xes => new OnlineMethodsXesSerializer(
+        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+      _ => throw new ArgumentOutOfRangeException()
+    };
+  }
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)
   {
