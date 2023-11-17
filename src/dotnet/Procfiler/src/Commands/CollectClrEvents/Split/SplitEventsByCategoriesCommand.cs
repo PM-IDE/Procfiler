@@ -4,6 +4,7 @@ using Procfiler.Core;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
 using Procfiler.Core.Serialization;
+using Procfiler.Core.Serialization.Core;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 

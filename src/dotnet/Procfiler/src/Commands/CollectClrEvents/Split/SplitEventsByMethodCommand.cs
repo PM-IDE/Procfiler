@@ -6,8 +6,9 @@ using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
-using Procfiler.Core.Serialization.XES;
-using Procfiler.Core.Serialization.XES.Online;
+using Procfiler.Core.Serialization.Bxes;
+using Procfiler.Core.Serialization.Core;
+using Procfiler.Core.Serialization.Xes;
 using Procfiler.Core.SplitByMethod;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
@@ -30,7 +31,7 @@ public class SplitEventsByMethodCommand(
   ICommandExecutorDependantOnContext commandExecutor,
   IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger,
   IUnitedEventsProcessor unitedEventsProcessor,
-  IXesEventsSerializer xesEventsSerializer,
+  IXesEventsSessionSerializer xesEventsSessionSerializer,
   IByMethodsSplitter splitter,
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerLogger logger,
@@ -97,7 +98,7 @@ public class SplitEventsByMethodCommand(
 
     return context.CommonContext.LogSerializationFormat switch
     {
-      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesEventsSerializer, logger, writeAllMetadata),
+      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesEventsSessionSerializer, logger, writeAllMetadata),
       LogFormat.Bxes => new NotStoringMergingTraceBxesSerializer(logger, writeAllMetadata),
       _ => throw new ArgumentOutOfRangeException()
     };
@@ -119,7 +120,7 @@ public class SplitEventsByMethodCommand(
       LogFormat.Bxes => new OnlineBxesMethodsSerializer(
         directory, targetMethodsRegex, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
       LogFormat.Xes => new OnlineMethodsXesSerializer(
-        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+        directory, targetMethodsRegex, xesEventsSessionSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
       _ => throw new ArgumentOutOfRangeException()
     };
   }

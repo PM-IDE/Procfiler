@@ -2,13 +2,14 @@ using Procfiler.Core.Collector;
 using Procfiler.Core.Constants.XesLifecycle;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing;
+using Procfiler.Core.Serialization.Core;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 using Procfiler.Utils.Xml;
 
-namespace Procfiler.Core.Serialization.XES;
+namespace Procfiler.Core.Serialization.Xes;
 
-public interface IXesEventsSerializer : IEventsSerializer
+public interface IXesEventsSessionSerializer : IEventsSessionSerializer
 {
   void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum, bool writeAllMetadata);
   void WriteHeader(XmlWriter writer);
@@ -17,10 +18,10 @@ public interface IXesEventsSerializer : IEventsSerializer
 }
 
 [AppComponent]
-public partial class XesEventsSerializer(
+public partial class XesEventsSessionSerializer(
   IUnitedEventsProcessor unitedEventsProcessor,
   IProcfilerLogger logger
-) : IXesEventsSerializer
+) : IXesEventsSessionSerializer
 {
   [ThreadStatic] private static int ourNextEventId;
 

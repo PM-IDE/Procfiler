@@ -3,7 +3,9 @@ using Procfiler.Commands.CollectClrEvents.Context;
 using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventsProcessing;
-using Procfiler.Core.Serialization.XES;
+using Procfiler.Core.Serialization.Bxes;
+using Procfiler.Core.Serialization.Core;
+using Procfiler.Core.Serialization.Xes;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
@@ -12,7 +14,7 @@ namespace Procfiler.Commands.CollectClrEvents;
 [CommandLineCommand]
 public class SerializeUndefinedThreadEventsToXesCommand(
   IProcfilerLogger logger,
-  IXesEventsSerializer xesSerializer,
+  IXesEventsSessionSerializer xesSessionSerializer,
   IUnitedEventsProcessor unitedEventsProcessor,
   ICommandExecutorDependantOnContext commandExecutor
 ) : CollectCommandBase(logger, commandExecutor)
@@ -43,7 +45,7 @@ public class SerializeUndefinedThreadEventsToXesCommand(
 
     return context.CommonContext.LogSerializationFormat switch
     {
-      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesSerializer, Logger, writeAllMetadata),
+      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesSessionSerializer, Logger, writeAllMetadata),
       LogFormat.Bxes => new NotStoringMergingTraceBxesSerializer(Logger, writeAllMetadata),
       _ => throw new ArgumentOutOfRangeException()
     };

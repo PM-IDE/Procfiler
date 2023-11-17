@@ -1,17 +1,14 @@
 using Procfiler.Core.EventRecord;
+using Procfiler.Core.Serialization.Csv;
+using Procfiler.Core.Serialization.MethodsCallTree;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
-namespace Procfiler.Core.Serialization;
+namespace Procfiler.Core.Serialization.Core;
 
 public interface IDelegatingEventsSerializer
 {
   void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path, FileFormat fileFormat);
-}
-
-public interface IEventsSerializer
-{
-  void SerializeEvents(IEnumerable<EventRecordWithMetadata> events, string path);
 }
 
 [AppComponent]

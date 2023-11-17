@@ -4,7 +4,7 @@ using Procfiler.Core.EventsCollection;
 using Procfiler.Core.SplitByMethod;
 using Procfiler.Utils;
 
-namespace Procfiler.Core.Serialization.XES.Online;
+namespace Procfiler.Core.Serialization.Core;
 
 public abstract class OnlineMethodsSerializerBase<TState>(
   string outputDirectory,

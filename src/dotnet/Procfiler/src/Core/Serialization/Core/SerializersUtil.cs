@@ -1,6 +1,6 @@
 using Procfiler.Utils;
 
-namespace Procfiler.Core.Serialization.XES;
+namespace Procfiler.Core.Serialization.Core;
 
 public static class SerializersUtil
 {

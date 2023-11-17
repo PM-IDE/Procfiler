@@ -2,10 +2,11 @@ using System.Collections.ObjectModel;
 using Bxes.Models;
 using Bxes.Writer.Stream;
 using Procfiler.Core.EventRecord;
+using Procfiler.Core.Serialization.Core;
 using Procfiler.Core.SplitByMethod;
 using Procfiler.Utils;
 
-namespace Procfiler.Core.Serialization.XES.Online;
+namespace Procfiler.Core.Serialization.Bxes;
 
 public class BxesEvent : IEvent
 {
