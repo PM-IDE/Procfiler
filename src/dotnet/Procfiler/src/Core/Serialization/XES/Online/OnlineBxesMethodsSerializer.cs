@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Bxes.Models;
 using Bxes.Writer.Stream;
 using Procfiler.Core.EventRecord;
@@ -11,7 +12,7 @@ public class BxesEvent : IEvent
   public long Timestamp { get; }
   public string Name { get; }
   public IEventLifecycle Lifecycle { get; }
-  public IEventAttributes Attributes { get; }
+  public IEnumerable<KeyValuePair<BxesStringValue, BxesValue>> Attributes { get; }
 
 
   public BxesEvent(EventRecordWithMetadata eventRecord, bool writeAllEventMetadata)
@@ -19,28 +20,16 @@ public class BxesEvent : IEvent
     Timestamp = eventRecord.Stamp;
     Name = eventRecord.EventName;
     Lifecycle = new BrafLifecycle(BrafLifecycleValues.Unspecified);
-    
-    var attributes = new EventAttributesImpl();
 
-    if (writeAllEventMetadata)
+    Attributes = writeAllEventMetadata switch
     {
-      foreach (var (key, value) in eventRecord.Metadata)
-      {
-        attributes[new BXesStringValue(key)] = new BXesStringValue(value);
-      } 
-    }
-
-    Attributes = attributes;
+      false => ReadOnlyCollection<KeyValuePair<BxesStringValue, BxesValue>>.Empty,
+      true => eventRecord.Metadata.Select(kv =>
+        new KeyValuePair<BxesStringValue, BxesValue>(new BxesStringValue(kv.Value), new BxesStringValue(kv.Value)))
+    };
   }
 
-  public bool Equals(IEvent? other)
-  {
-    return other is { } &&
-           Timestamp == other.Timestamp &&
-           Name == other.Name &&
-           Lifecycle.Equals(other.Lifecycle) &&
-           Attributes.Equals(other.Attributes);
-  }
+  public bool Equals(IEvent? other) => other is { } && EventUtil.Equals(this, other);
 }
 
 public class BxesWriteStateWithLastEvent : BxesWriteState
