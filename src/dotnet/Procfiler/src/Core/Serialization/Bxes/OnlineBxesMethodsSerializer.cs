@@ -26,7 +26,7 @@ public class BxesEvent : IEvent
     {
       false => ReadOnlyCollection<KeyValuePair<BxesStringValue, BxesValue>>.Empty,
       true => eventRecord.Metadata.Select(kv =>
-        new KeyValuePair<BxesStringValue, BxesValue>(new BxesStringValue(kv.Value), new BxesStringValue(kv.Value)))
+        new KeyValuePair<BxesStringValue, BxesValue>(new BxesStringValue(kv.Key), new BxesStringValue(kv.Value)))
     };
   }
 
