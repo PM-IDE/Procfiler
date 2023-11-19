@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Bxes.Models;
+using Bxes.Writer;
 using Bxes.Writer.Stream;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.Serialization.Core;
@@ -13,7 +14,7 @@ public class BxesEvent : IEvent
   public long Timestamp { get; }
   public string Name { get; }
   public IEventLifecycle Lifecycle { get; }
-  public IEnumerable<KeyValuePair<BxesStringValue, BxesValue>> Attributes { get; }
+  public IEnumerable<AttributeKeyValue> Attributes { get; }
 
 
   public BxesEvent(EventRecordWithMetadata eventRecord, bool writeAllEventMetadata)
@@ -24,9 +25,9 @@ public class BxesEvent : IEvent
 
     Attributes = writeAllEventMetadata switch
     {
-      false => ReadOnlyCollection<KeyValuePair<BxesStringValue, BxesValue>>.Empty,
+      false => ReadOnlyCollection<AttributeKeyValue>.Empty,
       true => eventRecord.Metadata.Select(kv =>
-        new KeyValuePair<BxesStringValue, BxesValue>(new BxesStringValue(kv.Key), new BxesStringValue(kv.Value)))
+        new AttributeKeyValue(new BxesStringValue(kv.Key), new BxesStringValue(kv.Value)))
     };
   }
 
