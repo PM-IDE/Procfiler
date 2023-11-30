@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using Bxes.Writer;
 using Bxes.Writer.Stream;
 using Procfiler.Core.Collector;
 using Procfiler.Core.Serialization.Core;
@@ -7,7 +9,7 @@ namespace Procfiler.Core.Serialization.Bxes;
 
 public class BxesWriteState
 {
-  public SingleFileBxesStreamWriterImpl<BxesEvent> Writer { get; init; }
+  public required SingleFileBxesStreamWriterImpl<BxesEvent> Writer { get; init; }
 }
 
 public class NotStoringMergingTraceBxesSerializer(
@@ -22,7 +24,7 @@ public class NotStoringMergingTraceBxesSerializer(
       Writer = new SingleFileBxesStreamWriterImpl<BxesEvent>(path, 0)
     });
 
-    writer.Writer.HandleEvent(new BxesTraceVariantStartEvent(1));
+    writer.Writer.HandleEvent(new BxesTraceVariantStartEvent(1, ImmutableArray<AttributeKeyValue>.Empty));
     foreach (var (_, @event) in new OrderedEventsEnumerator(sessionInfo.Events))
     {
       writer.Writer.HandleEvent(new BxesEventEvent<BxesEvent>(new BxesEvent(@event, WriteAllEventData)));

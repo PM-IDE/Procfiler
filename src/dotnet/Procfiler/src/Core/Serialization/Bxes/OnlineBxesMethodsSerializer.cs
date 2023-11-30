@@ -1,5 +1,8 @@
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using Bxes.Models;
+using Bxes.Models.Values;
+using Bxes.Models.Values.Lifecycle;
 using Bxes.Writer;
 using Bxes.Writer.Stream;
 using Procfiler.Core.EventRecord;
@@ -14,7 +17,7 @@ public class BxesEvent : IEvent
   public long Timestamp { get; }
   public string Name { get; }
   public IEventLifecycle Lifecycle { get; }
-  public IEnumerable<AttributeKeyValue> Attributes { get; }
+  public IList<AttributeKeyValue> Attributes { get; }
 
 
   public BxesEvent(EventRecordWithMetadata eventRecord, bool writeAllEventMetadata)
@@ -27,7 +30,7 @@ public class BxesEvent : IEvent
     {
       false => ReadOnlyCollection<AttributeKeyValue>.Empty,
       true => eventRecord.Metadata.Select(kv =>
-        new AttributeKeyValue(new BxesStringValue(kv.Key), new BxesStringValue(kv.Value)))
+        new AttributeKeyValue(new BxesStringValue(kv.Key), new BxesStringValue(kv.Value))).ToList()
     };
   }
 
@@ -89,7 +92,7 @@ public class OnlineBxesMethodsSerializer : OnlineMethodsSerializerBase<BxesWrite
       case MethodFinishedUpdate<BxesWriteStateWithLastEvent>:
         break;
       case MethodStartedUpdate<BxesWriteStateWithLastEvent>:
-        update.FrameInfo.State.Writer.HandleEvent(new BxesTraceVariantStartEvent(1));
+        update.FrameInfo.State.Writer.HandleEvent(new BxesTraceVariantStartEvent(1, ImmutableList<AttributeKeyValue>.Empty));
         break;
       case NormalEventUpdate<BxesWriteStateWithLastEvent> normalEventUpdate:
         WriteEvent(update.FrameInfo.State, normalEventUpdate.Event);
