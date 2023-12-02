@@ -81,7 +81,6 @@ public partial class XesEventsSessionSerializer(
 
     WriteDateTag(writer, currentEvent.Stamp);
     WriteStringValueTag(writer, ConceptName, currentEvent.EventName);
-    WriteStringValueTag(writer, EventId, (ourNextEventId++).ToString());
     WriteStringValueTag(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
 
     WriteAndRemoveMetadataValue(
