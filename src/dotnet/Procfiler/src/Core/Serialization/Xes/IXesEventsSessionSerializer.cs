@@ -83,28 +83,30 @@ public partial class XesEventsSessionSerializer(
     WriteStringValueTag(writer, ConceptName, currentEvent.EventName);
     WriteStringValueTag(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
 
-    WriteAndRemoveMetadataValue(
+    WriteMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
 
-    WriteAndRemoveMetadataValue(
+    WriteMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
 
     if (writeAllMetadata)
     {
       foreach (var key in currentEvent.Metadata.Keys)
       {
-        WriteAndRemoveMetadataValue(writer, currentEvent, key, key);
+        if (key is not (XesStandardLifecycleConstants.Transition or XesStandardLifecycleConstants.ActivityId))
+        {
+          WriteMetadataValue(writer, currentEvent, key, key);
+        }
       } 
     }
   }
 
-  private static void WriteAndRemoveMetadataValue(
+  private static void WriteMetadataValue(
     XmlWriter writer, EventRecordWithMetadata eventRecord, string metadataKey, string attributeName)
   {
     if (eventRecord.Metadata.TryGetValue(metadataKey, out var value))
     {
       WriteStringValueTag(writer, attributeName, value);
-      eventRecord.Metadata.Remove(metadataKey);
     }
   }
 
