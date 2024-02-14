@@ -94,7 +94,6 @@ DEFINE_DACVAR(PTR_StubLinkStubManager, StubLinkStubManager__g_pManager, StubLink
 DEFINE_DACVAR(PTR_ThunkHeapStubManager, ThunkHeapStubManager__g_pManager, ThunkHeapStubManager::g_pManager)
 DEFINE_DACVAR(PTR_JumpStubStubManager, JumpStubStubManager__g_pManager, JumpStubStubManager::g_pManager)
 DEFINE_DACVAR(PTR_RangeSectionStubManager, RangeSectionStubManager__g_pManager, RangeSectionStubManager::g_pManager)
-DEFINE_DACVAR(PTR_DelegateInvokeStubManager, DelegateInvokeStubManager__g_pManager, DelegateInvokeStubManager::g_pManager)
 DEFINE_DACVAR(PTR_VirtualCallStubManagerManager, VirtualCallStubManagerManager__g_pManager, VirtualCallStubManagerManager::g_pManager)
 DEFINE_DACVAR(PTR_CallCountingStubManager, CallCountingStubManager__g_pManager, CallCountingStubManager::g_pManager)
 
@@ -231,6 +230,8 @@ DEFINE_DACVAR(SIZE_T, dac__g_clrNotificationArguments, ::g_clrNotificationArgume
 #ifdef EnC_SUPPORTED
 DEFINE_DACVAR(bool, dac__g_metadataUpdatesApplied, ::g_metadataUpdatesApplied)
 #endif
+
+DEFINE_DACVAR(PTR_WSTR, dac__g_EntryAssemblyPath, ::g_EntryAssemblyPath)
 
 #undef DEFINE_DACVAR
 #undef DEFINE_DACVAR_NO_DUMP
