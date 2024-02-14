@@ -21,10 +21,11 @@ module ProcfilerScriptsUtils =
     type ConfigBase =
         { PathConfig: PathConfigBase
           Duration: int
-          Repeat: int }
+          Repeat: int
+          WriteAllMetadata: bool }
 
         member this.AddArguments list =
-            let toAdd = [ $" --repeat {this.Repeat}"; $" --duration {this.Duration}" ]
+            let toAdd = [ $" --repeat {this.Repeat}"; $" --duration {this.Duration}"; $" --write-all-event-metadata {this.WriteAllMetadata}" ]
             this.PathConfig.AddArguments list @ toAdd
 
     type ICommandConfig =
@@ -36,7 +37,8 @@ module ProcfilerScriptsUtils =
               OutputPath = outputPath }
 
           Duration = 10_000
-          Repeat = 1 }
+          Repeat = 50
+          WriteAllMetadata = true }
 
     let private createProcess fileName (args: String) workingDirectory =
         let startInfo = ProcessStartInfo(fileName, args)

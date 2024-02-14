@@ -2,15 +2,15 @@ using Procfiler.Core.Collector;
 using Procfiler.Core.Constants.XesLifecycle;
 using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsProcessing;
+using Procfiler.Core.Serialization.Core;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 using Procfiler.Utils.Xml;
 
-namespace Procfiler.Core.Serialization.XES;
+namespace Procfiler.Core.Serialization.Xes;
 
-public interface IXesEventsSerializer
+public interface IXesEventsSessionSerializer : IEventsSessionSerializer
 {
-  void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream, bool writeAllMetadata);
   void AppendTrace(EventSessionInfo session, XmlWriter writer, int traceNum, bool writeAllMetadata);
   void WriteHeader(XmlWriter writer);
   void WriteEvent(EventRecordWithMetadata eventRecord, XmlWriter writer, bool writeAllMetadata);
@@ -18,19 +18,20 @@ public interface IXesEventsSerializer
 }
 
 [AppComponent]
-public partial class XesEventsSerializer(
+public partial class XesEventsSessionSerializer(
   IUnitedEventsProcessor unitedEventsProcessor,
   IProcfilerLogger logger
-) : IXesEventsSerializer
+) : IXesEventsSessionSerializer
 {
   [ThreadStatic] private static int ourNextEventId;
 
 
-  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, Stream stream, bool writeAllMetadata)
+  public void SerializeEvents(IEnumerable<EventSessionInfo> eventsTraces, string path, bool writeAllMetadata)
   {
     using var performanceCookie = new PerformanceCookie($"{GetType().Name}::{nameof(SerializeEvents)}", logger);
 
-    using var writer = XmlWriter.Create(stream, new XmlWriterSettings
+    using var fs = File.OpenWrite(path);
+    using var writer = XmlWriter.Create(fs, new XmlWriterSettings
     {
       Indent = true,
     });
@@ -80,31 +81,32 @@ public partial class XesEventsSerializer(
 
     WriteDateTag(writer, currentEvent.Stamp);
     WriteStringValueTag(writer, ConceptName, currentEvent.EventName);
-    WriteStringValueTag(writer, EventId, (ourNextEventId++).ToString());
     WriteStringValueTag(writer, "ManagedThreadId", currentEvent.ManagedThreadId.ToString());
 
-    WriteAndRemoveMetadataValue(
+    WriteMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.Transition, StandardLifecycleTransition);
 
-    WriteAndRemoveMetadataValue(
+    WriteMetadataValue(
       writer, currentEvent, XesStandardLifecycleConstants.ActivityId, ConceptInstanceId);
 
     if (writeAllMetadata)
     {
       foreach (var key in currentEvent.Metadata.Keys)
       {
-        WriteAndRemoveMetadataValue(writer, currentEvent, key, key);
+        if (key is not (XesStandardLifecycleConstants.Transition or XesStandardLifecycleConstants.ActivityId))
+        {
+          WriteMetadataValue(writer, currentEvent, key, key);
+        }
       } 
     }
   }
 
-  private static void WriteAndRemoveMetadataValue(
+  private static void WriteMetadataValue(
     XmlWriter writer, EventRecordWithMetadata eventRecord, string metadataKey, string attributeName)
   {
     if (eventRecord.Metadata.TryGetValue(metadataKey, out var value))
     {
       WriteStringValueTag(writer, attributeName, value);
-      eventRecord.Metadata.Remove(metadataKey);
     }
   }
 

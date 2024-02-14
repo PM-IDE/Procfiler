@@ -4,7 +4,7 @@ using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
-using Procfiler.Core.Serialization.XES;
+using Procfiler.Core.Serialization.Core;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
@@ -20,7 +20,7 @@ public record struct SplitContext(
 
 public interface IByMethodsSplitter
 {
-  Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>? SplitNonAlloc(OnlineMethodsXesSerializer serializer, SplitContext context);
+  Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>? SplitNonAlloc(IOnlineMethodsSerializer serializer, SplitContext context);
   Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>> Split(SplitContext context);
 }
 
@@ -35,7 +35,7 @@ public class ByMethodsSplitterImpl(
 ) : IByMethodsSplitter
 {
   public Dictionary<string, List<IReadOnlyList<EventRecordWithMetadata>>>? SplitNonAlloc(
-    OnlineMethodsXesSerializer serializer, SplitContext context)
+    IOnlineMethodsSerializer serializer, SplitContext context)
   {
     var (events, filterPattern, inlineMode, mergeUndefinedThreadEvents, addAsyncMethods) = context;
     SplitEventsByThreads(events, out var eventsByManagedThreads, out var undefinedThreadEvents);

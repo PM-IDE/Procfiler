@@ -1,8 +1,9 @@
 ﻿using Procfiler.Core.EventRecord;
+using Procfiler.Core.Serialization.Core;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
-namespace Procfiler.Core.Serialization;
+namespace Procfiler.Core.Serialization.MethodsCallTree;
 
 public interface IMethodTreeEventSerializer : IEventsSerializer;
 

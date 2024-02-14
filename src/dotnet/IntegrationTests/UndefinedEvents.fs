@@ -11,7 +11,8 @@ let createCustomConfig csprojPath outputPath : ICommandConfig =
             { OutputPath = outputPath
               CsprojPath = csprojPath }
           Repeat = 1
-          Duration = 10_000 } }
+          Duration = 10_000
+          WriteAllMetadata = true } }
 
 let source () = knownProjectsNamesTestCaseSource
 

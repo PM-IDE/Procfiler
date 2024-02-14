@@ -6,7 +6,9 @@ using Procfiler.Core.EventRecord;
 using Procfiler.Core.EventsCollection;
 using Procfiler.Core.EventsProcessing;
 using Procfiler.Core.EventsProcessing.Mutators;
-using Procfiler.Core.Serialization.XES;
+using Procfiler.Core.Serialization.Bxes;
+using Procfiler.Core.Serialization.Core;
+using Procfiler.Core.Serialization.Xes;
 using Procfiler.Core.SplitByMethod;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
@@ -29,7 +31,7 @@ public class SplitEventsByMethodCommand(
   ICommandExecutorDependantOnContext commandExecutor,
   IUndefinedThreadsEventsMerger undefinedThreadsEventsMerger,
   IUnitedEventsProcessor unitedEventsProcessor,
-  IXesEventsSerializer xesEventsSerializer,
+  IXesEventsSessionSerializer xesEventsSessionSerializer,
   IByMethodsSplitter splitter,
   IFullMethodNameBeautifier methodNameBeautifier,
   IProcfilerLogger logger,
@@ -46,21 +48,18 @@ public class SplitEventsByMethodCommand(
 
   private Option<string?> TargetMethodsRegex { get; } =
     new("--target-methods-regex", static () => null, "Target methods regex ");
-
+  
 
   public override void Execute(CollectClrEventsContext context)
   {
     using var _ = new PerformanceCookie("SplittingEventsByMethods", Logger);
 
-    var directory = context.CommonContext.OutputPath;
     var parseResult = context.CommonContext.CommandParseResult;
     var mergeUndefinedThreadEvents = parseResult.TryGetOptionValue(MergeFromUndefinedThreadOption);
-    var targetMethodsRegexString = parseResult.TryGetOptionValue(TargetMethodsRegex);
-    var targetMethodsRegex = targetMethodsRegexString switch
-    {
-      { } => new Regex(targetMethodsRegexString),
-      _ => null
-    };
+    var directory = context.CommonContext.OutputPath;
+    
+    using var onlineSerializer = CreateOnlineSerializer(context);
+    using var notStoringSerializer = CreateNotStoringSerializer(context);
 
     ExecuteCommand(context, events =>
     {
@@ -71,17 +70,13 @@ public class SplitEventsByMethodCommand(
       var filterPattern = GetFilterPattern(context.CommonContext);
       var inlineInnerCalls = parseResult.TryGetOptionValue(InlineInnerMethodsCalls);
       var addAsyncMethods = parseResult.TryGetOptionValue(GroupAsyncMethods);
-      var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
-
-      using var xesSerializer = new OnlineMethodsXesSerializer(
-        directory, targetMethodsRegex, xesEventsSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData);
 
       var splitContext = new SplitContext(events, filterPattern, inlineInnerCalls, mergeUndefinedThreadEvents, addAsyncMethods);
-      var asyncMethods = splitter.SplitNonAlloc(xesSerializer, splitContext);
+      // ReSharper disable once AccessToDisposedClosure
+      var asyncMethods = splitter.SplitNonAlloc(onlineSerializer, splitContext);
 
       if (asyncMethods is { })
       {
-        using var serializer = new NotStoringMergingTraceSerializer(xesEventsSerializer, logger, writeAllEventData);
         foreach (var (methodName, traces) in asyncMethods)
         {
           var eventsByMethodsInvocation = PrepareEventSessionInfo(traces, globalData);
@@ -89,11 +84,45 @@ public class SplitEventsByMethodCommand(
           
           foreach (var (_, sessionInfo) in eventsByMethodsInvocation)
           {
-            serializer.WriteTrace(filePath, sessionInfo);
+            // ReSharper disable once AccessToDisposedClosure
+            notStoringSerializer.WriteTrace(filePath, sessionInfo);
           }
         }
       }
     });
+  }
+
+  private INotStoringMergingTraceSerializer CreateNotStoringSerializer(CollectClrEventsContext context)
+  {
+    var writeAllMetadata = context.CommonContext.WriteAllEventMetadata;
+
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Xes => new NotStoringMergingTraceXesSerializer(xesEventsSessionSerializer, logger, writeAllMetadata),
+      LogFormat.Bxes => new NotStoringMergingTraceBxesSerializer(logger, writeAllMetadata),
+      _ => throw new ArgumentOutOfRangeException()
+    };
+  }
+  
+  private IOnlineMethodsSerializer CreateOnlineSerializer(CollectClrEventsContext context)
+  {
+    var writeAllEventData = context.CommonContext.WriteAllEventMetadata;
+    var directory = context.CommonContext.OutputPath;
+    var targetMethodsRegexString = context.CommonContext.CommandParseResult.TryGetOptionValue(TargetMethodsRegex);
+    var targetMethodsRegex = targetMethodsRegexString switch
+    {
+      { } => new Regex(targetMethodsRegexString),
+      _ => null
+    };
+
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Bxes => new OnlineBxesMethodsSerializer(
+        directory, targetMethodsRegex, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+      LogFormat.Xes => new OnlineMethodsXesSerializer(
+        directory, targetMethodsRegex, xesEventsSessionSerializer, methodNameBeautifier, eventsFactory, logger, writeAllEventData),
+      _ => throw new ArgumentOutOfRangeException()
+    };
   }
 
   private string GetFilterPattern(CollectingClrEventsCommonContext context)

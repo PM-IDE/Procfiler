@@ -4,7 +4,9 @@ using Procfiler.Commands.CollectClrEvents.Split;
 using Procfiler.Core;
 using Procfiler.Core.Collector;
 using Procfiler.Core.EventsProcessing;
-using Procfiler.Core.Serialization.XES;
+using Procfiler.Core.Serialization.Bxes;
+using Procfiler.Core.Serialization.Core;
+using Procfiler.Core.Serialization.Xes;
 using Procfiler.Utils;
 using Procfiler.Utils.Container;
 
@@ -17,7 +19,8 @@ public class CollectEventsFromSeveralLaunchesCommand(
   IProcfilerLogger logger,
   ICommandExecutorDependantOnContext commandExecutor,
   IUnitedEventsProcessor unitedEventsProcessor,
-  IXesEventsSerializer xesEventsSerializer
+  IXesEventsSessionSerializer xesEventsSessionSerializer,
+  IBxesEventsSessionSerializer bxesEventsSessionSerializer
 ) : CollectCommandBase(logger, commandExecutor), ICollectEventsFromSeveralLaunchesCommand
 {
   public override void Execute(CollectClrEventsContext context)
@@ -35,10 +38,18 @@ public class CollectEventsFromSeveralLaunchesCommand(
     });
 
     var path = context.CommonContext.OutputPath;
-    using var fs = File.OpenWrite(path);
-
     var writeAllEventMetadata = context.CommonContext.WriteAllEventMetadata;
-    xesEventsSerializer.SerializeEvents(sessionInfos, fs, writeAllEventMetadata);
+    GetSerializer(context).SerializeEvents(sessionInfos, path, writeAllEventMetadata);
+  }
+
+  private IEventsSessionSerializer GetSerializer(CollectClrEventsContext context)
+  {
+    return context.CommonContext.LogSerializationFormat switch
+    {
+      LogFormat.Xes => xesEventsSessionSerializer,
+      LogFormat.Bxes => bxesEventsSessionSerializer,
+      _ => throw new ArgumentOutOfRangeException()
+    };
   }
 
   protected override Command CreateCommandInternal()

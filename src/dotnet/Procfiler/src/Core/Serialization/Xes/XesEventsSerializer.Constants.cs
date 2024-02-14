@@ -1,6 +1,6 @@
-namespace Procfiler.Core.Serialization.XES;
+namespace Procfiler.Core.Serialization.Xes;
 
-public partial class XesEventsSerializer
+public partial class XesEventsSessionSerializer
 {
   public const string Name = "name";
   public const string LogTagName = "log";

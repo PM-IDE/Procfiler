@@ -12,7 +12,8 @@ let private createConfigInternal solutionPath outputPath : ICommandConfig =
             { OutputPath = outputPath
               CsprojPath = solutionPath }
           Repeat = 1
-          Duration = 10_000 } }
+          Duration = 10_000
+          WriteAllMetadata = true } }
 
 let source () = knownProjectsNamesTestCaseSource
 
