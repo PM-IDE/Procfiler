@@ -26,19 +26,30 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
   {
     ExecuteTestWithGold(
       solution.CreateDefaultContext(),
-      events => ExecuteAsyncGroupingTest(events, solution, DumpsAllocationsWith));
+      events => ExecuteAsyncGroupingTest(events, solution, ExtractAllocations, DumpsAllocationsWith));
   }
 
-  private static string DumpsAllocationsWith(IReadOnlyList<EventRecordWithMetadata> events)
+  private static List<EventRecordWithMetadata> ExtractAllocations(IReadOnlyList<EventRecordWithMetadata> events)
   {
     var regex = new Regex("[a-zA-Z]+.Class[0-9]");
-    var sb = new StringBuilder();
+    List<EventRecordWithMetadata> allocations = [];
     foreach (var eventRecord in events)
     {
       if (!eventRecord.IsGcSampledObjectAlloc(out var typeName)) continue;
       if (regex.Match(typeName).Length != typeName.Length) continue;
 
-      sb.Append(typeName).AppendNewLine();
+      allocations.Add(eventRecord);
+    }
+
+    return allocations;
+  }
+  
+  private static string DumpsAllocationsWith(IReadOnlyList<EventRecordWithMetadata> events)
+  {
+    var sb = new StringBuilder();
+    foreach (var eventRecord in events)
+    {
+      sb.Append(eventRecord.GetAllocatedTypeNameOrThrow()).AppendNewLine();
     }
 
     return sb.ToString();
@@ -47,6 +58,7 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
   private string ExecuteAsyncGroupingTest(
     CollectedEvents events,
     KnownSolution knownSolution,
+    Func<IReadOnlyList<EventRecordWithMetadata>, List<EventRecordWithMetadata>> allocationsExtractor,
     Func<IReadOnlyList<EventRecordWithMetadata>, string> tracesDumber)
   {
     var processingContext = EventsProcessingContext.DoEverything(events.Events, events.GlobalData);
@@ -67,7 +79,10 @@ public class AsyncMethodsGroupingTest : GoldProcessBasedTest
       if (!filter.IsMatch(methodName)) continue;
 
       sb.Append(methodName);
-      foreach (var trace in methodsTraces.OrderBy(t => t[0].Stamp))
+
+      var allocationTraces = methodsTraces.Select(allocationsExtractor).Where(t => t.Count > 0).OrderBy(t => t[0].Stamp);
+
+      foreach (var trace in allocationTraces)
       {
         sb.AppendNewLine().Append("Trace:").AppendNewLine();
         sb.Append(tracesDumber(trace));

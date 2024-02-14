@@ -161,6 +161,9 @@ public static class EventRecordExtensions
     return true;
   }
 
+  public static string GetAllocatedTypeNameOrThrow(this EventRecordWithMetadata eventRecord) => 
+    eventRecord.Metadata[TraceEventsConstants.CommonTypeName];
+
   public static bool IsMethodStartEndProvider(this EventRecordWithMetadata eventRecord)
   {
     return eventRecord.EventClass is not (TraceEventsConstants.GcSetGcHandle or TraceEventsConstants.GcDestroyGcHandle);
