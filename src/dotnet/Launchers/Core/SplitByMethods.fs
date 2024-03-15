@@ -2,6 +2,7 @@
 
 open System.IO
 open Microsoft.FSharp.Core
+open Microsoft.VisualBasic.CompilerServices
 open Scripts.Core.ProcfilerScriptsUtils
 
 module SplitByMethods =
@@ -67,14 +68,7 @@ module SplitByMethods =
         launchProcfiler csprojPath outputPath configFunc
 
     let launchProcfilerOnFolderOfSolutions solutionsFolder outputPath =
-        ensureEmptyDirectory outputPath |> ignore
-        let pathsToDlls = getAllCsprojFiles solutionsFolder
-
-        pathsToDlls
-        |> List.iter (fun solution ->
-            let name = applicationNameFromCsproj solution
-            let outputPath = Path.Combine(outputPath, name)
-            launchProcfiler solution outputPath createInlineMerge)
+        launchProcfilerOnFolderOfSolutions solutionsFolder outputPath createInlineMerge false
 
     let launchProcfilerOnSolutionsFolderInAllConfigs solutionsFolder outputPath =
         let pathsToDlls = getAllCsprojFiles solutionsFolder

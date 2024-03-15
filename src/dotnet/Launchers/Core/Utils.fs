@@ -143,3 +143,18 @@ module ProcfilerScriptsUtils =
             let appName = applicationNameFromCsproj csprojPath
             printfn $"Finished executing procfiler for {appName}"
         | _ -> ()
+        
+    let launchProcfilerOnFolderOfSolutions solutionsFolder outputFolder config outputIsFile =
+        ensureEmptyDirectory outputFolder |> ignore
+        let pathsToDlls = getAllCsprojFiles solutionsFolder
+
+        pathsToDlls
+        |> List.iter (fun solution ->
+            let name = applicationNameFromCsproj solution
+            let outputPath =
+                match outputIsFile with
+                | true -> Path.Combine(outputFolder, name + ".xes")
+                | false -> Path.Combine(outputFolder, name)
+                
+            launchProcfiler solution outputPath config)
+        
